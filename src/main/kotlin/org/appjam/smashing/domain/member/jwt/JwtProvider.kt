@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component
 @Component
 class JwtProvider(
     private val jwtGenerator: JwtGenerator,
-    private val jwtValidator: JwtValidator
+    private val jwtValidator: JwtValidator,
 ) {
     fun issueToken(userId: Long): Token = Token.of(
         jwtGenerator.generateToken(userId, TokenType.ACCESS_TOKEN),
