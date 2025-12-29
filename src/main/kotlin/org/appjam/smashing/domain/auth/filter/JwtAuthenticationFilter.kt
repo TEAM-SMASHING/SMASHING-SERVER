@@ -36,6 +36,7 @@ class JwtAuthenticationFilter(
         val header = request.getHeader(HttpHeaders.AUTHORIZATION) ?: return null
         val prefix = PREFIX
         if (!header.startsWith(prefix)) return null
+
         return header.substring(prefix.length).trim().takeIf { it.isNotBlank() }
     }
 
