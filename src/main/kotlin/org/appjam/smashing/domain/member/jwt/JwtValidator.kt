@@ -28,5 +28,4 @@ class JwtValidator(
         Jwts.parserBuilder()
             .setSigningKey(keyProvider.getSigningKey())
             .build()
-
 }
