@@ -1,7 +1,7 @@
 package org.appjam.smashing.global.config
 
-import org.appjam.smashing.domain.auth.filter.JwtAuthenticationFilter
-import org.appjam.smashing.domain.auth.jwt.JwtProvider
+import org.appjam.smashing.domain.member.filter.JwtAuthenticationFilter
+import org.appjam.smashing.domain.member.jwt.JwtProvider
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
