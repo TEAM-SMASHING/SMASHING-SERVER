@@ -38,6 +38,10 @@ class Matching(
     @Comment("응답 시각")
     val respondedAt: LocalDateTime? = null,
 
+    @Column
+    @Comment("매칭 확정 시각(ACCEPTED 시)")
+    val confirmedAt: LocalDateTime? = null,
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
         name = "requester_user_id",
