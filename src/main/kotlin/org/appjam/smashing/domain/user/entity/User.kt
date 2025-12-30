@@ -1,0 +1,38 @@
+package org.appjam.smashing.domain.user.entity
+
+import io.hypersistence.utils.hibernate.id.Tsid
+import jakarta.persistence.*
+import org.appjam.smashing.domain.common.entity.BaseEntity
+import org.appjam.smashing.domain.user.enums.Gender
+import org.hibernate.annotations.Comment
+import org.hibernate.annotations.SQLDelete
+import org.hibernate.annotations.SQLRestriction
+
+@Entity
+@Comment("유저 정보")
+@SQLRestriction("deleted_at is null")
+@SQLDelete(sql = "update user set deleted_at = now() where id = ?")
+class User(
+    @Id
+    @Tsid
+    @Column(length = 13)
+    @Comment("유저 IDX")
+    val id: String? = null,
+
+    @Column(nullable = false)
+    @Comment("카카오 IDX")
+    val kakaoId: Long,
+
+    @Column(nullable = false, length = 50)
+    @Comment("닉네임")
+    val nickname: String,
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, columnDefinition = "VARCHAR(30)")
+    @Comment("성별")
+    val gender: Gender,
+
+    @Column(nullable = false, columnDefinition = "TEXT")
+    @Comment("오픈채팅 링크")
+    val openchatUrl: String,
+) : BaseEntity()
