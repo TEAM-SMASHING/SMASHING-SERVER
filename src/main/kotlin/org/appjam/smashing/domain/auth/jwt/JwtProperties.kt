@@ -1,4 +1,4 @@
-package org.appjam.smashing.domain.member.jwt
+package org.appjam.smashing.domain.auth.jwt
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.stereotype.Component

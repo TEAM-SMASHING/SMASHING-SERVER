@@ -1,4 +1,4 @@
-package org.appjam.smashing.domain.member.jwt
+package org.appjam.smashing.domain.auth.jwt
 
 data class Token(
     val accessToken: String,

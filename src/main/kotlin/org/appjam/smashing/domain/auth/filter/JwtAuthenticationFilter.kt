@@ -1,9 +1,9 @@
-package org.appjam.smashing.domain.member.filter
+package org.appjam.smashing.domain.auth.filter
 
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import org.appjam.smashing.domain.member.jwt.JwtProvider
+import org.appjam.smashing.domain.auth.jwt.JwtProvider
 import org.springframework.http.HttpHeaders
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
