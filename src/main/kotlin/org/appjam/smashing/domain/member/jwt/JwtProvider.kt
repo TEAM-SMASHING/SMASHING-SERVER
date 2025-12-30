@@ -16,7 +16,7 @@ class JwtProvider(
         jwtGenerator.generateToken(userId, TokenType.REFRESH_TOKEN)
     )
 
-    fun getUserIdFromSubject(token: String): Long {
+    fun getUserId(token: String): Long {
         val jws: Jws<Claims> = jwtValidator.parseToken(token)
         val subject = jws.body.subject
 

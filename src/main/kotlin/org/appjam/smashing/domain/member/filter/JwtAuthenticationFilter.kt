@@ -25,7 +25,7 @@ class JwtAuthenticationFilter(
             return
         }
 
-        val userId = jwtProvider.getUserIdFromSubject(token)
+        val userId = jwtProvider.getUserId(token)
 
         setAuthentication(userId)
 
