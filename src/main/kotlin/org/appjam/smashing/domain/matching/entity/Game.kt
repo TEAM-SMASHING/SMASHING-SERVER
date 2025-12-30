@@ -1,9 +1,9 @@
-package org.appjam.smashing.domain.match.entity
+package org.appjam.smashing.domain.matching.entity
 
 import io.hypersistence.utils.hibernate.id.Tsid
 import jakarta.persistence.*
 import org.appjam.smashing.domain.common.entity.BaseEntity
-import org.appjam.smashing.domain.match.enums.GameResultStatus
+import org.appjam.smashing.domain.matching.enums.GameResultStatus
 import org.appjam.smashing.domain.sport.entity.Sport
 import org.appjam.smashing.domain.user.entity.User
 import org.hibernate.annotations.Comment
@@ -14,7 +14,7 @@ import java.time.LocalDateTime
 @Entity
 @Table(
     indexes = [
-        Index(name = "idx_game_match_id", columnList = "match_id"),
+        Index(name = "idx_game_matching_id", columnList = "matching_id"),
         Index(name = "idx_game_sport_id", columnList = "sport_id"),
         Index(name = "idx_game_winner_user_id", columnList = "winner_user_id"),
         Index(name = "idx_game_loser_user_id", columnList = "loser_user_id"),
@@ -50,12 +50,12 @@ class Game(
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(
-        name = "match_id",
+        name = "matching_id",
         nullable = false,
         foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT)
     )
-    @Comment("매치 IDX")
-    val match: Match,
+    @Comment("매칭 IDX")
+    val matching: Matching,
 
     @Column(name = "confirmed_submission_id", length = 13)
     @Comment("최종 확정된 결과 제출 IDX")

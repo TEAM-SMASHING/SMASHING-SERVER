@@ -1,9 +1,9 @@
-package org.appjam.smashing.domain.match.entity
+package org.appjam.smashing.domain.matching.entity
 
 import io.hypersistence.utils.hibernate.id.Tsid
 import jakarta.persistence.*
 import org.appjam.smashing.domain.common.entity.BaseEntity
-import org.appjam.smashing.domain.match.enums.SubmissionStatus
+import org.appjam.smashing.domain.matching.enums.SubmissionStatus
 import org.appjam.smashing.domain.user.entity.User
 import org.hibernate.annotations.Comment
 import org.hibernate.annotations.SQLDelete

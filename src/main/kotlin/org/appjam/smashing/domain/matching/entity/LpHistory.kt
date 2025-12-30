@@ -1,4 +1,4 @@
-package org.appjam.smashing.domain.match.entity
+package org.appjam.smashing.domain.matching.entity
 
 import io.hypersistence.utils.hibernate.id.Tsid
 import jakarta.persistence.*

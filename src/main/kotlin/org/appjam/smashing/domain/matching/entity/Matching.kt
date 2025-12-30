@@ -1,9 +1,9 @@
-package org.appjam.smashing.domain.match.entity
+package org.appjam.smashing.domain.matching.entity
 
 import io.hypersistence.utils.hibernate.id.Tsid
 import jakarta.persistence.*
 import org.appjam.smashing.domain.common.entity.BaseEntity
-import org.appjam.smashing.domain.match.enums.MatchStatus
+import org.appjam.smashing.domain.matching.enums.MatchingStatus
 import org.appjam.smashing.domain.sport.entity.Sport
 import org.appjam.smashing.domain.user.entity.User
 import org.hibernate.annotations.Comment
@@ -14,25 +14,25 @@ import java.time.LocalDateTime
 @Entity
 @Table(
     indexes = [
-        Index(name = "idx_match_requester_user_id", columnList = "requester_user_id"),
-        Index(name = "idx_match_receiver_user_id", columnList = "receiver_user_id"),
-        Index(name = "idx_match_sport_id", columnList = "sport_id"),
+        Index(name = "idx_matching_requester_user_id", columnList = "requester_user_id"),
+        Index(name = "idx_matching_receiver_user_id", columnList = "receiver_user_id"),
+        Index(name = "idx_matching_sport_id", columnList = "sport_id"),
     ]
 )
 @Comment("매칭 정보")
 @SQLRestriction("deleted_at is null")
-@SQLDelete(sql = "update match set deleted_at = now() where id = ?")
-class Match(
+@SQLDelete(sql = "update matching set deleted_at = now() where id = ?")
+class Matching(
     @Id
     @Tsid
     @Column(length = 13)
-    @Comment("매치 IDX")
+    @Comment("매칭 IDX")
     val id: String? = null,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "VARCHAR(30)")
     @Comment("매칭 상태")
-    val status: MatchStatus,
+    val status: MatchingStatus,
 
     @Column
     @Comment("응답 시각")

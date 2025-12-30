@@ -1,4 +1,4 @@
-package org.appjam.smashing.domain.match.enums
+package org.appjam.smashing.domain.matching.enums
 
 enum class SubmissionStatus {
     SUBMITTED, ACCEPTED, REJECTED

@@ -3,7 +3,7 @@ package org.appjam.smashing.domain.review.entity
 import io.hypersistence.utils.hibernate.id.Tsid
 import jakarta.persistence.*
 import org.appjam.smashing.domain.common.entity.BaseEntity
-import org.appjam.smashing.domain.match.entity.Game
+import org.appjam.smashing.domain.matching.entity.Game
 import org.appjam.smashing.domain.user.entity.User
 import org.hibernate.annotations.Comment
 import org.hibernate.annotations.SQLDelete
