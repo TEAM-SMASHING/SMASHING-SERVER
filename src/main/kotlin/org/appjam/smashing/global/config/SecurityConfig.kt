@@ -60,8 +60,8 @@ class SecurityConfig(
             "/actuator/**",
 
             // API
-            "/api/v1/member/login",
-            "/api/v1/member/profile",
+            "/api/v1/auth/login/kakao",
+            "/api/v1/auth/signup",
         )
     }
 }
