@@ -1,5 +1,7 @@
 package org.appjam.smashing.global.config
 
+import org.appjam.smashing.domain.auth.exception.ExceptionHandlerFilter
+import org.appjam.smashing.domain.auth.exception.JwtAuthenticationEntryPoint
 import org.appjam.smashing.domain.auth.filter.JwtAuthenticationFilter
 import org.appjam.smashing.domain.auth.jwt.JwtProvider
 import org.springframework.context.annotation.Bean
@@ -18,6 +20,8 @@ import org.springframework.web.cors.CorsUtils
 @EnableMethodSecurity
 class SecurityConfig(
     private val jwtProvider: JwtProvider,
+    private val exceptionHandlerFilter: ExceptionHandlerFilter,
+    private val jwtAuthenticationEntryPoint: JwtAuthenticationEntryPoint,
 ) {
 
     @Bean
@@ -39,9 +43,12 @@ class SecurityConfig(
                 authorize(anyRequest, permitAll) // TODO: 추후 로그인 기능 구현 시 수정
             }
 
-            addFilterBefore<UsernamePasswordAuthenticationFilter>(
-                JwtAuthenticationFilter(jwtProvider)
-            )
+            exceptionHandling {
+                authenticationEntryPoint = jwtAuthenticationEntryPoint
+            }
+
+            addFilterBefore<UsernamePasswordAuthenticationFilter>(exceptionHandlerFilter)
+            addFilterBefore<UsernamePasswordAuthenticationFilter>(JwtAuthenticationFilter(jwtProvider))
         }
 
         return http.build()
