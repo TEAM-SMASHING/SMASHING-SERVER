@@ -79,7 +79,10 @@ data class ApiResponse<T>(
             )
 
         /**
-         * 에러 바디 (필터/EntryPoint용)
+         * 에러 바디
+         *
+         * @param errorCode 에러 코드
+         * @return ApiResponse
          */
         fun errorBody(errorCode: ErrorCode): ApiResponse<Unit> =
             ApiResponse(
