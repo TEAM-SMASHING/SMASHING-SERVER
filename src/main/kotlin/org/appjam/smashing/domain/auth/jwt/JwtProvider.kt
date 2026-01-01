@@ -4,6 +4,8 @@ import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jws
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Component
 
 @Component
@@ -16,11 +18,19 @@ class JwtProvider(
         jwtGenerator.generateToken(userId, TokenType.REFRESH_TOKEN)
     )
 
-    fun getUserId(token: String): Long {
+    fun getAuthentication(token: String): Authentication {
         val jws: Jws<Claims> = jwtValidator.parseToken(token)
         val subject = jws.body.subject
 
-        return subject.toLongOrNull()
+        val userId = subject.toLongOrNull()
             ?: throw CustomException(ErrorCode.INVALID_TOKEN_SUBJECT)
+
+        val userDetails = CustomUserDetails(userId)
+
+        return UsernamePasswordAuthenticationToken(
+            userDetails,
+            null,
+            userDetails.authorities
+        )
     }
 }

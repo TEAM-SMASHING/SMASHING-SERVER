@@ -24,10 +24,9 @@ class JwtAuthenticationFilter(
             filterChain.doFilter(request, response)
             return
         }
-
-        val userId = jwtProvider.getUserId(token)
-
-        setAuthentication(userId)
+        
+        val authentication = jwtProvider.getAuthentication(token)
+        SecurityContextHolder.getContext().authentication = authentication
 
         filterChain.doFilter(request, response)
     }
@@ -38,15 +37,6 @@ class JwtAuthenticationFilter(
         if (!header.startsWith(prefix)) return null
 
         return header.substring(prefix.length).trim().takeIf { it.isNotBlank() }
-    }
-
-    private fun setAuthentication(userId: Long) {
-        val authentication = UsernamePasswordAuthenticationToken(
-            userId,
-            null,
-            emptyList()
-        )
-        SecurityContextHolder.getContext().authentication = authentication
     }
 
     companion object {
