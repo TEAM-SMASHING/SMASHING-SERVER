@@ -47,8 +47,8 @@ class SecurityConfig(
                 authenticationEntryPoint = jwtAuthenticationEntryPoint
             }
 
-            addFilterBefore<UsernamePasswordAuthenticationFilter>(exceptionHandlerFilter)
             addFilterBefore<UsernamePasswordAuthenticationFilter>(JwtAuthenticationFilter(jwtProvider))
+            addFilterBefore<UsernamePasswordAuthenticationFilter>(exceptionHandlerFilter)
         }
 
         return http.build()
