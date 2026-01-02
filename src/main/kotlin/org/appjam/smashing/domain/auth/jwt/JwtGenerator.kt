@@ -11,27 +11,35 @@ class JwtGenerator(
     private val jwtProperties: JwtProperties,
     private val keyProvider: KeyProvider,
 ) {
-    fun generateToken(
-        userId: Long,
-        tokenType: TokenType,
-    ): String {
+    fun generateAccessToken(userId: Long): String {
         val now = Date()
-        val expiration = generateExpirationDate(now, tokenType)
+        val expiration = Date(now.time + jwtProperties.accessTokenExpireTime)
 
         return Jwts.builder()
             .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
             .setSubject(userId.toString())
+            .claim(TYPE_KEY, TokenType.ACCESS_TOKEN)
             .setIssuedAt(now)
             .setExpiration(expiration)
             .signWith(keyProvider.getSigningKey(), SignatureAlgorithm.HS256)
             .compact()
     }
 
-    private fun generateExpirationDate(
-        now: Date,
-        tokenType: TokenType,
-    ): Date = when (tokenType) {
-        TokenType.ACCESS_TOKEN -> Date(now.time + jwtProperties.accessTokenExpireTime)
-        TokenType.REFRESH_TOKEN -> Date(now.time + jwtProperties.refreshTokenExpireTime)
+    fun generateRefreshToken(): String {
+        val now = Date()
+        val expiration = Date(now.time + jwtProperties.refreshTokenExpireTime)
+
+        return Jwts.builder()
+            .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
+            .setSubject(UUID.randomUUID().toString())
+            .claim(TYPE_KEY, TokenType.REFRESH_TOKEN)
+            .setIssuedAt(now)
+            .setExpiration(expiration)
+            .signWith(keyProvider.getSigningKey(), SignatureAlgorithm.HS256)
+            .compact()
+    }
+
+    companion object {
+        const val TYPE_KEY = "type"
     }
 }

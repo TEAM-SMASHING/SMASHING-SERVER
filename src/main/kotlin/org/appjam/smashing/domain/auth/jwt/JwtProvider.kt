@@ -2,6 +2,7 @@ package org.appjam.smashing.domain.auth.jwt
 
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jws
+import org.appjam.smashing.domain.auth.jwt.JwtGenerator.Companion.TYPE_KEY
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -14,12 +15,18 @@ class JwtProvider(
     private val jwtValidator: JwtValidator,
 ) {
     fun issueToken(userId: Long): Token = Token.of(
-        jwtGenerator.generateToken(userId, TokenType.ACCESS_TOKEN),
-        jwtGenerator.generateToken(userId, TokenType.REFRESH_TOKEN)
+        jwtGenerator.generateAccessToken(userId),
+        jwtGenerator.generateRefreshToken()
     )
 
     fun getAuthentication(token: String): Authentication {
         val jws: Jws<Claims> = jwtValidator.parseToken(token)
+
+        val type = jws.body[TYPE_KEY] as? String
+        if (type != TokenType.ACCESS_TOKEN.name) {
+            throw CustomException(ErrorCode.INVALID_TOKEN_TYPE)
+        }
+
         val subject = jws.body.subject
 
         val userId = subject.toLongOrNull()

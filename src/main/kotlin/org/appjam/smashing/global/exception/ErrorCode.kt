@@ -18,9 +18,10 @@ enum class ErrorCode(
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "BR", "잘못된 요청입니다."),
 
     /* ========== 도메인 ========== */
-    // Member
+    // Auth
     INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH", "유효하지 않은 리프레시 토큰입니다."),
     EXPIRED_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH", "만료된 엑세스 토큰입니다."),
     INVALID_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH", "유효하지 않은 엑세스 토큰입니다."),
     INVALID_TOKEN_SUBJECT(HttpStatus.UNAUTHORIZED, "AUTH", "토큰의 subject 형식이 올바르지 않습니다."),
+    INVALID_TOKEN_TYPE(HttpStatus.UNAUTHORIZED, "AUTH", "토큰의 type 형식이 올바르지 않습니다."),
 }
