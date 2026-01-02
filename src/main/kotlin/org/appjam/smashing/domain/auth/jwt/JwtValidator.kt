@@ -15,11 +15,19 @@ class JwtValidator(
         }
     }
 
-    fun parseToken(token: String): Jws<Claims> =
+    fun validateAndParseAccessToken(token: String): Claims =
         try {
-            getJwtParser().parseClaimsJws(token)
+            getJwtParser().parseClaimsJws(token).body
         } catch (e: ExpiredJwtException) {
             throw CustomException(ErrorCode.EXPIRED_ACCESS_TOKEN)
+        } catch (e: UnsupportedJwtException) {
+            throw CustomException(ErrorCode.UNSUPPORTED_ACCESS_TOKEN)
+        } catch (e: MalformedJwtException) {
+            throw CustomException(ErrorCode.MALFORMED_ACCESS_TOKEN)
+        } catch (e: SecurityException) {
+            throw CustomException(ErrorCode.INVALID_ACCESS_SIGNATURE)
+        } catch (e: IllegalArgumentException) {
+            throw CustomException(ErrorCode.INVALID_ACCESS_TOKEN_CONTENTS)
         } catch (e: Exception) {
             throw CustomException(ErrorCode.INVALID_ACCESS_TOKEN)
         }

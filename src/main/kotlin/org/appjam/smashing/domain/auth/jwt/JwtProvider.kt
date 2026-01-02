@@ -1,7 +1,5 @@
 package org.appjam.smashing.domain.auth.jwt
 
-import io.jsonwebtoken.Claims
-import io.jsonwebtoken.Jws
 import org.appjam.smashing.domain.auth.jwt.JwtGenerator.Companion.TYPE_KEY
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
@@ -20,17 +18,17 @@ class JwtProvider(
     )
 
     fun getAuthentication(token: String): Authentication {
-        val jws: Jws<Claims> = jwtValidator.parseToken(token)
+        val claims = jwtValidator.validateAndParseAccessToken(token)
 
-        val type = jws.body[TYPE_KEY] as? String
+        val type = claims[TYPE_KEY] as? String
         if (type != TokenType.ACCESS_TOKEN.name) {
-            throw CustomException(ErrorCode.INVALID_TOKEN_TYPE)
+            throw CustomException(ErrorCode.INVALID_ACCESS_TOKEN_TYPE)
         }
 
-        val subject = jws.body.subject
+        val subject = claims.subject
 
         val userId = subject.toLongOrNull()
-            ?: throw CustomException(ErrorCode.INVALID_TOKEN_SUBJECT)
+            ?: throw CustomException(ErrorCode.INVALID_ACCESS_TOKEN_SUBJECT)
 
         val userDetails = CustomUserDetails(userId)
 

@@ -19,9 +19,13 @@ enum class ErrorCode(
 
     /* ========== 도메인 ========== */
     // Auth
-    INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH", "유효하지 않은 리프레시 토큰입니다."),
-    EXPIRED_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH", "만료된 엑세스 토큰입니다."),
-    INVALID_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH", "유효하지 않은 엑세스 토큰입니다."),
-    INVALID_TOKEN_SUBJECT(HttpStatus.UNAUTHORIZED, "AUTH", "토큰의 subject 형식이 올바르지 않습니다."),
-    INVALID_TOKEN_TYPE(HttpStatus.UNAUTHORIZED, "AUTH", "토큰의 type 형식이 올바르지 않습니다."),
+    EXPIRED_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-001", "만료된 엑세스 토큰입니다."),
+    INVALID_ACCESS_SIGNATURE(HttpStatus.UNAUTHORIZED, "AUTH-002", "변조된 엑세스 토큰입니다."),
+    MALFORMED_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-003", "엑세스 토큰의 형식이 잘못되었습니다."),
+    UNSUPPORTED_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-004", "지원되지 않는 엑세스 토큰 형식입니다."),
+    INVALID_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-005", "유효하지 않은 엑세스 토큰입니다."),
+    INVALID_ACCESS_TOKEN_TYPE(HttpStatus.UNAUTHORIZED, "AUTH-006", "엑세스 토큰의 타입이 올바르지 않습니다."),
+    INVALID_ACCESS_TOKEN_SUBJECT(HttpStatus.UNAUTHORIZED, "AUTH-007", "엑세스 토큰의 유저 정보가 올바르지 않습니다."),
+    INVALID_ACCESS_TOKEN_CONTENTS(HttpStatus.UNAUTHORIZED, "AUTH-008", "유효하지 않은 정보가 담긴 엑세스 토큰입니다."),
+    INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-009", "유효하지 않은 리프레시 토큰입니다."),
 }
