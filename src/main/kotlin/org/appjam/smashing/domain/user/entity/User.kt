@@ -35,4 +35,8 @@ class User(
     @Column(nullable = false, columnDefinition = "TEXT")
     @Comment("오픈채팅 링크")
     val openchatUrl: String,
+
+    @Column(name = "active_user_sport_profile_id", length = 13)
+    @Comment("현재 활성화된 유저-스포츠 프로필 IDX")
+    var activeUserSportProfileId: String? = null
 ) : BaseEntity()
