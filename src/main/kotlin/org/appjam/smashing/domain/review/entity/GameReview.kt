@@ -4,6 +4,7 @@ import io.hypersistence.utils.hibernate.id.Tsid
 import jakarta.persistence.*
 import org.appjam.smashing.domain.common.entity.BaseEntity
 import org.appjam.smashing.domain.matching.entity.Game
+import org.appjam.smashing.domain.review.enums.*
 import org.appjam.smashing.domain.user.entity.User
 import org.hibernate.annotations.Comment
 import org.hibernate.annotations.SQLDelete
@@ -30,6 +31,21 @@ class GameReview(
     @Column(columnDefinition = "TEXT")
     @Comment("후기 내용")
     var content: String? = null,
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    @Comment("경기 만족도(BAD/GOOD/BEST)")
+    val rating: ReviewRating,
+
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(
+        name = "game_review_tag",
+        joinColumns = [JoinColumn(name = "game_review_id", foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT))],
+    )
+    @Column(name = "tag", nullable = false, length = 30)
+    @Enumerated(EnumType.STRING)
+    @Comment("칭찬 태그")
+    val tags: MutableSet<ReviewTag> = mutableSetOf(),
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
