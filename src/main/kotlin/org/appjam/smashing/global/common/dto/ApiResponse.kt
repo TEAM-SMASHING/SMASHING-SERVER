@@ -77,20 +77,5 @@ data class ApiResponse<T>(
                     errorName = errorCode.name,
                 )
             )
-
-        /**
-         * 에러 바디
-         *
-         * @param errorCode 에러 코드
-         * @return ApiResponse
-         */
-        fun errorBody(errorCode: ErrorCode): ApiResponse<Unit> =
-            ApiResponse(
-                status = Status.ERROR,
-                statusCode = errorCode.httpStatus.value(),
-                message = errorCode.message,
-                errorCode = errorCode.errorCode,
-                errorName = errorCode.name,
-            )
     }
 }
