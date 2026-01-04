@@ -1,6 +1,5 @@
 package org.appjam.smashing.global.config
 
-import org.appjam.smashing.domain.auth.exception.ExceptionHandlerFilter
 import org.appjam.smashing.domain.auth.exception.JwtAuthenticationEntryPoint
 import org.appjam.smashing.domain.auth.filter.JwtAuthenticationFilter
 import org.appjam.smashing.domain.auth.jwt.JwtProvider
@@ -20,7 +19,6 @@ import org.springframework.web.cors.CorsUtils
 @EnableMethodSecurity
 class SecurityConfig(
     private val jwtProvider: JwtProvider,
-    private val exceptionHandlerFilter: ExceptionHandlerFilter,
     private val jwtAuthenticationEntryPoint: JwtAuthenticationEntryPoint,
 ) {
 
@@ -48,7 +46,6 @@ class SecurityConfig(
             }
 
             addFilterBefore<UsernamePasswordAuthenticationFilter>(JwtAuthenticationFilter(jwtProvider))
-            addFilterBefore<UsernamePasswordAuthenticationFilter>(exceptionHandlerFilter)
         }
 
         return http.build()

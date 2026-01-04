@@ -3,6 +3,7 @@ package org.appjam.smashing.domain.auth.filter
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.appjam.smashing.domain.auth.exception.JwtAuthenticationEntryPoint.Companion.EXCEPTION_KEY
 import org.appjam.smashing.domain.auth.jwt.JwtProvider
 import org.springframework.http.HttpHeaders
 import org.springframework.security.core.context.SecurityContextHolder
@@ -17,17 +18,22 @@ class JwtAuthenticationFilter(
         response: HttpServletResponse,
         filterChain: FilterChain,
     ) {
-        val token = resolveToken(request)
+        try {
+            val token = resolveToken(request)
 
-        if (token == null) {
+            if (token == null) {
+                filterChain.doFilter(request, response)
+                return
+            }
+
+            val authentication = jwtProvider.getAuthentication(token)
+            SecurityContextHolder.getContext().authentication = authentication
+
             filterChain.doFilter(request, response)
-            return
+        } catch (e: Exception) {
+            request.setAttribute(EXCEPTION_KEY, e)
+            throw e
         }
-
-        val authentication = jwtProvider.getAuthentication(token)
-        SecurityContextHolder.getContext().authentication = authentication
-
-        filterChain.doFilter(request, response)
     }
 
     private fun resolveToken(request: HttpServletRequest): String? {
