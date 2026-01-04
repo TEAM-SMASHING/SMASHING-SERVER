@@ -11,13 +11,13 @@ class JwtGenerator(
     private val jwtProperties: JwtProperties,
     private val keyProvider: KeyProvider,
 ) {
-    fun generateAccessToken(userId: Long): String {
+    fun generateAccessToken(userId: String): String {
         val now = Date()
         val expiration = Date(now.time + jwtProperties.accessTokenExpireTime)
 
         return Jwts.builder()
             .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
-            .setSubject(userId.toString())
+            .setSubject(userId)
             .claim(TYPE_KEY, TokenType.ACCESS_TOKEN.name)
             .setIssuedAt(now)
             .setExpiration(expiration)

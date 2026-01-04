@@ -12,7 +12,7 @@ class JwtProvider(
     private val jwtGenerator: JwtGenerator,
     private val jwtValidator: JwtValidator,
 ) {
-    fun issueToken(userId: Long): Token = Token.of(
+    fun issueToken(userId: String): Token = Token.of(
         jwtGenerator.generateAccessToken(userId),
         jwtGenerator.generateRefreshToken()
     )
