@@ -33,6 +33,10 @@ class Notification(
     @Comment("알림 읽음 여부")
     var isRead: Boolean = false,
 
+    @Column(nullable = false, length = 500)
+    @Comment("알림 연결 URL(라우팅 경로)")
+    val linkUrl: String,
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
         name = "user_id",
