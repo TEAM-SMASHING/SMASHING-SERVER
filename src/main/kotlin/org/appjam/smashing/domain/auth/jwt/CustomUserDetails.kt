@@ -1,12 +1,13 @@
 package org.appjam.smashing.domain.auth.jwt
 
 import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 
 class CustomUserDetails(
     private val userId: Long,
 ) : UserDetails {
-    override fun getAuthorities(): Collection<GrantedAuthority> = emptyList()
+    override fun getAuthorities(): Collection<GrantedAuthority> = listOf(SimpleGrantedAuthority("ROLE_USER"))
 
     override fun getPassword(): String? = null
 
