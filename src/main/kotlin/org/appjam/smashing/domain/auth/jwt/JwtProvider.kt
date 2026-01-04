@@ -25,12 +25,9 @@ class JwtProvider(
             throw CustomException(ErrorCode.INVALID_ACCESS_TOKEN_TYPE)
         }
 
-        val subject = claims.subject
+        val subject = claims.subject ?: throw CustomException(ErrorCode.INVALID_ACCESS_TOKEN_SUBJECT)
 
-        val userId = subject.toLongOrNull()
-            ?: throw CustomException(ErrorCode.INVALID_ACCESS_TOKEN_SUBJECT)
-
-        val userDetails = CustomUserDetails(userId)
+        val userDetails = CustomUserDetails(subject)
 
         return UsernamePasswordAuthenticationToken(
             userDetails,
