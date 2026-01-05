@@ -1,5 +1,6 @@
 package org.appjam.smashing.global.config
 
+import org.appjam.smashing.domain.auth.exception.JwtAccessDeniedHandler
 import org.appjam.smashing.domain.auth.exception.JwtAuthenticationEntryPoint
 import org.appjam.smashing.domain.auth.filter.JwtAuthenticationFilter
 import org.appjam.smashing.domain.auth.jwt.JwtProvider
@@ -20,6 +21,7 @@ import org.springframework.web.cors.CorsUtils
 class SecurityConfig(
     private val jwtProvider: JwtProvider,
     private val jwtAuthenticationEntryPoint: JwtAuthenticationEntryPoint,
+    private val jwtAccessDeniedHandler: JwtAccessDeniedHandler,
 ) {
 
     @Bean
@@ -43,6 +45,7 @@ class SecurityConfig(
 
             exceptionHandling {
                 authenticationEntryPoint = jwtAuthenticationEntryPoint
+                accessDeniedHandler = jwtAccessDeniedHandler
             }
 
             addFilterBefore<UsernamePasswordAuthenticationFilter>(JwtAuthenticationFilter(jwtProvider))
