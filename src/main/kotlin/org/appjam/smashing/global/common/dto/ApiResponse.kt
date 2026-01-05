@@ -25,12 +25,12 @@ data class ApiResponse<T>(
          * @return ResponseEntity
          */
         fun <T> success(data: T): ResponseEntity<ApiResponse<T>> = ResponseEntity.ok(
-                ApiResponse(
-                    status = Status.SUCCESS,
-                    statusCode = 200,
-                    data = data,
-                )
+            ApiResponse(
+                status = Status.SUCCESS,
+                statusCode = 200,
+                data = data,
             )
+        )
 
         /**
          * 성공 응답
@@ -38,11 +38,11 @@ data class ApiResponse<T>(
          * @return ResponseEntity
          */
         fun success(): ResponseEntity<ApiResponse<Unit>> = ResponseEntity.ok(
-                ApiResponse(
-                    status = Status.SUCCESS,
-                    statusCode = 200,
-                )
+            ApiResponse(
+                status = Status.SUCCESS,
+                statusCode = 200,
             )
+        )
 
         /**
          * 실패 응답
@@ -51,14 +51,14 @@ data class ApiResponse<T>(
          * @return ResponseEntity
          */
         fun fail(message: String?): ResponseEntity<ApiResponse<Unit>> = ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(
-                    ApiResponse(
-                        status = Status.FAIL,
-                        statusCode = 400,
-                        message = message,
-                    )
+            .status(HttpStatus.BAD_REQUEST)
+            .body(
+                ApiResponse(
+                    status = Status.FAIL,
+                    statusCode = 400,
+                    message = message,
                 )
+            )
 
         /**
          * 에러 응답
@@ -67,15 +67,15 @@ data class ApiResponse<T>(
          * @return ResponseEntity
          */
         fun error(errorCode: ErrorCode): ResponseEntity<ApiResponse<Unit>> = ResponseEntity
-                .status(errorCode.httpStatus)
-                .body(
-                    ApiResponse(
-                        status = Status.ERROR,
-                        statusCode = errorCode.httpStatus.value(),
-                        message = errorCode.message,
-                        errorCode = errorCode.errorCode,
-                        errorName = errorCode.name,
-                    )
+            .status(errorCode.httpStatus)
+            .body(
+                ApiResponse(
+                    status = Status.ERROR,
+                    statusCode = errorCode.httpStatus.value(),
+                    message = errorCode.message,
+                    errorCode = errorCode.errorCode,
+                    errorName = errorCode.name,
                 )
+            )
     }
 }
