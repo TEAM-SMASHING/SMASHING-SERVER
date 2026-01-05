@@ -5,6 +5,7 @@ import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
+import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.stereotype.Component
 
 @Component
@@ -26,8 +27,12 @@ class JwtProvider(
         }
 
         val subject = claims.subject ?: throw CustomException(ErrorCode.INVALID_ACCESS_TOKEN_SUBJECT)
+        val role = listOf(SimpleGrantedAuthority("ROLE_USER"))
 
-        val userDetails = CustomUserDetails(subject)
+        val userDetails = CustomUserDetails(
+            userId = subject,
+            authorities = role
+        )
 
         return UsernamePasswordAuthenticationToken(
             userDetails,
