@@ -16,7 +16,10 @@ class JwtGenerator(
     private val jwtProperties: JwtProperties,
     private val keyProvider: KeyProvider,
 ) {
-    fun generateAccessToken(userId: String): GeneratedToken {
+    fun generateAccessToken(
+        userId: String,
+        roles: List<String>,
+    ): GeneratedToken {
         val now = Date()
         val expireTime = now.time + jwtProperties.accessTokenExpireTime
         val expiration = Date(expireTime)
@@ -25,6 +28,7 @@ class JwtGenerator(
             .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
             .setSubject(userId)
             .claim(TYPE_KEY, TokenType.ACCESS_TOKEN.name)
+            .claim(ROLES_KEY, roles)
             .setIssuedAt(now)
             .setExpiration(expiration)
             .signWith(keyProvider.getSigningKey(), SignatureAlgorithm.HS256)
@@ -58,5 +62,6 @@ class JwtGenerator(
 
     companion object {
         const val TYPE_KEY = "type"
+        const val ROLES_KEY = "roles"
     }
 }
