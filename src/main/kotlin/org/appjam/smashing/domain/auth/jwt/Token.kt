@@ -1,33 +1,28 @@
 package org.appjam.smashing.domain.auth.jwt
 
 data class TokenDto(
-    val token: Token,
-    val expireTime: ExpireTime,
+    val accessToken: Token,
+    val refreshToken: Token,
 ) {
     data class Token(
-        val access: String,
-        val refresh: String,
-    )
-
-    data class ExpireTime(
-        val access: Long,
-        val refresh: Long,
+        val token: String,
+        val expiredAt: Long,
     )
 
     companion object {
         fun of(
             accessToken: String,
+            accessTokenExpiredAt: Long,
             refreshToken: String,
-            accessExpireTime: Long,
-            refreshExpireTime: Long,
+            refreshTokenExpiredAt: Long,
         ): TokenDto = TokenDto(
-            token = Token(
-                access = accessToken,
-                refresh = refreshToken,
+            accessToken = Token(
+                token = accessToken,
+                expiredAt = accessTokenExpiredAt,
             ),
-            expireTime = ExpireTime(
-                access = accessExpireTime,
-                refresh = refreshExpireTime,
+            refreshToken = Token(
+                token = refreshToken,
+                expiredAt = refreshTokenExpiredAt,
             )
         )
     }

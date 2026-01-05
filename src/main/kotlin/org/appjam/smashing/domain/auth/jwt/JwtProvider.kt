@@ -23,9 +23,9 @@ class JwtProvider(
 
         return TokenDto.of(
             accessToken = access.token,
+            accessTokenExpiredAt = access.expireTime,
             refreshToken = refresh.token,
-            accessExpireTime = access.expireTime,
-            refreshExpireTime = refresh.expireTime,
+            refreshTokenExpiredAt = refresh.expireTime,
         )
     }
 
