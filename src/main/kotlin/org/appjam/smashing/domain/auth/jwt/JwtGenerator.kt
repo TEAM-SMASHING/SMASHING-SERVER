@@ -6,16 +6,22 @@ import io.jsonwebtoken.SignatureAlgorithm
 import org.springframework.stereotype.Component
 import java.util.*
 
+data class GeneratedToken(
+    val token: String,
+    val expireTime: Long,
+)
+
 @Component
 class JwtGenerator(
     private val jwtProperties: JwtProperties,
     private val keyProvider: KeyProvider,
 ) {
-    fun generateAccessToken(userId: String): String {
+    fun generateAccessToken(userId: String): GeneratedToken {
         val now = Date()
-        val expiration = Date(now.time + jwtProperties.accessTokenExpireTime)
+        val expireTime = now.time + jwtProperties.accessTokenExpireTime
+        val expiration = Date(expireTime)
 
-        return Jwts.builder()
+        val accessToken = Jwts.builder()
             .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
             .setSubject(userId)
             .claim(TYPE_KEY, TokenType.ACCESS_TOKEN.name)
@@ -23,13 +29,19 @@ class JwtGenerator(
             .setExpiration(expiration)
             .signWith(keyProvider.getSigningKey(), SignatureAlgorithm.HS256)
             .compact()
+
+        return GeneratedToken(
+            token = accessToken,
+            expireTime = expireTime,
+        )
     }
 
-    fun generateRefreshToken(): String {
+    fun generateRefreshToken(): GeneratedToken {
         val now = Date()
-        val expiration = Date(now.time + jwtProperties.refreshTokenExpireTime)
+        val expireTime = now.time + jwtProperties.refreshTokenExpireTime
+        val expiration = Date(expireTime)
 
-        return Jwts.builder()
+        val refreshToken = Jwts.builder()
             .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
             .setSubject(UUID.randomUUID().toString())
             .claim(TYPE_KEY, TokenType.REFRESH_TOKEN.name)
@@ -37,6 +49,11 @@ class JwtGenerator(
             .setExpiration(expiration)
             .signWith(keyProvider.getSigningKey(), SignatureAlgorithm.HS256)
             .compact()
+
+        return GeneratedToken(
+            token = refreshToken,
+            expireTime = expireTime,
+        )
     }
 
     companion object {

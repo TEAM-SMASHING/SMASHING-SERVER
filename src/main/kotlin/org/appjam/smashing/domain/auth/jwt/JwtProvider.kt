@@ -13,10 +13,17 @@ class JwtProvider(
     private val jwtGenerator: JwtGenerator,
     private val jwtValidator: JwtValidator,
 ) {
-    fun issueToken(userId: String): Token = Token.of(
-        jwtGenerator.generateAccessToken(userId),
-        jwtGenerator.generateRefreshToken()
-    )
+    fun issueToken(userId: String): TokenDto {
+        val access = jwtGenerator.generateAccessToken(userId)
+        val refresh = jwtGenerator.generateRefreshToken()
+
+        return TokenDto.of(
+            accessToken = access.token,
+            refreshToken = refresh.token,
+            accessExpireTime = access.expireTime,
+            refreshExpireTime = refresh.expireTime,
+        )
+    }
 
     fun getAuthentication(token: String): Authentication {
         val claims = jwtValidator.validateAndParseAccessToken(token)
