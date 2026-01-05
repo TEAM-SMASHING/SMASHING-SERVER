@@ -2,6 +2,8 @@ package org.appjam.smashing.domain.auth.exception
 
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.appjam.smashing.global.exception.CustomException
+import org.appjam.smashing.global.exception.ErrorCode
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.web.access.AccessDeniedHandler
@@ -19,6 +21,7 @@ class JwtAccessDeniedHandler(
         response: HttpServletResponse,
         accessDeniedException: AccessDeniedException,
     ) {
-        resolver.resolveException(request, response, null, accessDeniedException)
+        val exception = CustomException(ErrorCode.FORBIDDEN)
+        resolver.resolveException(request, response, null, exception)
     }
 }
