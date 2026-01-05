@@ -18,22 +18,19 @@ class JwtAuthenticationFilter(
         response: HttpServletResponse,
         filterChain: FilterChain,
     ) {
-        try {
-            val token = resolveToken(request)
+        val token = resolveToken(request)
 
-            if (token == null) {
-                filterChain.doFilter(request, response)
-                return
+        if (!token.isNullOrBlank()) {
+            try {
+                val authentication = jwtProvider.getAuthentication(token)
+                SecurityContextHolder.getContext().authentication = authentication
+            } catch (e: Exception) {
+                SecurityContextHolder.clearContext()
+                request.setAttribute(EXCEPTION_KEY, e)
             }
-
-            val authentication = jwtProvider.getAuthentication(token)
-            SecurityContextHolder.getContext().authentication = authentication
-
-            filterChain.doFilter(request, response)
-        } catch (e: Exception) {
-            request.setAttribute(EXCEPTION_KEY, e)
-            throw e
         }
+
+        filterChain.doFilter(request, response)
     }
 
     private fun resolveToken(request: HttpServletRequest): String? {
