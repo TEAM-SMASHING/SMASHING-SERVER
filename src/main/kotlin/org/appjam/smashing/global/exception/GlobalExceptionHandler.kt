@@ -3,7 +3,6 @@ package org.appjam.smashing.global.exception
 import org.appjam.smashing.global.common.dto.ApiResponse
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authorization.AuthorizationDeniedException
-import org.springframework.security.core.AuthenticationException
 import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
@@ -64,14 +63,6 @@ class GlobalExceptionHandler {
     @ExceptionHandler(AuthorizationDeniedException::class)
     fun handleAuthorizationDeniedException(exception: AuthorizationDeniedException): ResponseEntity<ApiResponse<Unit>> {
         return ApiResponse.error(ErrorCode.FORBIDDEN)
-    }
-
-    /**
-     * 인증 실패 (401)
-     */
-    @ExceptionHandler(org.springframework.security.core.AuthenticationException::class)
-    fun handleAuthenticationException(exception: AuthenticationException): ResponseEntity<ApiResponse<Unit>> {
-        return ApiResponse.error(ErrorCode.UNAUTHORIZED)
     }
 
     /**
