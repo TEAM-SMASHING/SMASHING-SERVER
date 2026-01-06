@@ -17,7 +17,7 @@ interface OutboxEventRepository : JpaRepository<OutboxEvent, String> {
        and e.status = :status
      order by e.id asc
      """)
-    fun findPendingIds(
+    fun findIdsByUserIdAndStatus(
         userId: String,
         status: OutboxEventStatus,
         pageable: Pageable,
