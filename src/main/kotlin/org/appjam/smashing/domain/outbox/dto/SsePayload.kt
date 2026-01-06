@@ -18,8 +18,9 @@ data class MatchingReceivedPayload(
 ) : SsePayload
 
 /**
- * 매칭관리 - 보낸 요청 / 매칭확정
+ * 매칭관리 - 보낸 요청 / 매칭확정 / 요청삭제
  * - 상대가 내 요청을 ACCEPT/REJECT 하는 순간
+ * - 상대가 보낸 요청을 CANCELLED 하는 순간
  */
 data class MatchingUpdatedPayload(
     override val type: String = SseEventType.MATCHING_UPDATED.eventName,
@@ -30,7 +31,6 @@ data class MatchingUpdatedPayload(
 /**
  * 알림 생성
  * - 알림이 생성된 순간만 SSE로 푸시
- *
  */
 data class NotificationCreatedPayload(
     override val type: String = SseEventType.NOTIFICATION_CREATED.eventName,
