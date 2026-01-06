@@ -97,7 +97,7 @@ class SseEmitterRegistry {
     private fun remove(userId: String, emitter: SseEmitter) {
         emitters.computeIfPresent(userId) { _, queue ->
             queue.remove(emitter)
-            queue.takeIf { it.peek() != null } // it 사용하도록 깔끔
+            queue.takeIf { it.peek() != null }
         }
     }
 }
