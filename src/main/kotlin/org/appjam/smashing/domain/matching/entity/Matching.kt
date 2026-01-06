@@ -68,4 +68,18 @@ class Matching(
     )
     @Comment("스포츠 IDX")
     val sport: Sport,
-) : BaseEntity()
+) : BaseEntity() {
+
+    companion object {
+        fun createRequested(
+            requester: User,
+            receiver: User,
+            sport: Sport,
+        ): Matching = Matching(
+            status = MatchingStatus.REQUESTED,
+            requester = requester,
+            receiver = receiver,
+            sport = sport,
+        )
+    }
+}
