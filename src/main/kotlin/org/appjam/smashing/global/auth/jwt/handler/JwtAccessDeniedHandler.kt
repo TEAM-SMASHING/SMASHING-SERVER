@@ -1,33 +1,27 @@
-package org.appjam.smashing.domain.auth.exception
+package org.appjam.smashing.global.auth.jwt.handler
 
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.security.core.AuthenticationException
-import org.springframework.security.web.AuthenticationEntryPoint
+import org.springframework.security.access.AccessDeniedException
+import org.springframework.security.web.access.AccessDeniedHandler
 import org.springframework.stereotype.Component
 import org.springframework.web.servlet.HandlerExceptionResolver
 
 @Component
-class JwtAuthenticationEntryPoint(
+class JwtAccessDeniedHandler(
     @Qualifier("handlerExceptionResolver")
     private val resolver: HandlerExceptionResolver,
-) : AuthenticationEntryPoint {
+) : AccessDeniedHandler {
 
-    override fun commence(
+    override fun handle(
         request: HttpServletRequest,
         response: HttpServletResponse,
-        authException: AuthenticationException,
+        accessDeniedException: AccessDeniedException,
     ) {
-        val exception = request.getAttribute(EXCEPTION_KEY) as? CustomException ?: CustomException(ErrorCode.UNAUTHORIZED)
-
+        val exception = CustomException(ErrorCode.FORBIDDEN)
         resolver.resolveException(request, response, null, exception)
     }
-
-    companion object {
-        const val EXCEPTION_KEY = "exception"
-    }
-
 }

@@ -1,15 +1,13 @@
-package org.appjam.smashing.domain.auth.jwt
+package org.appjam.smashing.global.auth.jwt.components
 
 import io.jsonwebtoken.Header
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
+import org.appjam.smashing.global.auth.jwt.config.JwtProperties
+import org.appjam.smashing.global.auth.jwt.dto.TokenDto
+import org.appjam.smashing.global.auth.jwt.enums.TokenType
 import org.springframework.stereotype.Component
 import java.util.*
-
-data class GeneratedToken(
-    val token: String,
-    val expireTime: Long,
-)
 
 @Component
 class JwtGenerator(
@@ -19,7 +17,7 @@ class JwtGenerator(
     fun generateAccessToken(
         userId: String,
         roles: List<String>,
-    ): GeneratedToken {
+    ): TokenDto.Token {
         val now = Date()
         val expireTime = now.time + jwtProperties.accessTokenExpireTime
         val expiration = Date(expireTime)
@@ -34,13 +32,13 @@ class JwtGenerator(
             .signWith(keyProvider.getSigningKey(), SignatureAlgorithm.HS256)
             .compact()
 
-        return GeneratedToken(
+        return TokenDto.Token.of(
             token = accessToken,
-            expireTime = expireTime,
+            expiredAt = expireTime,
         )
     }
 
-    fun generateRefreshToken(): GeneratedToken {
+    fun generateRefreshToken(): TokenDto.Token {
         val now = Date()
         val expireTime = now.time + jwtProperties.refreshTokenExpireTime
         val expiration = Date(expireTime)
@@ -54,9 +52,9 @@ class JwtGenerator(
             .signWith(keyProvider.getSigningKey(), SignatureAlgorithm.HS256)
             .compact()
 
-        return GeneratedToken(
+        return TokenDto.Token.of(
             token = refreshToken,
-            expireTime = expireTime,
+            expiredAt = expireTime,
         )
     }
 
