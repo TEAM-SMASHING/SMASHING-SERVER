@@ -1,7 +1,8 @@
-package org.appjam.smashing.domain.auth.jwt
+package org.appjam.smashing.global.auth.jwt.components
 
 import io.jsonwebtoken.*
-import org.appjam.smashing.domain.auth.jwt.JwtGenerator.Companion.TYPE_KEY
+import org.appjam.smashing.global.auth.jwt.components.JwtGenerator.Companion.TYPE_KEY
+import org.appjam.smashing.global.auth.jwt.enums.TokenType
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
 import org.springframework.stereotype.Component
