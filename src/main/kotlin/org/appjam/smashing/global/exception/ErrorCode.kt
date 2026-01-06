@@ -37,5 +37,8 @@ enum class ErrorCode(
     MALFORMED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-014", "리프레시 토큰의 형식이 잘못되었습니다."),
     UNSUPPORTED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-015", "지원되지 않는 리프레시 토큰 형식입니다."),
     INVALID_REFRESH_TOKEN_TYPE(HttpStatus.UNAUTHORIZED, "AUTH-016", "리프레시 토큰의 타입이 올바르지 않습니다."),
-    INVALID_REFRESH_TOKEN_CONTENTS(HttpStatus.UNAUTHORIZED, "AUTH-017", "유효하지 않은 정보가 담긴 리프레시 토큰입니다.")
+    INVALID_REFRESH_TOKEN_CONTENTS(HttpStatus.UNAUTHORIZED, "AUTH-017", "유효하지 않은 정보가 담긴 리프레시 토큰입니다."),
+
+    // User
+    USER_NOT_FOUND(HttpStatus.BAD_REQUEST, "USER-001", "해당 유저를 찾을 수 없습니다."),
 }
