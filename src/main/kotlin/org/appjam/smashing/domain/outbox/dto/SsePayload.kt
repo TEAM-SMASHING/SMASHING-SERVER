@@ -3,6 +3,7 @@ package org.appjam.smashing.domain.outbox.dto
 import org.appjam.smashing.domain.notification.enums.NotificationType
 import org.appjam.smashing.domain.outbox.enums.MatchingUpdateStatus
 import org.appjam.smashing.domain.outbox.enums.SseEventType
+import org.appjam.smashing.domain.user.enums.Gender
 
 sealed interface SsePayload {
     val type: String
@@ -15,7 +16,19 @@ sealed interface SsePayload {
 data class MatchingReceivedPayload(
     override val type: String = SseEventType.MATCHING_RECEIVED.eventName,
     val matchingId: String,
-) : SsePayload
+    val requester: MatchingRequesterSummary,
+) : SsePayload {
+
+    data class MatchingRequesterSummary(
+        val userId: String,
+        val nickname: String,
+        val gender: Gender,
+        val tierName: String,
+        val wins: Int,
+        val losses: Int,
+        val reviewCount: Long,
+    )
+}
 
 /**
  * 매칭관리 - 보낸 요청 / 매칭확정 / 요청삭제
