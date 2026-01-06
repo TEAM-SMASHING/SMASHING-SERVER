@@ -4,6 +4,7 @@ import io.hypersistence.utils.hibernate.id.Tsid
 import jakarta.persistence.*
 import org.appjam.smashing.domain.common.entity.BaseEntity
 import org.appjam.smashing.domain.user.entity.User
+import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.hibernate.annotations.Comment
 import org.hibernate.annotations.SQLDelete
 import org.hibernate.annotations.SQLRestriction
@@ -54,4 +55,20 @@ class Notification(
     )
     @Comment("템플릿 IDX")
     val notificationTemplate: NotificationTemplate,
-) : BaseEntity()
+) : BaseEntity() {
+
+    companion object {
+        fun createMatchingRequested(
+            receiver: User,
+            template: NotificationTemplate,
+            requesterProfile: UserSportProfile,
+        ): Notification =
+            Notification(
+                params = """{"requesterNickname":"${requesterProfile.user.nickname}","requesterTierName":"${requesterProfile.tier.name}"}""",
+                isRead = false,
+                linkUrl = "/api/v1/users/me/matchings/received",
+                user = receiver,
+                notificationTemplate = template,
+            )
+    }
+}
