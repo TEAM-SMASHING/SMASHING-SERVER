@@ -40,7 +40,7 @@ class SseSubscribeController(
 
         // 연결이 정상인 경우 backlog flush
         if (isConnected) {
-            outboxEventService.enqueuePendingSends(userId)
+            outboxEventService.enqueuePendingSendsAsync(userId)
         }
 
         return emitter

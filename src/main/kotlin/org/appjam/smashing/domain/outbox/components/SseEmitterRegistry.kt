@@ -31,27 +31,33 @@ class SseEmitterRegistry {
      */
     fun hasConnection(userId: String): Boolean = emitters[userId]?.peek() != null
 
-    /*
-     * userId에 연결된 모든 emitter에 이벤트 전송
+    /**
+     * userId에 연결된 emitter들로 전송을 시도하고,
+     * 하나라도 성공하면 true, 전부 실패/없으면 false
      */
     fun send(
         userId: String,
         eventName: String,
         payloadJson: String
-    ) {
-        // 해당 userId에 연결된 emitter가 없으면 종료
-        val queue = emitters[userId] ?: return
+    ): Boolean {
+        // userId에 연결된 emitter 큐 가져오기
+        val queue = emitters[userId] ?: return false
 
-        // 이벤트 생성
         val event = SseEmitter.event()
             .name(eventName)
             .data(payloadJson, MediaType.APPLICATION_JSON)
 
-        // 유저의 모든 emitter에 이벤트 전송
-        for (emitter in queue) {
-            val isSucceed = runCatching { emitter.send(event) }.isSuccess
-            if (!isSucceed) remove(userId, emitter)
+        // 최소 한 번이라도 전송 성공했는지 여부
+        var sentAtLeastOnce = false
+
+        val snapshot = queue.toList()
+
+        for (emitter in snapshot) {
+            val isSuccess = runCatching { emitter.send(event) }.isSuccess
+            if (isSuccess) sentAtLeastOnce = true else remove(userId, emitter)
         }
+
+        return sentAtLeastOnce
     }
 
     /*
