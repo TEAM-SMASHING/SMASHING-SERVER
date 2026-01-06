@@ -7,7 +7,17 @@ data class TokenDto(
     data class Token(
         val token: String,
         val expiredAt: Long,
-    )
+    ) {
+        companion object {
+            fun of(
+                token: String,
+                expiredAt: Long
+            ): Token = Token(
+                token = token,
+                expiredAt = expiredAt
+            )
+        }
+    }
 
     companion object {
         fun of(

@@ -29,7 +29,7 @@ class JwtGenerator(
             .signWith(keyProvider.getSigningKey(), SignatureAlgorithm.HS256)
             .compact()
 
-        return TokenDto.Token(
+        return TokenDto.Token.of(
             token = accessToken,
             expiredAt = expireTime,
         )
@@ -49,7 +49,7 @@ class JwtGenerator(
             .signWith(keyProvider.getSigningKey(), SignatureAlgorithm.HS256)
             .compact()
 
-        return TokenDto.Token(
+        return TokenDto.Token.of(
             token = refreshToken,
             expiredAt = expireTime,
         )
