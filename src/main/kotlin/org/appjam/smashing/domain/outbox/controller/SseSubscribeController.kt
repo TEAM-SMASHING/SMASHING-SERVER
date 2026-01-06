@@ -1,6 +1,6 @@
 package org.appjam.smashing.domain.outbox.controller
 
-import org.appjam.smashing.domain.outbox.components.CurrentUserProvider
+import org.appjam.smashing.global.auth.security.components.CurrentUserProvider
 import org.appjam.smashing.domain.outbox.components.SseEmitterRegistry
 import org.appjam.smashing.domain.outbox.service.OutboxEventService
 import org.springframework.http.MediaType
@@ -28,19 +28,17 @@ class SseSubscribeController(
         // registry에 emitter 추가
         sseEmitterRegistry.add(userId, emitter)
 
-        val isConnected = runCatching {
+        runCatching {
             emitter.send(
                 SseEmitter.event()
                     .name(SYSTEM_CONNECTED_EVENT)
                     .data("""{"type":"$SYSTEM_CONNECTED_EVENT"}""", MediaType.APPLICATION_JSON)
             )
+        }.onSuccess {
+            // 대기중인 이벤트 비동기 전송 시도
+            outboxEventService.enqueuePendingSendsAsync(userId)
         }.onFailure {
             sseEmitterRegistry.removeEmitter(userId, emitter)
-        }.isSuccess
-
-        // 연결이 정상인 경우 backlog flush
-        if (isConnected) {
-            outboxEventService.enqueuePendingSendsAsync(userId)
         }
 
         return emitter

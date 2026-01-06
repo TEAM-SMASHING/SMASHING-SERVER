@@ -53,8 +53,12 @@ class SseEmitterRegistry {
         val snapshot = queue.toList()
 
         for (emitter in snapshot) {
-            val isSuccess = runCatching { emitter.send(event) }.isSuccess
-            if (isSuccess) sentAtLeastOnce = true else remove(userId, emitter)
+            runCatching {
+                emitter.send(event)
+                sentAtLeastOnce = true
+            }.onFailure {
+                remove(userId, emitter)
+            }
         }
 
         return sentAtLeastOnce
@@ -77,11 +81,13 @@ class SseEmitterRegistry {
         userId: String,
         emitter: SseEmitter
     ) {
-        val cleanup = { remove(userId, emitter) }
+        emitter.apply {
+            val cleanup = { remove(userId, this) }
 
-        emitter.onCompletion(cleanup)
-        emitter.onTimeout(cleanup)
-        emitter.onError { cleanup() }
+            onCompletion(cleanup)
+            onTimeout(cleanup)
+            onError { cleanup() }
+        }
     }
 
     /*

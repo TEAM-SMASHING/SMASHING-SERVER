@@ -23,6 +23,6 @@ class AsyncConfig {
     }
 
     companion object {
-        const val OUTBOX_EVENT_EXECUTOR = "outboxEventExecutor"
+        private const val OUTBOX_EVENT_EXECUTOR = "outboxEventExecutor"
     }
 }
