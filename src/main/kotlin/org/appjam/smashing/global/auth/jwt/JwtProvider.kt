@@ -1,7 +1,7 @@
-package org.appjam.smashing.domain.auth.jwt
+package org.appjam.smashing.global.auth.jwt
 
-import org.appjam.smashing.domain.auth.jwt.JwtGenerator.Companion.ROLES_KEY
-import org.appjam.smashing.domain.auth.jwt.JwtGenerator.Companion.TYPE_KEY
+import org.appjam.smashing.global.auth.jwt.JwtGenerator.Companion.ROLES_KEY
+import org.appjam.smashing.global.auth.jwt.JwtGenerator.Companion.TYPE_KEY
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken

@@ -1,4 +1,4 @@
-package org.appjam.smashing.domain.auth.exception
+package org.appjam.smashing.global.auth.exception
 
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
