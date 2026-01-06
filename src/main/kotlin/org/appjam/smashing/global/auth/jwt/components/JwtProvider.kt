@@ -4,7 +4,7 @@ import org.appjam.smashing.global.auth.jwt.components.JwtGenerator.Companion.ROL
 import org.appjam.smashing.global.auth.jwt.components.JwtGenerator.Companion.TYPE_KEY
 import org.appjam.smashing.global.auth.jwt.dto.TokenDto
 import org.appjam.smashing.global.auth.jwt.enums.TokenType
-import org.appjam.smashing.global.auth.security.CustomUserDetails
+import org.appjam.smashing.global.auth.security.data.CustomUserDetails
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -32,7 +32,10 @@ class JwtProvider(
         )
     }
 
-    fun getAuthentication(token: String): Authentication {
+    fun getAuthentication(
+        token: String,
+        timeZone: String
+    ): Authentication {
         val claims = jwtValidator.validateAndParseAccessToken(token)
 
         val roles = claims[ROLES_KEY] as? List<*> ?: throw CustomException(ErrorCode.INVALID_ACCESS_TOKEN_CLAIM)
@@ -49,7 +52,8 @@ class JwtProvider(
 
         val userDetails = CustomUserDetails(
             userId = subject,
-            authorities = authorities
+            authorities = authorities,
+            timeZone = timeZone
         )
 
         return UsernamePasswordAuthenticationToken(

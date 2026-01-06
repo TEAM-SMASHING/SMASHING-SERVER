@@ -6,6 +6,7 @@ import org.springframework.security.core.userdetails.UserDetails
 class CustomUserDetails(
     private val userId: String,
     private val authorities: Collection<GrantedAuthority>,
+    private val timeZone: String,
 ) : UserDetails {
     override fun getAuthorities(): Collection<GrantedAuthority> = authorities
 
@@ -20,4 +21,6 @@ class CustomUserDetails(
     override fun isCredentialsNonExpired(): Boolean = true
 
     override fun isEnabled(): Boolean = true
+
+    fun getTimeZone(): String = timeZone
 }
