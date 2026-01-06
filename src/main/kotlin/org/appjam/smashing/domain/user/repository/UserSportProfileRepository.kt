@@ -1,0 +1,38 @@
+package org.appjam.smashing.domain.user.repository
+
+import org.appjam.smashing.domain.user.entity.UserSportProfile
+import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Query
+
+interface UserSportProfileRepository : JpaRepository<UserSportProfile, String> {
+
+    @Query(
+        """
+        select usp
+          from UserSportProfile usp
+          join fetch usp.user u
+          join fetch usp.tier t
+          join fetch usp.sport s
+         where u.id = :userId
+           and s.id = :sportId
+        """
+    )
+    fun findByUserIdAndSportIdFetch(
+        userId: String,
+        sportId: Long,
+    ): UserSportProfile?
+
+    @Query(
+        """
+    select usp
+      from UserSportProfile usp
+      join fetch usp.user
+      join fetch usp.sport
+      join fetch usp.tier
+     where usp.id = :profileId
+    """
+    )
+    fun findByIdFetchAll(
+        profileId: String,
+    ): UserSportProfile?
+}
