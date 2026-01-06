@@ -1,10 +1,10 @@
-package org.appjam.smashing.global.auth.filter
+package org.appjam.smashing.global.auth.jwt.filter
 
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import org.appjam.smashing.global.auth.exception.JwtAuthenticationEntryPoint.Companion.EXCEPTION_KEY
-import org.appjam.smashing.global.auth.jwt.JwtProvider
+import org.appjam.smashing.global.auth.jwt.components.JwtProvider
+import org.appjam.smashing.global.auth.jwt.handler.JwtAuthenticationEntryPoint.Companion.EXCEPTION_KEY
 import org.springframework.http.HttpHeaders
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.filter.OncePerRequestFilter

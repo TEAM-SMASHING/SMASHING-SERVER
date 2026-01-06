@@ -1,4 +1,4 @@
-package org.appjam.smashing.global.auth.jwt
+package org.appjam.smashing.global.auth.security
 
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails

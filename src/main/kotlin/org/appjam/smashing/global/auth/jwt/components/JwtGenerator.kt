@@ -1,8 +1,11 @@
-package org.appjam.smashing.global.auth.jwt
+package org.appjam.smashing.global.auth.jwt.components
 
 import io.jsonwebtoken.Header
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
+import org.appjam.smashing.global.auth.jwt.config.JwtProperties
+import org.appjam.smashing.global.auth.jwt.dto.TokenDto
+import org.appjam.smashing.global.auth.jwt.enums.TokenType
 import org.springframework.stereotype.Component
 import java.util.*
 

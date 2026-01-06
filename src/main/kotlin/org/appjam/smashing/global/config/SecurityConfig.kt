@@ -1,9 +1,9 @@
 package org.appjam.smashing.global.config
 
-import org.appjam.smashing.global.auth.exception.JwtAccessDeniedHandler
-import org.appjam.smashing.global.auth.exception.JwtAuthenticationEntryPoint
-import org.appjam.smashing.global.auth.filter.JwtAuthenticationFilter
-import org.appjam.smashing.global.auth.jwt.JwtProvider
+import org.appjam.smashing.global.auth.jwt.components.JwtProvider
+import org.appjam.smashing.global.auth.jwt.filter.JwtAuthenticationFilter
+import org.appjam.smashing.global.auth.jwt.handler.JwtAccessDeniedHandler
+import org.appjam.smashing.global.auth.jwt.handler.JwtAuthenticationEntryPoint
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
