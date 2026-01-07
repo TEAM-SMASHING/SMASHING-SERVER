@@ -41,4 +41,8 @@ class AuthService(
             authId = kakaoId,
         )
     }
+
+    fun signUp() {
+
+    }
 }
