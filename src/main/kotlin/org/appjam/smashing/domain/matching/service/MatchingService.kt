@@ -6,6 +6,7 @@ import org.appjam.smashing.domain.notification.enums.NotificationType
 import org.appjam.smashing.domain.notification.service.NotificationService
 import org.appjam.smashing.domain.outbox.components.OutboxEventPublisher
 import org.appjam.smashing.domain.outbox.dto.MatchingReceivedPayload
+import org.appjam.smashing.domain.outbox.dto.MatchingRequestNotificationCreatedPayload
 import org.appjam.smashing.domain.outbox.dto.NotificationCreatedPayload
 import org.appjam.smashing.domain.outbox.enums.SseEventType
 import org.appjam.smashing.domain.review.repository.GameReviewRepository
@@ -75,15 +76,20 @@ class MatchingService(
         publishMatchingReceived(
             receiverUserId = receiverProfile.user.id!!,
             matchingId = matchingId,
+            sportId = sportId,
+            receiverProfileId = receiverProfileId,
             requesterProfile = requesterProfile,
             reviewCount = reviewCount,
         )
 
         // 알림 생성 이벤트 발행
-        publishNotificationCreated(
+        publishMatchingRequestNotificationCreated(
             receiverUserId = receiverProfile.user.id!!,
             notificationId = notificationId,
             matchingId = matchingId,
+            sportId = sportId,
+            receiverProfileId = receiverProfileId,
+            requesterProfile = requesterProfile,
         )
     }
 
@@ -146,6 +152,8 @@ class MatchingService(
     private fun publishMatchingReceived(
         receiverUserId: String,
         matchingId: String,
+        sportId: Long,
+        receiverProfileId: String,
         requesterProfile: UserSportProfile,
         reviewCount: Long,
     ) {
@@ -154,11 +162,13 @@ class MatchingService(
             eventType = SseEventType.MATCHING_RECEIVED,
             payload = MatchingReceivedPayload(
                 matchingId = matchingId,
+                sportId = sportId,
+                receiverProfileId = receiverProfileId,
                 requester = MatchingReceivedPayload.MatchingRequesterSummary(
                     userId = requesterProfile.user.id!!,
                     nickname = requesterProfile.user.nickname,
                     gender = requesterProfile.user.gender,
-                    tierName = requesterProfile.tier.name,
+                    tierId = requesterProfile.tier.id!!,
                     wins = requesterProfile.wins,
                     losses = requesterProfile.losses,
                     reviewCount = reviewCount,
@@ -167,18 +177,28 @@ class MatchingService(
         )
     }
 
-    private fun publishNotificationCreated(
+    private fun publishMatchingRequestNotificationCreated(
         receiverUserId: String,
         notificationId: String,
         matchingId: String,
+        sportId: Long,
+        receiverProfileId: String,
+        requesterProfile: UserSportProfile,
     ) {
         outboxEventPublisher.publish(
             userId = receiverUserId,
-            eventType = SseEventType.NOTIFICATION_CREATED,
-            payload = NotificationCreatedPayload(
+            eventType = SseEventType.MATCHING_REQUEST_NOTIFICATION_CREATED,
+            payload = MatchingRequestNotificationCreatedPayload(
                 notificationId = notificationId,
                 notificationType = NotificationType.MATCHING_REQUESTED,
-                targetId = matchingId,
+                matchingId = matchingId,
+                sportId = sportId,
+                receiverProfileId = receiverProfileId,
+                requester = MatchingRequestNotificationCreatedPayload.RequesterSummary(
+                    userId = requesterProfile.user.id!!,
+                    nickname = requesterProfile.user.nickname,
+                    tierId = requesterProfile.tier.id!!,
+                )
             )
         )
     }

@@ -11,4 +11,7 @@ enum class SseEventType(
 
     // 알림 관련 생성 / 변경 사항
     NOTIFICATION_CREATED("notification.created"),
+
+    // 매칭 요청 알림 생성
+    MATCHING_REQUEST_NOTIFICATION_CREATED("matching.request.notification.created"),
 }

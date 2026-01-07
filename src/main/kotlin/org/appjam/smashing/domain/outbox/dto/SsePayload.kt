@@ -16,6 +16,8 @@ sealed interface SsePayload {
 data class MatchingReceivedPayload(
     override val type: String = SseEventType.MATCHING_RECEIVED.eventName,
     val matchingId: String,
+    val sportId: Long,
+    val receiverProfileId: String,
     val requester: MatchingRequesterSummary,
 ) : SsePayload {
 
@@ -23,7 +25,7 @@ data class MatchingReceivedPayload(
         val userId: String,
         val nickname: String,
         val gender: Gender,
-        val tierName: String,
+        val tierId: Long,
         val wins: Int,
         val losses: Int,
         val reviewCount: Long,
@@ -51,3 +53,24 @@ data class NotificationCreatedPayload(
     val notificationType: NotificationType,
     val targetId: String? = null,           // matchingId/gameId/reviewId 등
 ) : SsePayload
+
+/**
+ * 매칭 신청 알림 생성
+ * - 상대가 나에게 매칭을 신청한 순간 알림 생성
+ */
+data class MatchingRequestNotificationCreatedPayload(
+    override val type: String = SseEventType.MATCHING_REQUEST_NOTIFICATION_CREATED.eventName,
+    val notificationId: String,
+    val notificationType: NotificationType,
+    val matchingId: String,
+    val sportId: Long,
+    val receiverProfileId: String,
+    val requester: RequesterSummary,
+) : SsePayload {
+
+    data class RequesterSummary(
+        val userId: String,
+        val nickname: String,
+        val tierId: Long,
+    )
+}
