@@ -24,4 +24,18 @@ interface MatchingRepository : JpaRepository<Matching, String> {
         userB: String,
         startAt: LocalDateTime,
     ): Long
+
+    @Query(
+        """
+        select m
+          from Matching m
+          join fetch m.requester
+          join fetch m.receiver
+          join fetch m.sport
+         where m.id = :matchingId
+        """
+    )
+    fun findByIdFetchAll(
+        matchingId: String
+    ): Matching?
 }

@@ -1,13 +1,18 @@
 package org.appjam.smashing.domain.matching.service
 
+import org.appjam.smashing.domain.game.entity.Game
+import org.appjam.smashing.domain.game.repository.GameRepository
 import org.appjam.smashing.domain.matching.entity.Matching
+import org.appjam.smashing.domain.matching.enums.MatchingStatus
 import org.appjam.smashing.domain.matching.repository.MatchingRepository
 import org.appjam.smashing.domain.notification.enums.NotificationType
 import org.appjam.smashing.domain.notification.service.NotificationService
 import org.appjam.smashing.domain.outbox.components.OutboxEventPublisher
+import org.appjam.smashing.domain.outbox.dto.MatchingAcceptNotificationCreatedPayload
 import org.appjam.smashing.domain.outbox.dto.MatchingReceivedPayload
 import org.appjam.smashing.domain.outbox.dto.MatchingRequestNotificationCreatedPayload
-import org.appjam.smashing.domain.outbox.dto.NotificationCreatedPayload
+import org.appjam.smashing.domain.outbox.dto.MatchingUpdatedPayload
+import org.appjam.smashing.domain.outbox.enums.MatchingUpdateStatus
 import org.appjam.smashing.domain.outbox.enums.SseEventType
 import org.appjam.smashing.domain.review.repository.GameReviewRepository
 import org.appjam.smashing.domain.user.entity.User
@@ -27,6 +32,7 @@ class MatchingService(
     private val matchingRepository: MatchingRepository,
     private val userRepository: UserRepository,
     private val userSportProfileRepository: UserSportProfileRepository,
+    private val gameRepository: GameRepository,
     private val gameReviewRepository: GameReviewRepository,
     private val notificationService: NotificationService,
     private val outboxEventPublisher: OutboxEventPublisher,
@@ -67,10 +73,15 @@ class MatchingService(
         )
 
         // 알림 생성
-        val notificationId = notificationService.createMatchingRequested(
+        val savedNotification = notificationService.createMatchingRequested(
             receiver = receiverProfile.user,
             requesterProfile = requesterProfile,
         )
+
+        val notificationCreatedAt = savedNotification.createdAt
+            .atZone(DEFAULT_ZONE_ID)
+            .toOffsetDateTime()
+            .toString()
 
         // SSE 이벤트 발행
         publishMatchingReceived(
@@ -85,13 +96,68 @@ class MatchingService(
         // 알림 생성 이벤트 발행
         publishMatchingRequestNotificationCreated(
             receiverUserId = receiverProfile.user.id!!,
-            notificationId = notificationId,
+            notificationId = savedNotification.id!!,
+            notificationCreatedAt = notificationCreatedAt,
             matchingId = matchingId,
             sportId = sportId,
             receiverProfileId = receiverProfileId,
             requesterProfile = requesterProfile,
         )
     }
+
+    @Transactional
+    fun acceptMatching(
+        receiverUserId: String,
+        matchingId: String,
+    ) {
+        val matching = matchingRepository.findByIdFetchAll(matchingId)
+            ?: throw CustomException(ErrorCode.MATCHING_NOT_FOUND)
+
+        // 수락 가능 여부 검증
+        validateAcceptable(matching, receiverUserId)
+        // TODO: 매칭 3회 제한 등 제약 기획 확정되면 추가 필요
+
+        // 매칭 수락 처리
+        matching.accept(LocalDateTime.now(DEFAULT_ZONE_ID)) // TODO: 인증 붙으면 receiver 타임존으로 교체
+
+        // 게임 엔티티 생성 (중복 방지)
+        if (!gameRepository.existsByMatchingId(matchingId)) {
+            gameRepository.save(Game.createFromMatching(matching))
+        }
+
+        val receiverProfile = findUserProfileBySport(receiverUserId, matching.sport.id!!)
+
+        // 알림 생성
+        val savedNotification = notificationService.createMatchingAccepted(
+            receiver = matching.requester,
+            acceptorProfile = receiverProfile,
+        )
+
+        // 알림 생성 시간 OffsetDateTime으로 변환
+        val notificationCreatedAt = savedNotification.createdAt
+            .atZone(DEFAULT_ZONE_ID)
+            .toOffsetDateTime()
+            .toString()
+
+        // SSE 이벤트 발행
+        publishMatchingUpdatedAccepted(
+            requesterUserId = matching.requester.id!!,
+            matchingId = matchingId,
+        )
+
+        // 알림 생성 이벤트 발행
+        publishMatchingAcceptNotificationCreated(
+            requesterUserId = matching.requester.id!!,
+            notificationId = savedNotification.id!!,
+            notificationCreatedAt = notificationCreatedAt,
+            matchingId = matchingId,
+            sportId = matching.sport.id!!,
+            receiverProfileId = receiverProfile.id!!,
+            receiverUserId = receiverUserId,
+            receiverProfile = receiverProfile,
+        )
+    }
+
 
     private fun findReceiverProfile(receiverProfileId: String): UserSportProfile = userSportProfileRepository.findByIdFetchAll(receiverProfileId)
         ?: throw CustomException(ErrorCode.MATCHING_RECEIVER_PROFILE_NOT_FOUND)
@@ -108,6 +174,7 @@ class MatchingService(
         }
     }
 
+    // TODO: 현재 3회 매칭 제한 기획 제대로 안나옴. 기획 확정 후 수정 필요
     private fun validateDailyLimit(requesterUserId: String, receiverUserId: String) {
         // val zoneId = SecurityUtils.currentZoneId() TODO: 인증 붙이고 해제
         val zoneId = ZoneId.of("Asia/Seoul")
@@ -177,9 +244,24 @@ class MatchingService(
         )
     }
 
+    private fun publishMatchingUpdatedAccepted(
+        requesterUserId: String,
+        matchingId: String,
+    ) {
+        outboxEventPublisher.publish(
+            userId = requesterUserId,
+            eventType = SseEventType.MATCHING_UPDATED,
+            payload = MatchingUpdatedPayload(
+                matchingId = matchingId,
+                status = MatchingUpdateStatus.ACCEPTED,
+            )
+        )
+    }
+
     private fun publishMatchingRequestNotificationCreated(
         receiverUserId: String,
         notificationId: String,
+        notificationCreatedAt: String,
         matchingId: String,
         sportId: Long,
         receiverProfileId: String,
@@ -191,6 +273,7 @@ class MatchingService(
             payload = MatchingRequestNotificationCreatedPayload(
                 notificationId = notificationId,
                 notificationType = NotificationType.MATCHING_REQUESTED,
+                notificationCreatedAt = notificationCreatedAt,
                 matchingId = matchingId,
                 sportId = sportId,
                 receiverProfileId = receiverProfileId,
@@ -201,5 +284,59 @@ class MatchingService(
                 )
             )
         )
+    }
+
+    private fun validateAcceptable(
+        matching: Matching,
+        receiverUserId: String
+    ) {
+        // receiver만 수락 가능
+        if (matching.receiver.id!! != receiverUserId) {
+            throw CustomException(ErrorCode.MATCHING_FORBIDDEN)
+        }
+
+        // REQUESTED 상태만 수락 가능
+        if (matching.status != MatchingStatus.REQUESTED) {
+            throw CustomException(ErrorCode.MATCHING_ALREADY_RESPONDED)
+        }
+    }
+
+    private fun findUserProfileBySport(
+        userId: String,
+        sportId: Long
+    ): UserSportProfile = userSportProfileRepository.findByUserIdAndSportIdFetch(userId, sportId)
+            ?: throw CustomException(ErrorCode.MATCHING_RECEIVER_USER_NOT_FOUND)
+
+    private fun publishMatchingAcceptNotificationCreated(
+        requesterUserId: String,
+        notificationId: String,
+        notificationCreatedAt: String,
+        matchingId: String,
+        sportId: Long,
+        receiverProfileId: String,
+        receiverUserId: String,
+        receiverProfile: UserSportProfile,
+    ) {
+        outboxEventPublisher.publish(
+            userId = requesterUserId,
+            eventType = SseEventType.MATCHING_ACCEPT_NOTIFICATION_CREATED,
+            payload = MatchingAcceptNotificationCreatedPayload(
+                notificationId = notificationId,
+                notificationType = NotificationType.MATCHING_ACCEPTED,
+                notificationCreatedAt = notificationCreatedAt,
+                matchingId = matchingId,
+                sportId = sportId,
+                receiverProfileId = receiverProfileId,
+                acceptor = MatchingAcceptNotificationCreatedPayload.AcceptorSummary(
+                    userId = receiverUserId,
+                    nickname = receiverProfile.user.nickname,
+                    tierId = receiverProfile.tier.id!!,
+                )
+            )
+        )
+    }
+
+    companion object {
+        private val DEFAULT_ZONE_ID = ZoneId.of("Asia/Seoul")
     }
 }

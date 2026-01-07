@@ -41,4 +41,24 @@ class MatchingController(
 
         return ApiResponse.success()
     }
+
+    @Operation(
+        summary = "매칭 요청 수락 API",
+        description = """
+            매칭 요청(matchingId)을 수락합니다.
+            - 성공 시 상대(requester)에게 알림 생성 + SSE 이벤트가 전송됩니다.
+        """
+    )
+    @PostMapping("/{matchingId}/accept")
+    fun acceptMatching(
+        @RequestHeader("userId") requesterUserId: String, // TODO: 인증/인가 회복시 @AuthenticationPrincipal 으로 변경
+        @PathVariable matchingId: String,
+    ): ResponseEntity<ApiResponse<Unit>> {
+        matchingService.acceptMatching(
+            receiverUserId = requesterUserId,
+            matchingId = matchingId,
+        )
+
+        return ApiResponse.success()
+    }
 }

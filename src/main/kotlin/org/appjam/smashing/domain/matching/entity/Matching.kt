@@ -32,15 +32,15 @@ class Matching(
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "VARCHAR(30)")
     @Comment("매칭 상태")
-    val status: MatchingStatus,
+    var status: MatchingStatus = MatchingStatus.REQUESTED,
 
     @Column
     @Comment("응답 시각")
-    val respondedAt: LocalDateTime? = null,
+    var respondedAt: LocalDateTime? = null,
 
     @Column
     @Comment("매칭 확정 시각(ACCEPTED 시)")
-    val confirmedAt: LocalDateTime? = null,
+    var confirmedAt: LocalDateTime? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
@@ -76,10 +76,17 @@ class Matching(
             receiver: User,
             sport: Sport,
         ): Matching = Matching(
-            status = MatchingStatus.REQUESTED,
             requester = requester,
             receiver = receiver,
             sport = sport,
         )
+    }
+
+    fun accept(
+        now: LocalDateTime
+    ) {
+        status = MatchingStatus.ACCEPTED
+        respondedAt = now
+        confirmedAt = now
     }
 }
