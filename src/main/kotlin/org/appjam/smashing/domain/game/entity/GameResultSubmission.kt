@@ -1,7 +1,18 @@
-package org.appjam.smashing.domain.matching.entity
+package org.appjam.smashing.domain.game.entity
 
 import io.hypersistence.utils.hibernate.id.Tsid
-import jakarta.persistence.*
+import jakarta.persistence.Column
+import jakarta.persistence.ConstraintMode
+import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
+import jakarta.persistence.FetchType
+import jakarta.persistence.ForeignKey
+import jakarta.persistence.Id
+import jakarta.persistence.Index
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.ManyToOne
+import jakarta.persistence.Table
 import org.appjam.smashing.domain.common.entity.BaseEntity
 import org.appjam.smashing.domain.matching.enums.RejectReason
 import org.appjam.smashing.domain.matching.enums.SubmissionStatus
