@@ -19,18 +19,32 @@ class NotificationService(
     fun createMatchingRequested(
         receiver: User,
         requesterProfile: UserSportProfile,
-    ): String {
+    ): Notification {
         val template = notificationTemplateRepository.findByType(NotificationType.MATCHING_REQUESTED)
             ?: throw CustomException(ErrorCode.NOTIFICATION_TEMPLATE_NOT_FOUND)
 
-        val notification = notificationRepository.save(
+        return notificationRepository.save(
             Notification.createMatchingRequested(
                 receiver = receiver,
                 template = template,
                 requesterProfile = requesterProfile,
             )
         )
+    }
 
-        return requireNotNull(notification.id)
+    fun createMatchingAccepted(
+        receiver: User,
+        acceptorProfile: UserSportProfile,
+    ): Notification {
+        val template = notificationTemplateRepository.findByType(NotificationType.MATCHING_ACCEPTED)
+            ?: throw CustomException(ErrorCode.NOTIFICATION_TEMPLATE_NOT_FOUND)
+
+        return notificationRepository.save(
+            Notification.createMatchingRequestAccepted(
+                receiver = receiver,
+                template = template,
+                acceptorProfile = acceptorProfile,
+            )
+        )
     }
 }

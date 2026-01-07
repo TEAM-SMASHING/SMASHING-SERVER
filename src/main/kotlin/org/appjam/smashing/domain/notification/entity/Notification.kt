@@ -62,11 +62,22 @@ class Notification(
             receiver: User,
             template: NotificationTemplate,
             requesterProfile: UserSportProfile,
-        ): Notification =
-            Notification(
+        ) = Notification(
                 params = """{"requesterNickname":"${requesterProfile.user.nickname}","requesterTierName":"${requesterProfile.tier.name}"}""",
                 isRead = false,
                 linkUrl = "/api/v1/users/me/matchings/received",
+                user = receiver,
+                notificationTemplate = template,
+            )
+
+        fun createMatchingRequestAccepted(
+            receiver: User,
+            template: NotificationTemplate,
+            acceptorProfile: UserSportProfile,
+        ) = Notification(
+                params = """{"acceptorNickname":"${acceptorProfile.user.nickname}","acceptorTierId":${acceptorProfile.tier.id!!}}""",
+                isRead = false,
+                linkUrl = "/api/v1/users/me/matchings/accepted/pending-result",
                 user = receiver,
                 notificationTemplate = template,
             )
