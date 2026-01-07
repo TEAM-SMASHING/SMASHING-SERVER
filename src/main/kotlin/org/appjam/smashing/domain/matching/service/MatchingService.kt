@@ -53,7 +53,7 @@ class MatchingService(
         val sportId = receiverProfile.sport.id ?: throw CustomException(ErrorCode.BAD_REQUEST)
         val requesterProfile = findRequesterProfileBySport(requesterUserId, sportId)
 
-        // 하루 (00:00 ~) 최대 3회 매칭 요청 가능
+        // 하루 (00:00 ~) 최대 3회 게임 가능
         validateDailyLimit(
             requesterUserId,
             receiverProfile.user.id!!
@@ -115,7 +115,6 @@ class MatchingService(
 
         // 수락 가능 여부 검증
         validateAcceptable(matching, receiverUserId)
-        // TODO: 매칭 3회 제한 등 제약 기획 확정되면 추가 필요
 
         // 매칭 수락 처리
         matching.accept(LocalDateTime.now(DEFAULT_ZONE_ID)) // TODO: 인증 붙으면 receiver 타임존으로 교체
@@ -221,21 +220,22 @@ class MatchingService(
         }
     }
 
-    // TODO: 현재 3회 매칭 제한 기획 제대로 안나옴. 기획 확정 후 수정 필요
-    private fun validateDailyLimit(requesterUserId: String, receiverUserId: String) {
-        // val zoneId = SecurityUtils.currentZoneId() TODO: 인증 붙이고 해제
-        val zoneId = ZoneId.of("Asia/Seoul")
-
-        val now = LocalDateTime.now(zoneId)
+    private fun validateDailyLimit(
+        requesterUserId: String,
+        receiverUserId: String
+    ) {
+        val now = LocalDateTime.now(DEFAULT_ZONE_ID)
         val startOfDay = now.toLocalDate().atStartOfDay()
 
-        val todayCount = matchingRepository.countTodayBetweenUsersIncludingDeleted(
+        // 하루 확정 게임 갯수 조회
+        val todayConfirmedGames = gameRepository.countTodayConfirmedGamesBetweenUsers(
+            startAt = startOfDay,
             userA = requesterUserId,
             userB = receiverUserId,
-            startAt = startOfDay,
         )
 
-        if (todayCount >= 3L) {
+        // 하루 최대 3회 제한
+        if (todayConfirmedGames >= 3L) {
             throw CustomException(ErrorCode.MATCHING_DAILY_LIMIT_EXCEEDED)
         }
     }
