@@ -1,6 +1,6 @@
 package org.appjam.smashing.domain.auth.social
 
-import org.appjam.smashing.domain.auth.kakao.KakaoApiClient
+import org.appjam.smashing.domain.auth.kakao.client.KakaoApiClient
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
 import org.springframework.stereotype.Component
