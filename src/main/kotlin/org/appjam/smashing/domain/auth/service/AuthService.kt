@@ -27,7 +27,7 @@ class AuthService(
             return SignInResponseCommand(
                 accessToken = null,
                 refreshToken = null,
-                kakaoId = null,
+                authId = null,
             )
         }
 
@@ -38,7 +38,7 @@ class AuthService(
         return SignInResponseCommand(
             accessToken = token.accessToken.token,
             refreshToken = token.refreshToken.token,
-            kakaoId = kakaoId,
+            authId = kakaoId,
         )
     }
 }
