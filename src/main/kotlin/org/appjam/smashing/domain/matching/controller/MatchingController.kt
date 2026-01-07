@@ -61,4 +61,27 @@ class MatchingController(
 
         return ApiResponse.success()
     }
+
+    @Operation(
+        summary = "매칭 요청 거절 API",
+        description = """
+            수신자가 받은 매칭 요청을 거절합니다.
+            - REQUESTED 상태에서만 거절 가능
+            - 거절 시 soft delete 처리
+            - Notification 생성 없음
+            - requester에게 SSE(matching.updated: REJECTED) 전송
+        """
+    )
+    @PostMapping("/{matchingId}/reject")
+    fun rejectMatching(
+        @RequestHeader("userId") requesterUserId: String, // TODO: 인증/인가 회복시 @AuthenticationPrincipal 으로 변경
+        @PathVariable matchingId: String,
+    ): ResponseEntity<ApiResponse<Unit>> {
+        matchingService.rejectMatching(
+            receiverUserId = requesterUserId,
+            matchingId = matchingId,
+        )
+
+        return ApiResponse.success()
+    }
 }

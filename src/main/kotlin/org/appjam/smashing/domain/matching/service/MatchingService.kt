@@ -158,6 +158,29 @@ class MatchingService(
         )
     }
 
+    @Transactional
+    fun rejectMatching(
+        receiverUserId: String,
+        matchingId: String,
+    ) {
+        val matching = matchingRepository.findByIdFetchAll(matchingId)
+            ?: throw CustomException(ErrorCode.MATCHING_NOT_FOUND)
+
+        validateRejectable(matching, receiverUserId)
+
+        // 상태 변경
+        matching.reject(LocalDateTime.now(DEFAULT_ZONE_ID))
+        matchingRepository.flush()
+
+        // soft delete
+        matchingRepository.delete(matching)
+
+        // SSE 이벤트 발행
+        publishMatchingUpdatedRejected(
+            requesterUserId = matching.requester.id!!,
+            matchingId = matchingId,
+        )
+    }
 
     private fun findReceiverProfile(receiverProfileId: String): UserSportProfile = userSportProfileRepository.findByIdFetchAll(receiverProfileId)
         ?: throw CustomException(ErrorCode.MATCHING_RECEIVER_PROFILE_NOT_FOUND)
@@ -190,6 +213,21 @@ class MatchingService(
 
         if (todayCount >= 3L) {
             throw CustomException(ErrorCode.MATCHING_DAILY_LIMIT_EXCEEDED)
+        }
+    }
+
+    private fun validateRejectable(
+        matching: Matching,
+        receiverUserId: String,
+    ) {
+        // receiver만 거절 가능
+        if (matching.receiver.id!! != receiverUserId) {
+            throw CustomException(ErrorCode.MATCHING_FORBIDDEN)
+        }
+
+        // REQUESTED 상태만 거절 가능
+        if (matching.status != MatchingStatus.REQUESTED) {
+            throw CustomException(ErrorCode.MATCHING_ALREADY_RESPONDED)
         }
     }
 
@@ -282,6 +320,20 @@ class MatchingService(
                     nickname = requesterProfile.user.nickname,
                     tierId = requesterProfile.tier.id!!,
                 )
+            )
+        )
+    }
+
+    private fun publishMatchingUpdatedRejected(
+        requesterUserId: String,
+        matchingId: String,
+    ) {
+        outboxEventPublisher.publish(
+            userId = requesterUserId,
+            eventType = SseEventType.MATCHING_UPDATED,
+            payload = MatchingUpdatedPayload(
+                matchingId = matchingId,
+                status = MatchingUpdateStatus.REJECTED,
             )
         )
     }

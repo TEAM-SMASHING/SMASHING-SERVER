@@ -89,4 +89,11 @@ class Matching(
         respondedAt = now
         confirmedAt = now
     }
+
+    fun reject(
+        now: LocalDateTime
+    ) {
+        status = MatchingStatus.REJECTED
+        respondedAt = now
+    }
 }
