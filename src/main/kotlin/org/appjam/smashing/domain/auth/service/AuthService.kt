@@ -31,7 +31,7 @@ class AuthService(
             )
         }
 
-        val userId = user.id ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+        val userId = user.id ?: throw CustomException(ErrorCode.INTERNAL_SERVER_ERROR)
 
         val token = jwtProvider.issueToken(userId)
 
