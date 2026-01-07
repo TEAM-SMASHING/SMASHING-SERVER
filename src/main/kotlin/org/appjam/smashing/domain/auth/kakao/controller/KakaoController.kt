@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController
 /**
  * [KakaoController]
  *
- * 카카오 로그인 성공 시 인가 코드를 전달받는 Callback 엔드포인트
+ * 카카오 로그인 성공 시 인가 코드를 전달받는 콜백 엔드포인트
  *
  * 테스트용 (로컬):
  * https://kauth.kakao.com/oauth/authorize
