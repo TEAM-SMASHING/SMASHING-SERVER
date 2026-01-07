@@ -22,6 +22,7 @@ class SecurityConfig(
     private val jwtProvider: JwtProvider,
     private val jwtAuthenticationEntryPoint: JwtAuthenticationEntryPoint,
     private val jwtAccessDeniedHandler: JwtAccessDeniedHandler,
+    private val timeZoneProperties: TimeZoneProperties,
 ) {
 
     @Bean
@@ -48,7 +49,7 @@ class SecurityConfig(
                 accessDeniedHandler = jwtAccessDeniedHandler
             }
 
-            addFilterBefore<UsernamePasswordAuthenticationFilter>(JwtAuthenticationFilter(jwtProvider))
+            addFilterBefore<UsernamePasswordAuthenticationFilter>(JwtAuthenticationFilter(jwtProvider, timeZoneProperties))
         }
 
         return http.build()

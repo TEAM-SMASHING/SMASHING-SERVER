@@ -3,6 +3,7 @@ package org.appjam.smashing.domain.outbox.dto
 import org.appjam.smashing.domain.notification.enums.NotificationType
 import org.appjam.smashing.domain.outbox.enums.MatchingUpdateStatus
 import org.appjam.smashing.domain.outbox.enums.SseEventType
+import org.appjam.smashing.domain.user.enums.Gender
 
 sealed interface SsePayload {
     val type: String
@@ -15,7 +16,21 @@ sealed interface SsePayload {
 data class MatchingReceivedPayload(
     override val type: String = SseEventType.MATCHING_RECEIVED.eventName,
     val matchingId: String,
-) : SsePayload
+    val sportId: Long,
+    val receiverProfileId: String,
+    val requester: MatchingRequesterSummary,
+) : SsePayload {
+
+    data class MatchingRequesterSummary(
+        val userId: String,
+        val nickname: String,
+        val gender: Gender,
+        val tierId: Long,
+        val wins: Int,
+        val losses: Int,
+        val reviewCount: Long,
+    )
+}
 
 /**
  * 매칭관리 - 보낸 요청 / 매칭확정 / 요청삭제
@@ -38,3 +53,47 @@ data class NotificationCreatedPayload(
     val notificationType: NotificationType,
     val targetId: String? = null,           // matchingId/gameId/reviewId 등
 ) : SsePayload
+
+/**
+ * 매칭 신청 알림 생성
+ * - 상대가 나에게 매칭을 신청한 순간 알림 생성
+ */
+data class MatchingRequestNotificationCreatedPayload(
+    override val type: String = SseEventType.MATCHING_REQUEST_NOTIFICATION_CREATED.eventName,
+    val notificationId: String,
+    val notificationType: NotificationType,
+    val notificationCreatedAt: String,
+    val matchingId: String,
+    val sportId: Long,
+    val receiverProfileId: String,
+    val requester: RequesterSummary,
+) : SsePayload {
+
+    data class RequesterSummary(
+        val userId: String,
+        val nickname: String,
+        val tierId: Long,
+    )
+}
+
+/**
+ * 매칭 수락 알림 생성
+ * - 상대가 나의 매칭을 수락한 순간 알림 생성
+ */
+data class MatchingAcceptNotificationCreatedPayload(
+    override val type: String = SseEventType.MATCHING_ACCEPT_NOTIFICATION_CREATED.eventName,
+    val notificationId: String,
+    val notificationType: NotificationType,
+    val notificationCreatedAt: String,
+    val matchingId: String,
+    val sportId: Long,
+    val receiverProfileId: String,
+    val acceptor: AcceptorSummary,
+) : SsePayload {
+
+    data class AcceptorSummary(
+        val userId: String,
+        val nickname: String,
+        val tierId: Long,
+    )
+}
