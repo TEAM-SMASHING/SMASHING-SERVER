@@ -1,0 +1,44 @@
+package org.appjam.smashing.domain.auth.service
+
+import org.appjam.smashing.domain.auth.command.SignInResponseCommand
+import org.appjam.smashing.domain.auth.kakao.SocialAuthServiceManager
+import org.appjam.smashing.domain.user.repository.UserRepository
+import org.appjam.smashing.global.auth.jwt.components.JwtProvider
+import org.appjam.smashing.global.exception.CustomException
+import org.appjam.smashing.global.exception.ErrorCode
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+
+@Service
+@Transactional
+class AuthService(
+    private val socialAuthServiceManager: SocialAuthServiceManager,
+    private val userRepository: UserRepository,
+    private val jwtProvider: JwtProvider,
+) {
+    fun signIn(accessToken: String): SignInResponseCommand {
+        val kakaoId = socialAuthServiceManager.getKakaoId(accessToken)
+
+        val user = userRepository.findByKakaoId(
+            kakaoId = kakaoId
+        )
+
+        if (user == null) {
+            return SignInResponseCommand(
+                accessToken = null,
+                refreshToken = null,
+                kakaoId = null,
+            )
+        }
+
+        val userId = user.id ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+
+        val token = jwtProvider.issueToken(userId)
+
+        return SignInResponseCommand(
+            accessToken = token.accessToken.token,
+            refreshToken = token.refreshToken.token,
+            kakaoId = kakaoId,
+        )
+    }
+}
