@@ -25,4 +25,11 @@ class AuthController(
             data = response
         )
     }
+
+    @PostMapping("/signup")
+    fun signUp(
+
+    ) {
+
+    }
 }
