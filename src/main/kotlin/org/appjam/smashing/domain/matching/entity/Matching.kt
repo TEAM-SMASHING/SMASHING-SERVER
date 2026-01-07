@@ -96,4 +96,11 @@ class Matching(
         status = MatchingStatus.REJECTED
         respondedAt = now
     }
+
+    fun cancel(
+        now: LocalDateTime
+    ) {
+        status = MatchingStatus.CANCELLED
+        respondedAt = now
+    }
 }

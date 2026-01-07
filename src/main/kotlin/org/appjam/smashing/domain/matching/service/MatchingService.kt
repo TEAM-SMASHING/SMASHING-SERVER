@@ -182,6 +182,30 @@ class MatchingService(
         )
     }
 
+    @Transactional
+    fun cancelMyMatchingRequest(
+        requesterUserId: String,
+        matchingId: String,
+    ) {
+        val matching = matchingRepository.findByIdFetchAll(matchingId)
+            ?: throw CustomException(ErrorCode.MATCHING_NOT_FOUND)
+
+        validateCancellableByRequester(matching, requesterUserId)
+
+        // 상태 변경
+        matching.cancel(LocalDateTime.now(DEFAULT_ZONE_ID))
+        matchingRepository.flush()
+
+        // soft delete
+        matchingRepository.delete(matching)
+
+        // SSE 이벤트 발행
+        publishMatchingUpdatedCancelled(
+            receiverUserId = matching.receiver.id!!,
+            matchingId = matchingId,
+        )
+    }
+
     private fun findReceiverProfile(receiverProfileId: String): UserSportProfile = userSportProfileRepository.findByIdFetchAll(receiverProfileId)
         ?: throw CustomException(ErrorCode.MATCHING_RECEIVER_PROFILE_NOT_FOUND)
 
@@ -226,6 +250,21 @@ class MatchingService(
         }
 
         // REQUESTED 상태만 거절 가능
+        if (matching.status != MatchingStatus.REQUESTED) {
+            throw CustomException(ErrorCode.MATCHING_ALREADY_RESPONDED)
+        }
+    }
+
+    private fun validateCancellableByRequester(
+        matching: Matching,
+        requesterUserId: String,
+    ) {
+        // requester만 삭제 가능
+        if (matching.requester.id!! != requesterUserId) {
+            throw CustomException(ErrorCode.MATCHING_FORBIDDEN)
+        }
+
+        // REQUESTED 상태만 삭제 가능
         if (matching.status != MatchingStatus.REQUESTED) {
             throw CustomException(ErrorCode.MATCHING_ALREADY_RESPONDED)
         }
@@ -334,6 +373,20 @@ class MatchingService(
             payload = MatchingUpdatedPayload(
                 matchingId = matchingId,
                 status = MatchingUpdateStatus.REJECTED,
+            )
+        )
+    }
+
+    private fun publishMatchingUpdatedCancelled(
+        receiverUserId: String,
+        matchingId: String,
+    ) {
+        outboxEventPublisher.publish(
+            userId = receiverUserId,
+            eventType = SseEventType.MATCHING_UPDATED,
+            payload = MatchingUpdatedPayload(
+                matchingId = matchingId,
+                status = MatchingUpdateStatus.CANCELLED,
             )
         )
     }

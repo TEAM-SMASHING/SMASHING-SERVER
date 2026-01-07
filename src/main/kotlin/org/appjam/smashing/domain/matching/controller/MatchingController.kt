@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import org.appjam.smashing.domain.matching.service.MatchingService
 import org.appjam.smashing.global.common.dto.ApiResponse
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestHeader
@@ -79,6 +80,29 @@ class MatchingController(
     ): ResponseEntity<ApiResponse<Unit>> {
         matchingService.rejectMatching(
             receiverUserId = requesterUserId,
+            matchingId = matchingId,
+        )
+
+        return ApiResponse.success()
+    }
+
+    @Operation(
+        summary = "내가 보낸 매칭 요청 삭제 API",
+        description = """
+            내가 보낸 매칭 요청을 삭제합니다.
+            - REQUESTED 상태에서만 삭제 가능
+            - 삭제 시 soft delete 처리
+            - Notification 생성 없음
+            - receiver에게 SSE(matching.updated: CANCELLED) 전송
+        """
+    )
+    @DeleteMapping("/{matchingId}")
+    fun cancelMyMatchingRequest(
+        @RequestHeader("userId") requesterUserId: String, // TODO: 인증/인가 회복시 @AuthenticationPrincipal 으로 변경
+        @PathVariable matchingId: String,
+    ): ResponseEntity<ApiResponse<Unit>> {
+        matchingService.cancelMyMatchingRequest(
+            requesterUserId = requesterUserId,
             matchingId = matchingId,
         )
 
