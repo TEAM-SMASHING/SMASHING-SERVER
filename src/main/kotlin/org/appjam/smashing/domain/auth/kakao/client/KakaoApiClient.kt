@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestHeader
 
 /**
  * [KakaoApiClient]
+ *
  * 카카오 API 서버(KApi)와 통신하여 사용자 정보를 가져오기 위한 Feign Client
  */
 @FeignClient(name = "kakaoApiClient", url = "https://kapi.kakao.com")

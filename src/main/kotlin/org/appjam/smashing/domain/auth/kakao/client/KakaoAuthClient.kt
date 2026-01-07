@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam
 
 /**
  * [KakaoAuthClient]
+ *
  * 카카오 인증 서버(KAuth)와 통신하기 위한 Feign Client
  * 인가 코드를 사용하여 카카오 엑세스 토큰 및 리프레시 토큰을 발급받습니다.
  */
