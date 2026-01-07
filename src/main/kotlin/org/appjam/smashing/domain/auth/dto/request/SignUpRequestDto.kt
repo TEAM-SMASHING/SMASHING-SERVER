@@ -1,4 +1,4 @@
-package org.appjam.smashing.domain.auth.dto
+package org.appjam.smashing.domain.auth.dto.request
 
 data class SignUpRequestDto(
     val nickname: String,

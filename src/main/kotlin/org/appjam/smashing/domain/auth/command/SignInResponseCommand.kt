@@ -1,6 +1,6 @@
 package org.appjam.smashing.domain.auth.command
 
-import org.appjam.smashing.domain.auth.dto.SignInResponseDto
+import org.appjam.smashing.domain.auth.dto.response.SignInResponseDto
 
 data class SignInResponseCommand(
     val accessToken: String?,

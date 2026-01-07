@@ -1,7 +1,7 @@
 package org.appjam.smashing.domain.auth.controller
 
 import org.appjam.smashing.domain.auth.command.SignInResponseCommand.Companion.toDto
-import org.appjam.smashing.domain.auth.dto.SignInResponseDto
+import org.appjam.smashing.domain.auth.dto.response.SignInResponseDto
 import org.appjam.smashing.domain.auth.service.AuthService
 import org.appjam.smashing.global.common.dto.ApiResponse
 import org.springframework.http.ResponseEntity
