@@ -49,9 +49,7 @@ class AuthService(
         authId: String,
         requestCommand: SignUpRequestCommand
     ): SignUpResponseCommand {
-        if (userRepository.existsByKakaoId(authId)) {
-            throw CustomException(ErrorCode.ALREADY_REGISTERED_USER)
-        }
+        validateUser(authId = authId, requestCommand = requestCommand)
 
         val user = User(
             kakaoId = authId,
@@ -69,5 +67,18 @@ class AuthService(
         return SignUpResponseCommand(
             token = token
         )
+    }
+
+    private fun validateUser(
+        authId: String,
+        requestCommand: SignUpRequestCommand
+    ) {
+        if (userRepository.existsByKakaoId(authId)) {
+            throw CustomException(ErrorCode.DUPLICATE_USER)
+        }
+
+        if (userRepository.existsByNickname(requestCommand.nickname)) {
+            throw CustomException(ErrorCode.DUPLICATE_NICKNAME)
+        }
     }
 }
