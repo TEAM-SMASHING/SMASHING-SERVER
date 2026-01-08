@@ -1,4 +1,4 @@
-package org.appjam.smashing.domain.auth.command.reqeust
+package org.appjam.smashing.domain.auth.command
 
 data class SignInRequestCommand(
     val accessToken: String,

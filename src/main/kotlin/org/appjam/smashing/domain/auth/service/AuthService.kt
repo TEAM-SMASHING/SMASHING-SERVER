@@ -1,9 +1,9 @@
 package org.appjam.smashing.domain.auth.service
 
-import org.appjam.smashing.domain.auth.command.reqeust.SignInRequestCommand
-import org.appjam.smashing.domain.auth.command.reqeust.SignUpRequestCommand
-import org.appjam.smashing.domain.auth.command.response.SignUpResponseCommand
+import org.appjam.smashing.domain.auth.command.SignInRequestCommand
+import org.appjam.smashing.domain.auth.command.SignUpRequestCommand
 import org.appjam.smashing.domain.auth.dto.response.SignInResponse
+import org.appjam.smashing.domain.auth.dto.response.SignUpResponse
 import org.appjam.smashing.domain.auth.social.SocialAuthServiceManager
 import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.enums.Gender
@@ -45,7 +45,7 @@ class AuthService(
     fun signUp(
         authId: String,
         requestCommand: SignUpRequestCommand
-    ): SignUpResponseCommand {
+    ): SignUpResponse {
         validateUser(
             authId = authId,
             requestCommand = requestCommand,
@@ -67,8 +67,9 @@ class AuthService(
 
         val token = jwtProvider.issueToken(userId)
 
-        return SignUpResponseCommand(
-            token = token
+        return SignUpResponse(
+            accessToken = token.accessToken.token,
+            refreshToken = token.refreshToken.token,
         )
     }
 

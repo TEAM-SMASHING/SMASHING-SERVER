@@ -1,8 +1,6 @@
 package org.appjam.smashing.domain.auth.controller
 
 import jakarta.validation.Valid
-import org.appjam.smashing.domain.auth.command.reqeust.SignUpRequestCommand.Companion.toCommand
-import org.appjam.smashing.domain.auth.command.response.SignUpResponseCommand.Companion.toDto
 import org.appjam.smashing.domain.auth.dto.request.SignInRequest
 import org.appjam.smashing.domain.auth.dto.request.SignUpRequest
 import org.appjam.smashing.domain.auth.dto.response.SignInResponse
@@ -39,12 +37,12 @@ class AuthController(
     @PostMapping("/signup")
     fun signUp(
         @RequestHeader("Auth-Id") authId: String,
-        @RequestBody signUpRequest: SignUpRequest,
+        @Valid @RequestBody signUpRequest: SignUpRequest,
     ): ResponseEntity<ApiResponse<SignUpResponse>> {
-        val response: SignUpResponse = authService.signUp(
+        val response = authService.signUp(
             authId = authId,
             requestCommand = signUpRequest.toCommand(),
-        ).toDto()
+        )
 
         return ApiResponse.success(
             data = response
