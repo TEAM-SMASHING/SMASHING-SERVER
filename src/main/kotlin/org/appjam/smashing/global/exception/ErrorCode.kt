@@ -40,14 +40,14 @@ enum class ErrorCode(
     INVALID_REFRESH_TOKEN_CONTENTS(HttpStatus.UNAUTHORIZED, "AUTH-017", "유효하지 않은 정보가 담긴 리프레시 토큰입니다."),
 
     // Auth - Kakao Token
-    INVALID_KAKAO_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-017", "유효하지 않은 카카오 액세스 토큰입니다."),
-    DUPLICATE_USER(HttpStatus.CONFLICT, "AUTH-018", "이미 존재하는 유저입니다."),
-    DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "AUTH-019", "이미 사용 중인 닉네임입니다."),
+    INVALID_KAKAO_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-018", "유효하지 않은 카카오 액세스 토큰입니다."),
+    DUPLICATE_USER(HttpStatus.CONFLICT, "AUTH-019", "이미 존재하는 유저입니다."),
+    DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "AUTH-020", "이미 사용 중인 닉네임입니다."),
 
     // Auth - SignUp
-    INVALID_TIER_NAME(HttpStatus.BAD_REQUEST, "AUTH-020", "유효하지 않은 티어 이름입니다."),
-    INVALID_INITIAL_TIER(HttpStatus.BAD_REQUEST, "AUTH-021", "초기 티어로 설정할 수 없는 등급입니다."),
-    INVALID_SPORT_CODE(HttpStatus.BAD_REQUEST, "AUTH-022", "유효하지 않은 스포츠 코드입니다."),
+    INVALID_TIER_NAME(HttpStatus.BAD_REQUEST, "AUTH-021", "유효하지 않은 티어 이름입니다."),
+    INVALID_INITIAL_TIER(HttpStatus.BAD_REQUEST, "AUTH-022", "초기 티어로 설정할 수 없는 등급입니다."),
+    INVALID_SPORT_CODE(HttpStatus.BAD_REQUEST, "AUTH-023", "유효하지 않은 스포츠 코드입니다."),
 
     // Domain - Matching
     MATCHING_REQUESTER_NOT_FOUND(HttpStatus.NOT_FOUND, "MATCH-001", "요청자 유저를 찾을 수 없습니다."),
