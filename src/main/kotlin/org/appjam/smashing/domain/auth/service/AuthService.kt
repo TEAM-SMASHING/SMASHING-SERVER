@@ -71,6 +71,9 @@ class AuthService(
         )
 
         val tierType = TierType.from(requestCommand.tier)
+        if (tierType.initTier == null) {
+            throw CustomException(ErrorCode.INVALID_INITIAL_TIER)
+        }
         val tier = tierRepository.save(
             Tier(
                 name = tierType.tierName,
@@ -85,7 +88,7 @@ class AuthService(
             User(
                 kakaoId = authId,
                 nickname = requestCommand.nickname,
-                gender = Gender.valueOf(requestCommand.gender), // todo handling exception
+                gender = Gender.valueOf(requestCommand.gender),
                 openchatUrl = requestCommand.openChatUrl,
                 region = requestCommand.region,
             )
@@ -93,7 +96,7 @@ class AuthService(
 
         val profile = userSportProfileRepository.save(
             UserSportProfile(
-                lp = tierType.initTier!!, // todo change null handling
+                lp = tierType.initTier,
                 user = user,
                 sport = sport,
                 tier = tier,
