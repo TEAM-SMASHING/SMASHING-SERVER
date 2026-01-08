@@ -40,7 +40,7 @@ enum class ErrorCode(
     INVALID_REFRESH_TOKEN_CONTENTS(HttpStatus.UNAUTHORIZED, "AUTH-017", "유효하지 않은 정보가 담긴 리프레시 토큰입니다."),
 
     // User
-    USER_NOT_FOUND(HttpStatus.BAD_REQUEST, "USER-001", "해당 유저를 찾을 수 없습니다."),
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER-001", "해당 유저를 찾을 수 없습니다."),
 
     // Domain - Matching
     MATCHING_REQUESTER_NOT_FOUND(HttpStatus.NOT_FOUND, "MATCH-001", "요청자 유저를 찾을 수 없습니다."),
