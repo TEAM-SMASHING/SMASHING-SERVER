@@ -19,11 +19,11 @@ class User(
     @Comment("유저 IDX")
     val id: String? = null,
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     @Comment("카카오 IDX")
     val kakaoId: String,
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, length = 50, unique = true)
     @Comment("닉네임")
     val nickname: String,
 
