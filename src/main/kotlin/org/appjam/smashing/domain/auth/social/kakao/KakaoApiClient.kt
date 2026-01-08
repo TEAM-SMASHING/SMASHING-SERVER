@@ -1,6 +1,6 @@
 package org.appjam.smashing.domain.auth.social.kakao
 
-import org.appjam.smashing.domain.auth.test.dto.KakaoUserResponse
+import org.appjam.smashing.domain.auth.social.kakao.dto.response.KakaoUserResponse
 import org.springframework.cloud.openfeign.FeignClient
 import org.springframework.http.HttpHeaders
 import org.springframework.web.bind.annotation.GetMapping
