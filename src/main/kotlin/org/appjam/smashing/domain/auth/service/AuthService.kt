@@ -2,8 +2,8 @@ package org.appjam.smashing.domain.auth.service
 
 import org.appjam.smashing.domain.auth.command.reqeust.SignInRequestCommand
 import org.appjam.smashing.domain.auth.command.reqeust.SignUpRequestCommand
-import org.appjam.smashing.domain.auth.command.response.SignInResponseCommand
 import org.appjam.smashing.domain.auth.command.response.SignUpResponseCommand
+import org.appjam.smashing.domain.auth.dto.response.SignInResponse
 import org.appjam.smashing.domain.auth.social.SocialAuthServiceManager
 import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.enums.Gender
@@ -21,26 +21,23 @@ class AuthService(
     private val userRepository: UserRepository,
     private val jwtProvider: JwtProvider,
 ) {
-    fun signIn(requestCommand: SignInRequestCommand): SignInResponseCommand {
+    fun signIn(requestCommand: SignInRequestCommand): SignInResponse {
         val kakaoId = socialAuthServiceManager.getKakaoId(requestCommand.accessToken)
 
-        val user = userRepository.findByKakaoId(
-            kakaoId = kakaoId
-        )
-
-        if (user == null) {
-            return SignInResponseCommand(
-                token = null,
+        val user = userRepository.findByKakaoId(kakaoId)
+            ?: return SignInResponse(
+                accessToken = null,
+                refreshToken = null,
                 authId = kakaoId,
             )
-        }
 
         val userId = user.id ?: throw CustomException(ErrorCode.INTERNAL_SERVER_ERROR)
 
         val token = jwtProvider.issueToken(userId)
 
-        return SignInResponseCommand(
-            token = token,
+        return SignInResponse(
+            accessToken = token.accessToken.token,
+            refreshToken = token.refreshToken.token,
             authId = kakaoId,
         )
     }

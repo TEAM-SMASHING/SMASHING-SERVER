@@ -1,8 +1,7 @@
 package org.appjam.smashing.domain.auth.controller
 
-import org.appjam.smashing.domain.auth.command.reqeust.SignInRequestCommand.Companion.toCommand
+import jakarta.validation.Valid
 import org.appjam.smashing.domain.auth.command.reqeust.SignUpRequestCommand.Companion.toCommand
-import org.appjam.smashing.domain.auth.command.response.SignInResponseCommand.Companion.toDto
 import org.appjam.smashing.domain.auth.command.response.SignUpResponseCommand.Companion.toDto
 import org.appjam.smashing.domain.auth.dto.request.SignInRequest
 import org.appjam.smashing.domain.auth.dto.request.SignUpRequest
@@ -10,6 +9,7 @@ import org.appjam.smashing.domain.auth.dto.response.SignInResponse
 import org.appjam.smashing.domain.auth.dto.response.SignUpResponse
 import org.appjam.smashing.domain.auth.service.AuthService
 import org.appjam.smashing.global.common.dto.ApiResponse
+import org.appjam.smashing.global.common.enums.SuccessCode
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -20,13 +20,20 @@ class AuthController(
 ) {
     @PostMapping("/login/kakao")
     fun signIn(
-        @RequestBody signInRequest: SignInRequest
+        @Valid @RequestBody signInRequest: SignInRequest
     ): ResponseEntity<ApiResponse<SignInResponse>> {
-        val response: SignInResponse = authService.signIn(signInRequest.toCommand()).toDto()
+        val response: SignInResponse = authService.signIn(signInRequest.toCommand())
 
-        return ApiResponse.success(
-            data = response
-        )
+        return if (response.isCompletedSignUp()) {
+            ApiResponse.success(
+                data = response
+            )
+        } else {
+            ApiResponse.success(
+                status = SuccessCode.ACCEPTED.httpStatus,
+                data = response
+            )
+        }
     }
 
     @PostMapping("/signup")
