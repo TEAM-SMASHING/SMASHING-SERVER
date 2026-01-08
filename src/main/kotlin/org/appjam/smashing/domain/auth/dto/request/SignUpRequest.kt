@@ -1,6 +1,6 @@
 package org.appjam.smashing.domain.auth.dto.request
 
-data class SignUpRequestDto(
+data class SignUpRequest(
     val nickname: String,
     val gender: String,
     val openChatUrl: String,
