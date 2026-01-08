@@ -1,6 +1,7 @@
 package org.appjam.smashing.domain.auth.service
 
 import org.appjam.smashing.domain.auth.command.reqeust.SignInRequestCommand
+import org.appjam.smashing.domain.auth.command.reqeust.SignUpRequestCommand
 import org.appjam.smashing.domain.auth.command.response.SignInResponseCommand
 import org.appjam.smashing.domain.auth.social.SocialAuthServiceManager
 import org.appjam.smashing.domain.user.repository.UserRepository
@@ -43,7 +44,7 @@ class AuthService(
         )
     }
 
-    fun signUp() {
+    fun signUp(requestCommand: SignUpRequestCommand) {
 
     }
 }
