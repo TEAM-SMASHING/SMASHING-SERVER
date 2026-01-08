@@ -17,7 +17,7 @@ class KakaoAuthTokenValidator(
             response.id.toString()
 
         } catch (e: Exception) {
-            throw CustomException(ErrorCode.USER_NOT_FOUND)
+            throw CustomException(ErrorCode.INVALID_KAKAO_ACCESS_TOKEN)
         }
 
     companion object {
