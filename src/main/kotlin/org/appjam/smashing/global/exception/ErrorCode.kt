@@ -52,6 +52,19 @@ enum class ErrorCode(
     MATCHING_FORBIDDEN(HttpStatus.FORBIDDEN, "MATCH-007", "해당 매칭에 대한 권한이 없습니다."),
     MATCHING_ALREADY_RESPONDED(HttpStatus.BAD_REQUEST, "MATCH-008", "이미 응답된 매칭 요청입니다."),
 
+    // Domain - Game
+    GAME_NOT_FOUND(HttpStatus.NOT_FOUND, "GAME-001", "경기를 찾을 수 없습니다."),
+    GAME_FORBIDDEN(HttpStatus.FORBIDDEN, "GAME-002", "경기에 대한 권한이 없습니다."),
+    GAME_RESULT_INVALID_PLAYERS(HttpStatus.BAD_REQUEST, "GAME-003", "승자 또는 패자가 경기 참여자가 아닙니다."),
+    GAME_REVIEW_ONLY_FIRST_SUBMISSION_ALLOWED(HttpStatus.BAD_REQUEST, "GAME-004", "리뷰는 최초 제출에서만 가능합니다."),
+    GAME_RESULT_SUBMIT_BLOCKED_1H(HttpStatus.BAD_REQUEST, "GAME-005", "경기 생성 후 1시간 동안 결과 제출이 불가합니다."),
+    GAME_RESULT_SUBMIT_BLOCKED_10M(HttpStatus.BAD_REQUEST, "GAME-006", "연속 경기의 경우 생성 후 10분 동안 결과 제출이 불가합니다."),
+    GAME_RESULT_INVALID_SCORE(HttpStatus.BAD_REQUEST, "GAME-007", "승자 점수는 패자 점수보다 이상이어야 합니다."),
+    GAME_RESULT_SAME_PLAYER(HttpStatus.BAD_REQUEST, "GAME-008", "winnerUserId와 loserUserId는 같을 수 없습니다."),
+    GAME_RESULT_ALREADY_SUBMITTED(HttpStatus.BAD_REQUEST, "GAME-009","이미 결과 제출이 진행 중이거나 제출되었습니다."),
+    GAME_REVIEW_REQUIRED_ON_FIRST_SUBMISSION(HttpStatus.BAD_REQUEST, "GAME-010","첫 결과 제출에는 리뷰가 필수입니다."),
+    GAME_RESULT_SUBMISSION_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "GAME-011","결과 제출은 유저당 최대 2회까지만 가능합니다."),
+
     // Domain - Notification
     NOTIFICATION_TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTI-001", "알림 템플릿을 찾을 수 없습니다."),
 
