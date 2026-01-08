@@ -45,6 +45,22 @@ data class ApiResponse<T>(
         )
 
         /**
+         * 성공 응답
+         *
+         * @param status 상태 코드
+         * @param data 응답 데이터
+         * @return ResponseEntity
+         */
+        fun <T> success(status: HttpStatus, data: T): ResponseEntity<ApiResponse<T>> =
+            ResponseEntity.status(status).body(
+                ApiResponse(
+                    status = Status.SUCCESS,
+                    statusCode = status.value(),
+                    data = data,
+                )
+            )
+
+        /**
          * 실패 응답
          *
          * @param message 메시지

@@ -5,6 +5,7 @@ import org.appjam.smashing.domain.auth.dto.request.SignInRequest
 import org.appjam.smashing.domain.auth.dto.response.SignInResponse
 import org.appjam.smashing.domain.auth.service.AuthService
 import org.appjam.smashing.global.common.dto.ApiResponse
+import org.appjam.smashing.global.common.enums.SuccessCode
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -22,8 +23,15 @@ class AuthController(
     ): ResponseEntity<ApiResponse<SignInResponse>> {
         val response: SignInResponse = authService.signIn(signInRequest.toCommand())
 
-        return ApiResponse.success(
-            data = response
-        )
+        return if (response.isCompletedSignUp()) {
+            ApiResponse.success(
+                data = response
+            )
+        } else {
+            ApiResponse.success(
+                status = SuccessCode.ACCEPTED.httpStatus,
+                data = response
+            )
+        }
     }
 }
