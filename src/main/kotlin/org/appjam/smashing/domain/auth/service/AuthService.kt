@@ -7,6 +7,7 @@ import org.appjam.smashing.domain.auth.dto.response.SignUpResponse
 import org.appjam.smashing.domain.auth.social.SocialAuthServiceManager
 import org.appjam.smashing.domain.sport.entity.Sport
 import org.appjam.smashing.domain.sport.entity.Tier
+import org.appjam.smashing.domain.sport.enums.SportCode
 import org.appjam.smashing.domain.sport.enums.TierType
 import org.appjam.smashing.domain.sport.repository.SportRepository
 import org.appjam.smashing.domain.sport.repository.TierRepository
@@ -61,10 +62,11 @@ class AuthService(
             requestCommand = requestCommand,
         )
 
+        val sportCode = SportCode.valueOf(requestCommand.sportCode.uppercase())
         val sport = sportRepository.save(
             Sport(
-                code = requestCommand.sportCode,
-                name = requestCommand.sportCode,
+                code = sportCode.name,
+                name = sportCode.sportName,
             )
         )
 
