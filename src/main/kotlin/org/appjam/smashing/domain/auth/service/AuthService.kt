@@ -62,7 +62,7 @@ class AuthService(
             requestCommand = requestCommand,
         )
 
-        val sportCode = SportCode.valueOf(requestCommand.sportCode.uppercase())
+        val sportCode = SportCode.from(requestCommand.sportCode)
         val sport = sportRepository.save(
             Sport(
                 code = sportCode.name,
@@ -70,7 +70,7 @@ class AuthService(
             )
         )
 
-        val tierType = TierType.valueOf(requestCommand.tier.uppercase()) // todo handling exception
+        val tierType = TierType.from(requestCommand.tier)
         val tier = tierRepository.save(
             Tier(
                 name = tierType.tierName,
