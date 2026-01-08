@@ -1,6 +1,6 @@
-package org.appjam.smashing.domain.auth.kakao.client
+package org.appjam.smashing.domain.auth.test.client
 
-import org.appjam.smashing.domain.auth.kakao.dto.KakaoTokenResponse
+import org.appjam.smashing.domain.auth.test.dto.KakaoTokenResponse
 import org.springframework.cloud.openfeign.FeignClient
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.PostMapping

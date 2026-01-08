@@ -1,4 +1,4 @@
-package org.appjam.smashing.domain.auth.kakao.dto
+package org.appjam.smashing.domain.auth.test.dto
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming

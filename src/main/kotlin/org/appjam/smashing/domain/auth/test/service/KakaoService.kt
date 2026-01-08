@@ -1,6 +1,6 @@
-package org.appjam.smashing.domain.auth.kakao.service
+package org.appjam.smashing.domain.auth.test.service
 
-import org.appjam.smashing.domain.auth.kakao.client.KakaoAuthClient
+import org.appjam.smashing.domain.auth.test.client.KakaoAuthClient
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
