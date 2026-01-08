@@ -34,7 +34,10 @@ class AuthController(
         @RequestHeader("Auth-Id") authId: String,
         @RequestBody signUpRequest: SignUpRequest,
     ): ResponseEntity<ApiResponse<SignUpResponse>> {
-        val response = authService.signUp(signUpRequest.toCommand()).toDto()
+        val response: SignUpResponse = authService.signUp(
+            authId = authId,
+            requestCommand = signUpRequest.toCommand(),
+        ).toDto()
 
         return ApiResponse.success(
             data = response

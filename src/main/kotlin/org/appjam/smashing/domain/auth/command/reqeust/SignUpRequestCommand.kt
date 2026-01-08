@@ -17,7 +17,7 @@ data class SignUpRequestCommand(
             openChatUrl = openChatUrl,
             sportCode = sportCode,
             tier = tier,
-            region = region
+            region = region,
         )
     }
 }

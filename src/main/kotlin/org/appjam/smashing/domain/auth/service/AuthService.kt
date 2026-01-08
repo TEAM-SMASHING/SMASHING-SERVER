@@ -5,6 +5,8 @@ import org.appjam.smashing.domain.auth.command.reqeust.SignUpRequestCommand
 import org.appjam.smashing.domain.auth.command.response.SignInResponseCommand
 import org.appjam.smashing.domain.auth.command.response.SignUpResponseCommand
 import org.appjam.smashing.domain.auth.social.SocialAuthServiceManager
+import org.appjam.smashing.domain.user.entity.User
+import org.appjam.smashing.domain.user.enums.Gender
 import org.appjam.smashing.domain.user.repository.UserRepository
 import org.appjam.smashing.global.auth.jwt.components.JwtProvider
 import org.appjam.smashing.global.exception.CustomException
@@ -43,13 +45,22 @@ class AuthService(
         )
     }
 
-    fun signUp(requestCommand: SignUpRequestCommand): SignUpResponseCommand {
-        // 들어온 값을 저장한다.
+    fun signUp(
+        authId: String,
+        requestCommand: SignUpRequestCommand
+    ): SignUpResponseCommand {
+        val user = User(
+            kakaoId = authId,
+            nickname = requestCommand.nickname,
+            gender = Gender.valueOf(requestCommand.gender),
+            openchatUrl = requestCommand.openChatUrl,
+        )
 
+        userRepository.save(user)
 
-        // 유저아이디를 반환한다.
+        val userId = user.id ?: throw CustomException(ErrorCode.NOT_FOUND)
 
-        val token = jwtProvider.issueToken("")
+        val token = jwtProvider.issueToken(userId)
 
         return SignUpResponseCommand(
             token = token
