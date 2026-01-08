@@ -28,7 +28,7 @@ class AuthService(
             return SignInResponseCommand(
                 accessToken = null,
                 refreshToken = null,
-                authId = null,
+                authId = kakaoId,
             )
         }
 
