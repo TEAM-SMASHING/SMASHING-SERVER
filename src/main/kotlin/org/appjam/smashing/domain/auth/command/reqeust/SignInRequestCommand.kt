@@ -1,4 +1,4 @@
-package org.appjam.smashing.domain.auth.command
+package org.appjam.smashing.domain.auth.command.reqeust
 
 import org.appjam.smashing.domain.auth.dto.request.SignInRequest
 

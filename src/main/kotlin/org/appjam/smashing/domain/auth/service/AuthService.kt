@@ -1,7 +1,7 @@
 package org.appjam.smashing.domain.auth.service
 
-import org.appjam.smashing.domain.auth.command.SignInRequestCommand
-import org.appjam.smashing.domain.auth.command.SignInResponseCommand
+import org.appjam.smashing.domain.auth.command.reqeust.SignInRequestCommand
+import org.appjam.smashing.domain.auth.command.response.SignInResponseCommand
 import org.appjam.smashing.domain.auth.social.SocialAuthServiceManager
 import org.appjam.smashing.domain.user.repository.UserRepository
 import org.appjam.smashing.global.auth.jwt.components.JwtProvider

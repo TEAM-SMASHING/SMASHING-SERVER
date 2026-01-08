@@ -1,7 +1,7 @@
 package org.appjam.smashing.domain.auth.controller
 
-import org.appjam.smashing.domain.auth.command.SignInRequestCommand.Companion.toCommand
-import org.appjam.smashing.domain.auth.command.SignInResponseCommand.Companion.toDto
+import org.appjam.smashing.domain.auth.command.reqeust.SignInRequestCommand.Companion.toCommand
+import org.appjam.smashing.domain.auth.command.response.SignInResponseCommand.Companion.toDto
 import org.appjam.smashing.domain.auth.dto.request.SignInRequest
 import org.appjam.smashing.domain.auth.dto.request.SignUpRequest
 import org.appjam.smashing.domain.auth.dto.response.SignInResponse
