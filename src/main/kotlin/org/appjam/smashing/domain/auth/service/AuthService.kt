@@ -40,7 +40,7 @@ class AuthService(
         return SignInResponseCommand(
             accessToken = token.accessToken.token,
             refreshToken = token.refreshToken.token,
-            authId = kakaoId,
+            authId = null,
         )
     }
 
