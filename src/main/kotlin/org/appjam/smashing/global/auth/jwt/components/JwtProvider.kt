@@ -32,7 +32,10 @@ class JwtProvider(
         )
     }
 
-    fun getAuthentication(token: String): Authentication {
+    fun getAuthentication(
+        token: String,
+        timeZone: String
+    ): Authentication {
         val claims = jwtValidator.validateAndParseAccessToken(token)
 
         val roles = claims[ROLES_KEY] as? List<*> ?: throw CustomException(ErrorCode.INVALID_ACCESS_TOKEN_CLAIM)
@@ -49,7 +52,8 @@ class JwtProvider(
 
         val userDetails = CustomUserDetails(
             userId = subject,
-            authorities = authorities
+            authorities = authorities,
+            timeZone = timeZone
         )
 
         return UsernamePasswordAuthenticationToken(
