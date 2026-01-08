@@ -51,7 +51,7 @@ class AuthService(
     ): SignUpResponseCommand {
         validateUser(
             authId = authId,
-            requestCommand = requestCommand
+            requestCommand = requestCommand,
         )
 
         val user = User(
@@ -59,7 +59,10 @@ class AuthService(
             nickname = requestCommand.nickname,
             gender = Gender.valueOf(requestCommand.gender),
             openchatUrl = requestCommand.openChatUrl,
+            region = requestCommand.region,
         )
+        // 유저가 생성되면 유저프로필도 생성해야 됨
+        // sportCode, tier 추가하기
 
         userRepository.save(user)
 
