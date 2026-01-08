@@ -46,11 +46,15 @@ class AuthService(
     }
 
     fun signUp(requestCommand: SignUpRequestCommand): SignUpResponseCommand {
+        // 들어온 값을 저장한다.
 
+
+        // 유저아이디를 반환한다.
+
+        val token = jwtProvider.issueToken("")
 
         return SignUpResponseCommand(
-            accessToken = "",
-            refreshToken = ""
+            token = token
         )
     }
 }
