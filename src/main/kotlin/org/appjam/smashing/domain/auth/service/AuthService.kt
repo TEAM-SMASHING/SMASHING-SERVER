@@ -1,7 +1,7 @@
 package org.appjam.smashing.domain.auth.service
 
 import org.appjam.smashing.domain.auth.command.SignInRequestCommand
-import org.appjam.smashing.domain.auth.command.SignInResponseCommand
+import org.appjam.smashing.domain.auth.dto.response.SignInResponse
 import org.appjam.smashing.domain.auth.social.SocialAuthServiceManager
 import org.appjam.smashing.domain.user.repository.UserRepository
 import org.appjam.smashing.global.auth.jwt.components.JwtProvider
@@ -17,7 +17,7 @@ class AuthService(
     private val userRepository: UserRepository,
     private val jwtProvider: JwtProvider,
 ) {
-    fun signIn(requestCommand: SignInRequestCommand): SignInResponseCommand {
+    fun signIn(requestCommand: SignInRequestCommand): SignInResponse {
         val kakaoId = socialAuthServiceManager.getKakaoId(requestCommand.accessToken)
 
         val user = userRepository.findByKakaoId(
@@ -25,8 +25,9 @@ class AuthService(
         )
 
         if (user == null) {
-            return SignInResponseCommand(
-                token = null,
+            return SignInResponse(
+                accessToken = null,
+                refreshToken = null,
                 authId = kakaoId,
             )
         }
@@ -35,8 +36,9 @@ class AuthService(
 
         val token = jwtProvider.issueToken(userId)
 
-        return SignInResponseCommand(
-            token = token,
+        return SignInResponse(
+            accessToken = token.accessToken.token,
+            refreshToken = token.refreshToken.token,
             authId = null,
         )
     }

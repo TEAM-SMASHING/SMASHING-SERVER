@@ -1,7 +1,5 @@
 package org.appjam.smashing.domain.auth.controller
 
-import org.appjam.smashing.domain.auth.command.SignInRequestCommand.Companion.toCommand
-import org.appjam.smashing.domain.auth.command.SignInResponseCommand.Companion.toDto
 import org.appjam.smashing.domain.auth.dto.request.SignInRequest
 import org.appjam.smashing.domain.auth.dto.response.SignInResponse
 import org.appjam.smashing.domain.auth.service.AuthService
@@ -21,7 +19,7 @@ class AuthController(
     fun signIn(
         @RequestBody signInRequest: SignInRequest
     ): ResponseEntity<ApiResponse<SignInResponse>> {
-        val response: SignInResponse = authService.signIn(signInRequest.toCommand()).toDto()
+        val response: SignInResponse = authService.signIn(signInRequest.toCommand())
 
         return ApiResponse.success(
             data = response
