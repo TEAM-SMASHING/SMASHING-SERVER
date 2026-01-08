@@ -28,8 +28,7 @@ class AuthService(
 
         if (user == null) {
             return SignInResponseCommand(
-                accessToken = null,
-                refreshToken = null,
+                token = null,
                 authId = kakaoId,
             )
         }
@@ -39,8 +38,7 @@ class AuthService(
         val token = jwtProvider.issueToken(userId)
 
         return SignInResponseCommand(
-            accessToken = token.accessToken.token,
-            refreshToken = token.refreshToken.token,
+            token = token,
             authId = null,
         )
     }
