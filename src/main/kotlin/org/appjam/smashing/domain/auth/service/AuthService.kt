@@ -41,7 +41,7 @@ class AuthService(
 
         return SignInResponseCommand(
             token = token,
-            authId = null,
+            authId = kakaoId,
         )
     }
 

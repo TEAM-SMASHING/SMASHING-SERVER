@@ -5,7 +5,7 @@ import org.appjam.smashing.global.auth.jwt.dto.TokenDto
 
 data class SignInResponseCommand(
     val token: TokenDto?,
-    val authId: String?
+    val authId: String
 ) {
     companion object {
         fun SignInResponseCommand.toDto(): SignInResponse =
