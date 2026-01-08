@@ -42,7 +42,7 @@ enum class ErrorCode(
     // User
     USER_NOT_FOUND(HttpStatus.BAD_REQUEST, "USER-001", "해당 유저를 찾을 수 없습니다."),
 
-// Domain - Matching
+    // Domain - Matching
     MATCHING_REQUESTER_NOT_FOUND(HttpStatus.NOT_FOUND, "MATCH-001", "요청자 유저를 찾을 수 없습니다."),
     MATCHING_RECEIVER_PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND, "MATCH-002", "상대 유저 스포츠 프로필을 찾을 수 없습니다."),
     MATCHING_RECEIVER_USER_NOT_FOUND(HttpStatus.NOT_FOUND, "MATCH-003", "상대 유저 정보를 찾을 수 없습니다."),
