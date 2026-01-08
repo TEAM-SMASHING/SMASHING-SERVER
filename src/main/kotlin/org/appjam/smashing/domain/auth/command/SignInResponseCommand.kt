@@ -1,6 +1,6 @@
 package org.appjam.smashing.domain.auth.command
 
-import org.appjam.smashing.domain.auth.dto.SignInResponseDto
+import org.appjam.smashing.domain.auth.dto.response.SignInResponse
 
 data class SignInResponseCommand(
     val accessToken: String?,
@@ -8,8 +8,8 @@ data class SignInResponseCommand(
     val authId: String?
 ) {
     companion object {
-        fun SignInResponseCommand.toDto(): SignInResponseDto =
-            SignInResponseDto(
+        fun SignInResponseCommand.toDto(): SignInResponse =
+            SignInResponse(
                 accessToken = accessToken,
                 refreshToken = refreshToken,
                 authId = authId,

@@ -2,8 +2,8 @@ package org.appjam.smashing.domain.auth.controller
 
 import org.appjam.smashing.domain.auth.command.SignInRequestCommand.Companion.toCommand
 import org.appjam.smashing.domain.auth.command.SignInResponseCommand.Companion.toDto
-import org.appjam.smashing.domain.auth.dto.SignInRequestDto
-import org.appjam.smashing.domain.auth.dto.SignInResponseDto
+import org.appjam.smashing.domain.auth.dto.request.SignInRequest
+import org.appjam.smashing.domain.auth.dto.response.SignInResponse
 import org.appjam.smashing.domain.auth.service.AuthService
 import org.appjam.smashing.global.common.dto.ApiResponse
 import org.springframework.http.ResponseEntity
@@ -19,9 +19,9 @@ class AuthController(
 ) {
     @PostMapping("/login/kakao")
     fun signIn(
-        @RequestBody signInRequestDto: SignInRequestDto
-    ): ResponseEntity<ApiResponse<SignInResponseDto>> {
-        val response: SignInResponseDto = authService.signIn(signInRequestDto.toCommand()).toDto()
+        @RequestBody signInRequest: SignInRequest
+    ): ResponseEntity<ApiResponse<SignInResponse>> {
+        val response: SignInResponse = authService.signIn(signInRequest.toCommand()).toDto()
 
         return ApiResponse.success(
             data = response

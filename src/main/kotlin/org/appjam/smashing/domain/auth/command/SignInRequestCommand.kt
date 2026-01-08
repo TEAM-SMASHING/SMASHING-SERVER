@@ -1,12 +1,12 @@
 package org.appjam.smashing.domain.auth.command
 
-import org.appjam.smashing.domain.auth.dto.SignInRequestDto
+import org.appjam.smashing.domain.auth.dto.request.SignInRequest
 
 data class SignInRequestCommand(
     val accessToken: String,
 ) {
     companion object {
-        fun SignInRequestDto.toCommand(): SignInRequestCommand =
+        fun SignInRequest.toCommand(): SignInRequestCommand =
             SignInRequestCommand(
                 accessToken = accessToken,
             )

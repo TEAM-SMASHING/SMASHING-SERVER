@@ -1,6 +1,6 @@
-package org.appjam.smashing.domain.auth.dto
+package org.appjam.smashing.domain.auth.dto.response
 
-data class SignInResponseDto(
+data class SignInResponse(
     val accessToken: String?,
     val refreshToken: String?,
     val authId: String?,
