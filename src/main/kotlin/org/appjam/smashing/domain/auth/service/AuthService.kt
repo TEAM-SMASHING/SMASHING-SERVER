@@ -20,17 +20,12 @@ class AuthService(
     fun signIn(requestCommand: SignInRequestCommand): SignInResponse {
         val kakaoId = socialAuthServiceManager.getKakaoId(requestCommand.accessToken)
 
-        val user = userRepository.findByKakaoId(
-            kakaoId = kakaoId
-        )
-
-        if (user == null) {
-            return SignInResponse(
+        val user = userRepository.findByKakaoId(kakaoId)
+            ?: return SignInResponse(
                 accessToken = null,
                 refreshToken = null,
                 authId = kakaoId,
             )
-        }
 
         val userId = user.id ?: throw CustomException(ErrorCode.INTERNAL_SERVER_ERROR)
 
