@@ -71,7 +71,6 @@ dependencies {
 
     // Feign
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.1.2")
-    implementation("org.springframework.boot:spring-boot-starter-web")
 }
 
 kotlin {
