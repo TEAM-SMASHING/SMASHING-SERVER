@@ -1,6 +1,6 @@
-package org.appjam.smashing.domain.auth.kakao.controller
+package org.appjam.smashing.domain.auth.test.controller
 
-import org.appjam.smashing.domain.auth.kakao.service.KakaoService
+import org.appjam.smashing.domain.auth.test.service.KakaoService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping

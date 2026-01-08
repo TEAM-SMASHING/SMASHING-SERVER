@@ -1,6 +1,5 @@
-package org.appjam.smashing.domain.auth.social
+package org.appjam.smashing.domain.auth.social.kakao
 
-import org.appjam.smashing.domain.auth.kakao.client.KakaoApiClient
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
 import org.springframework.stereotype.Component
@@ -18,7 +17,7 @@ class KakaoAuthTokenValidator(
             response.id.toString()
 
         } catch (e: Exception) {
-            throw CustomException(ErrorCode.USER_NOT_FOUND)
+            throw CustomException(ErrorCode.INVALID_KAKAO_ACCESS_TOKEN)
         }
 
     companion object {

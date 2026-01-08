@@ -1,5 +1,6 @@
 package org.appjam.smashing.domain.auth.service
 
+import org.appjam.smashing.domain.auth.command.SignInRequestCommand
 import org.appjam.smashing.domain.auth.command.SignInResponseCommand
 import org.appjam.smashing.domain.auth.social.SocialAuthServiceManager
 import org.appjam.smashing.domain.user.repository.UserRepository
@@ -16,8 +17,8 @@ class AuthService(
     private val userRepository: UserRepository,
     private val jwtProvider: JwtProvider,
 ) {
-    fun signIn(accessToken: String): SignInResponseCommand {
-        val kakaoId = socialAuthServiceManager.getKakaoId(accessToken)
+    fun signIn(requestCommand: SignInRequestCommand): SignInResponseCommand {
+        val kakaoId = socialAuthServiceManager.getKakaoId(requestCommand.accessToken)
 
         val user = userRepository.findByKakaoId(
             kakaoId = kakaoId
@@ -27,7 +28,7 @@ class AuthService(
             return SignInResponseCommand(
                 accessToken = null,
                 refreshToken = null,
-                authId = null,
+                authId = kakaoId,
             )
         }
 

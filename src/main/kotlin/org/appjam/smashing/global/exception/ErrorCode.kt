@@ -39,6 +39,20 @@ enum class ErrorCode(
     INVALID_REFRESH_TOKEN_TYPE(HttpStatus.UNAUTHORIZED, "AUTH-016", "리프레시 토큰의 타입이 올바르지 않습니다."),
     INVALID_REFRESH_TOKEN_CONTENTS(HttpStatus.UNAUTHORIZED, "AUTH-017", "유효하지 않은 정보가 담긴 리프레시 토큰입니다."),
 
-    // User
-    USER_NOT_FOUND(HttpStatus.BAD_REQUEST, "USER-001", "해당 유저를 찾을 수 없습니다."),
+    // Auth - Kakao Token
+    INVALID_KAKAO_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-017", "유효하지 않은 카카오 액세스 토큰입니다."),
+
+    // Domain - Matching
+    MATCHING_REQUESTER_NOT_FOUND(HttpStatus.NOT_FOUND, "MATCH-001", "요청자 유저를 찾을 수 없습니다."),
+    MATCHING_RECEIVER_PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND, "MATCH-002", "상대 유저 스포츠 프로필을 찾을 수 없습니다."),
+    MATCHING_RECEIVER_USER_NOT_FOUND(HttpStatus.NOT_FOUND, "MATCH-003", "상대 유저 정보를 찾을 수 없습니다."),
+    MATCHING_CANNOT_REQUEST_TO_SELF(HttpStatus.BAD_REQUEST, "MATCH-004", "본인에게 매칭을 신청할 수 없습니다."),
+    MATCHING_DAILY_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "MATCH-005", "해당 유저와 오늘 매칭 가능 횟수를 초과했습니다."),
+    MATCHING_NOT_FOUND(HttpStatus.NOT_FOUND, "MATCH-006", "매칭을 찾을 수 없습니다."),
+    MATCHING_FORBIDDEN(HttpStatus.FORBIDDEN, "MATCH-007", "해당 매칭에 대한 권한이 없습니다."),
+    MATCHING_ALREADY_RESPONDED(HttpStatus.BAD_REQUEST, "MATCH-008", "이미 응답된 매칭 요청입니다."),
+
+    // Domain - Notification
+    NOTIFICATION_TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTI-001", "알림 템플릿을 찾을 수 없습니다."),
+
 }

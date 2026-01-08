@@ -28,7 +28,7 @@ class OutboxEvent(
     val userId: String,
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 30)
+    @Column(nullable = false, length = 100)
     @Comment("Outbox Event 타입")
     val eventType: SseEventType,
 
