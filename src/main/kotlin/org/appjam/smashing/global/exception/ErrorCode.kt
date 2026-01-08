@@ -41,6 +41,8 @@ enum class ErrorCode(
 
     // Auth - Kakao Token
     INVALID_KAKAO_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-017", "유효하지 않은 카카오 액세스 토큰입니다."),
+    ALREADY_REGISTERED_USER(HttpStatus.BAD_REQUEST, "AUTH-018", "이미 존재하는 유저입니다."),
+    // todo: 이미존재하는 닉네임 확인 에러 추가하기
 
     // Domain - Matching
     MATCHING_REQUESTER_NOT_FOUND(HttpStatus.NOT_FOUND, "MATCH-001", "요청자 유저를 찾을 수 없습니다."),

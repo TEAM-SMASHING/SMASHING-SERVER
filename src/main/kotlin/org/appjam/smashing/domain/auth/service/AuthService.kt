@@ -49,6 +49,10 @@ class AuthService(
         authId: String,
         requestCommand: SignUpRequestCommand
     ): SignUpResponseCommand {
+        if (userRepository.existsByKakaoId(authId)) {
+            throw CustomException(ErrorCode.ALREADY_REGISTERED_USER)
+        }
+
         val user = User(
             kakaoId = authId,
             nickname = requestCommand.nickname,
