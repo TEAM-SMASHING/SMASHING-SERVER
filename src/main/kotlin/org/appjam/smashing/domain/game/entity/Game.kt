@@ -113,4 +113,21 @@ class Game(
     fun markWaitingConfirmation() {
         resultStatus = GameResultStatus.WAITING_CONFIRMATION
     }
+
+    fun confirmResult(
+        submissionId: String,
+        winner: User,
+        loser: User,
+        scoreWinner: Int,
+        scoreLoser: Int,
+        confirmedAt: LocalDateTime,
+    ) {
+        resultStatus = GameResultStatus.RESULT_CONFIRMED
+        confirmedSubmissionId = submissionId
+        this.winner = winner
+        this.loser = loser
+        this.scoreWinner = scoreWinner
+        this.scoreLoser = scoreLoser
+        this.confirmedAt = confirmedAt
+    }
 }

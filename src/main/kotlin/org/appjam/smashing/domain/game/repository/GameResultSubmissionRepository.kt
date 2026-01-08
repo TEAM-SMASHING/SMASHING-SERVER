@@ -1,7 +1,10 @@
 package org.appjam.smashing.domain.game.repository
 
+import jakarta.persistence.LockModeType
 import org.appjam.smashing.domain.game.entity.GameResultSubmission
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Lock
+import org.springframework.data.jpa.repository.Query
 
 interface GameResultSubmissionRepository : JpaRepository<GameResultSubmission, String> {
     fun countByGame_Id(gameId: String): Long
@@ -10,4 +13,19 @@ interface GameResultSubmissionRepository : JpaRepository<GameResultSubmission, S
         gameId: String,
         submitterUserId: String,
     ): Long
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query(
+        """
+        select s
+        from GameResultSubmission s
+        where s.id = :submissionId
+          and s.game.id = :gameId
+        """
+    )
+    fun findByIdAndGameIdForUpdate(
+        submissionId: String,
+        gameId: String,
+    ): GameResultSubmission?
+
 }

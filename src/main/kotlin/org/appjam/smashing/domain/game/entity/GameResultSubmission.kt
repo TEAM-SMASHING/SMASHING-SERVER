@@ -124,4 +124,11 @@ class GameResultSubmission(
             loser = loser,
         )
     }
+
+    fun accept(
+        actedAt: LocalDateTime
+    ) {
+        status = SubmissionStatus.ACCEPTED
+        this.actedAt = actedAt
+    }
 }
