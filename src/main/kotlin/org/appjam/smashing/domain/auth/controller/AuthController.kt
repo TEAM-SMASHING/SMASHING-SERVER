@@ -1,5 +1,6 @@
 package org.appjam.smashing.domain.auth.controller
 
+import jakarta.validation.Valid
 import org.appjam.smashing.domain.auth.dto.request.SignInRequest
 import org.appjam.smashing.domain.auth.dto.response.SignInResponse
 import org.appjam.smashing.domain.auth.service.AuthService
@@ -17,7 +18,7 @@ class AuthController(
 ) {
     @PostMapping("/login/kakao")
     fun signIn(
-        @RequestBody signInRequest: SignInRequest
+        @Valid @RequestBody signInRequest: SignInRequest
     ): ResponseEntity<ApiResponse<SignInResponse>> {
         val response: SignInResponse = authService.signIn(signInRequest.toCommand())
 
