@@ -21,7 +21,7 @@ class User(
 
     @Column(nullable = false)
     @Comment("카카오 IDX")
-    val kakaoId: Long,
+    val kakaoId: String,
 
     @Column(nullable = false, length = 50)
     @Comment("닉네임")
