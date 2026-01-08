@@ -5,9 +5,15 @@ import org.appjam.smashing.domain.auth.command.SignUpRequestCommand
 import org.appjam.smashing.domain.auth.dto.response.SignInResponse
 import org.appjam.smashing.domain.auth.dto.response.SignUpResponse
 import org.appjam.smashing.domain.auth.social.SocialAuthServiceManager
+import org.appjam.smashing.domain.sport.entity.Sport
+import org.appjam.smashing.domain.sport.entity.Tier
+import org.appjam.smashing.domain.sport.repository.SportRepository
+import org.appjam.smashing.domain.sport.repository.TierRepository
 import org.appjam.smashing.domain.user.entity.User
+import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.appjam.smashing.domain.user.enums.Gender
 import org.appjam.smashing.domain.user.repository.UserRepository
+import org.appjam.smashing.domain.user.repository.UserSportProfileRepository
 import org.appjam.smashing.global.auth.jwt.components.JwtProvider
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
@@ -18,8 +24,11 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 class AuthService(
     private val socialAuthServiceManager: SocialAuthServiceManager,
-    private val userRepository: UserRepository,
     private val jwtProvider: JwtProvider,
+    private val userRepository: UserRepository,
+    private val sportRepository: SportRepository,
+    private val tierRepository: TierRepository,
+    private val userSportProfileRepository: UserSportProfileRepository,
 ) {
     fun signIn(requestCommand: SignInRequestCommand): SignInResponse {
         val kakaoId = socialAuthServiceManager.getKakaoId(requestCommand.accessToken)
@@ -51,20 +60,46 @@ class AuthService(
             requestCommand = requestCommand,
         )
 
-        val user = User(
-            kakaoId = authId,
-            nickname = requestCommand.nickname,
-            gender = Gender.valueOf(requestCommand.gender),
-            openchatUrl = requestCommand.openChatUrl,
-            region = requestCommand.region,
+        val sport = sportRepository.save(
+            Sport(
+                code = requestCommand.sportCode,
+                name = requestCommand.sportCode
+            )
         )
-        // 유저가 생성되면 유저프로필도 생성해야 됨
-        // sportCode, tier 추가하기
 
-        userRepository.save(user)
+        // todo: have to split by tier
+        val tier = tierRepository.save(
+            Tier(
+                name = requestCommand.tier,
+                orderNo = 1, // todo: all type is temporary
+                minLp = 0,
+                maxLp = 1000,
+                sport = sport
+            )
+        )
+
+        val user = userRepository.save(
+            User(
+                kakaoId = authId,
+                nickname = requestCommand.nickname,
+                gender = Gender.valueOf(requestCommand.gender),
+                openchatUrl = requestCommand.openChatUrl,
+                region = requestCommand.region,
+            )
+        )
+
+        val profile = userSportProfileRepository.save(
+            UserSportProfile(
+                lp = tier.minLp,
+                user = user,
+                sport = sport,
+                tier = tier
+            )
+        )
+
+        user.activeUserSportProfileId = profile.id
 
         val userId = user.id ?: throw CustomException(ErrorCode.NOT_FOUND)
-
         val token = jwtProvider.issueToken(userId)
 
         return SignUpResponse(
