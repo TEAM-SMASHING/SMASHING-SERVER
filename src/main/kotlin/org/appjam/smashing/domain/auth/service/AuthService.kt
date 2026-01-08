@@ -53,7 +53,7 @@ class AuthService(
 
     fun signUp(
         authId: String,
-        requestCommand: SignUpRequestCommand
+        requestCommand: SignUpRequestCommand,
     ): SignUpResponse {
         validateUser(
             authId = authId,
@@ -63,7 +63,7 @@ class AuthService(
         val sport = sportRepository.save(
             Sport(
                 code = requestCommand.sportCode,
-                name = requestCommand.sportCode
+                name = requestCommand.sportCode,
             )
         )
 
@@ -74,7 +74,7 @@ class AuthService(
                 orderNo = 1, // todo: all type is temporary
                 minLp = 0,
                 maxLp = 1000,
-                sport = sport
+                sport = sport,
             )
         )
 
@@ -93,7 +93,7 @@ class AuthService(
                 lp = tier.minLp,
                 user = user,
                 sport = sport,
-                tier = tier
+                tier = tier,
             )
         )
 
@@ -110,7 +110,7 @@ class AuthService(
 
     private fun validateUser(
         authId: String,
-        requestCommand: SignUpRequestCommand
+        requestCommand: SignUpRequestCommand,
     ) {
         if (userRepository.existsByKakaoId(authId)) {
             throw CustomException(ErrorCode.DUPLICATE_USER)
