@@ -49,7 +49,10 @@ class AuthService(
         authId: String,
         requestCommand: SignUpRequestCommand
     ): SignUpResponseCommand {
-        validateUser(authId = authId, requestCommand = requestCommand)
+        validateUser(
+            authId = authId,
+            requestCommand = requestCommand
+        )
 
         val user = User(
             kakaoId = authId,
