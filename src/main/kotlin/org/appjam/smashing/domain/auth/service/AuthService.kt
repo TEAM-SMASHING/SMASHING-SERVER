@@ -7,6 +7,7 @@ import org.appjam.smashing.domain.auth.dto.response.SignUpResponse
 import org.appjam.smashing.domain.auth.social.SocialAuthServiceManager
 import org.appjam.smashing.domain.sport.entity.Sport
 import org.appjam.smashing.domain.sport.entity.Tier
+import org.appjam.smashing.domain.sport.enums.TierType
 import org.appjam.smashing.domain.sport.repository.SportRepository
 import org.appjam.smashing.domain.sport.repository.TierRepository
 import org.appjam.smashing.domain.user.entity.User
@@ -67,13 +68,13 @@ class AuthService(
             )
         )
 
-        // todo: have to split by tier
+        val tierType = TierType.valueOf(requestCommand.tier.uppercase()) // todo handling exception
         val tier = tierRepository.save(
             Tier(
-                name = requestCommand.tier,
-                orderNo = 1, // todo: all type is temporary
-                minLp = 0,
-                maxLp = 1000,
+                name = tierType.tierName,
+                orderNo = tierType.orderNo,
+                minLp = tierType.minLp,
+                maxLp = tierType.maxLp,
                 sport = sport,
             )
         )
@@ -82,7 +83,7 @@ class AuthService(
             User(
                 kakaoId = authId,
                 nickname = requestCommand.nickname,
-                gender = Gender.valueOf(requestCommand.gender),
+                gender = Gender.valueOf(requestCommand.gender), // todo handling exception
                 openchatUrl = requestCommand.openChatUrl,
                 region = requestCommand.region,
             )
@@ -90,7 +91,7 @@ class AuthService(
 
         val profile = userSportProfileRepository.save(
             UserSportProfile(
-                lp = tier.minLp,
+                lp = tierType.initTier!!, // todo change null handling
                 user = user,
                 sport = sport,
                 tier = tier,
