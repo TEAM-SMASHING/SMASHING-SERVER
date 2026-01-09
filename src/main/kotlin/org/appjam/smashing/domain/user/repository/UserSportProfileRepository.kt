@@ -5,7 +5,6 @@ import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Lock
 import org.springframework.data.jpa.repository.Query
-import org.springframework.data.repository.query.Param
 
 interface UserSportProfileRepository : JpaRepository<UserSportProfile, String> {
 
@@ -67,6 +66,6 @@ interface UserSportProfileRepository : JpaRepository<UserSportProfile, String> {
         """
     )
     fun findAllByUserId(
-        @Param("userId") userId: String,
+        userId: String,
     ): List<UserSportProfile>
 }
