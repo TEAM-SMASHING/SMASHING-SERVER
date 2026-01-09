@@ -1,6 +1,6 @@
 package org.appjam.smashing.domain.sport.enums
 
-enum class InitTier(
+enum class InitTierLp(
     val initLp: Int,
 ) {
     IRON(0),
