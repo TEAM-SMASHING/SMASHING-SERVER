@@ -11,7 +11,6 @@ import org.appjam.smashing.domain.tier.entity.Tier
 import org.appjam.smashing.domain.tier.repository.TierRepository
 import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.entity.UserSportProfile
-import org.appjam.smashing.domain.user.enums.Gender
 import org.appjam.smashing.domain.user.repository.UserRepository
 import org.appjam.smashing.domain.user.repository.UserSportProfileRepository
 import org.appjam.smashing.global.auth.jwt.components.JwtProvider
@@ -80,7 +79,7 @@ class AuthService(
             User(
                 kakaoId = requestCommand.authId,
                 nickname = requestCommand.nickname,
-                gender = Gender.valueOf(requestCommand.gender),
+                gender = requestCommand.gender,
                 openchatUrl = requestCommand.openChatUrl,
                 region = requestCommand.region,
             )

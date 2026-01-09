@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank
 import org.appjam.smashing.domain.auth.command.SignUpRequestCommand
 import org.appjam.smashing.domain.sport.enums.SportCode
 import org.appjam.smashing.domain.sport.enums.TierType
+import org.appjam.smashing.domain.user.enums.Gender
 import org.appjam.smashing.global.common.validator.annotation.ValidEnum
 import org.appjam.smashing.global.extensions.ofIgnoreCase
 
@@ -13,6 +14,7 @@ data class SignUpRequest(
     @field:NotBlank(message = "nickname을 입력해주세요.")
     val nickname: String?,
     @field:NotBlank(message = "gender를 입력해주세요.")
+    @field:ValidEnum(message = "잘못된 gender 값입니다.", enumClass = Gender::class)
     val gender: String?,
     @field:NotBlank(message = "openChatUrl을 입력해주세요.")
     val openChatUrl: String?,
@@ -28,7 +30,7 @@ data class SignUpRequest(
     fun toCommand(): SignUpRequestCommand = SignUpRequestCommand(
         authId = authId!!,
         nickname = nickname!!,
-        gender = gender!!,
+        gender = ofIgnoreCase<Gender>(gender!!),
         openChatUrl = openChatUrl!!,
         sportCode = ofIgnoreCase<SportCode>(sportCode!!),
         tier = ofIgnoreCase<TierType>(tier!!),
