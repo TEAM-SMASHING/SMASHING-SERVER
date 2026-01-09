@@ -9,7 +9,10 @@ import org.appjam.smashing.domain.auth.service.AuthService
 import org.appjam.smashing.global.common.dto.ApiResponse
 import org.appjam.smashing.global.common.enums.SuccessCode
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -36,13 +39,9 @@ class AuthController(
 
     @PostMapping("/signup")
     fun signUp(
-        @RequestHeader("Auth-Id") authId: String,
         @Valid @RequestBody signUpRequest: SignUpRequest,
     ): ResponseEntity<ApiResponse<SignUpResponse>> {
-        val response = authService.signUp(
-            authId = authId,
-            requestCommand = signUpRequest.toCommand(),
-        )
+        val response = authService.signUp(signUpRequest.toCommand())
 
         return ApiResponse.success(
             data = response

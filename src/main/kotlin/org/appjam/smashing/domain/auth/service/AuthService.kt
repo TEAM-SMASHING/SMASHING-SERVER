@@ -51,14 +51,8 @@ class AuthService(
         )
     }
 
-    fun signUp(
-        authId: String,
-        requestCommand: SignUpRequestCommand,
-    ): SignUpResponse {
-        validateUser(
-            authId = authId,
-            requestCommand = requestCommand,
-        )
+    fun signUp(requestCommand: SignUpRequestCommand): SignUpResponse {
+        validateUser(requestCommand)
 
         val sportCode = requestCommand.sportCode
         val sport = sportRepository.save(
@@ -84,7 +78,7 @@ class AuthService(
 
         val user = userRepository.save(
             User(
-                kakaoId = authId,
+                kakaoId = requestCommand.authId,
                 nickname = requestCommand.nickname,
                 gender = Gender.valueOf(requestCommand.gender),
                 openchatUrl = requestCommand.openChatUrl,
@@ -112,11 +106,8 @@ class AuthService(
         )
     }
 
-    private fun validateUser(
-        authId: String,
-        requestCommand: SignUpRequestCommand,
-    ) {
-        if (userRepository.existsByKakaoId(authId)) {
+    private fun validateUser(requestCommand: SignUpRequestCommand) {
+        if (userRepository.existsByKakaoId(requestCommand.authId)) {
             throw CustomException(ErrorCode.DUPLICATE_USER)
         }
 

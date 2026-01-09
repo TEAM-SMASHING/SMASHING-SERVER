@@ -8,6 +8,8 @@ import org.appjam.smashing.global.common.validator.annotation.ValidEnum
 import org.appjam.smashing.global.extensions.ofIgnoreCase
 
 data class SignUpRequest(
+    @field:NotBlank(message = "authId를 입력해주세요.")
+    val authId: String?,
     @field:NotBlank(message = "nickname을 입력해주세요.")
     val nickname: String?,
     @field:NotBlank(message = "gender를 입력해주세요.")
@@ -24,6 +26,7 @@ data class SignUpRequest(
     val region: String?,
 ) {
     fun toCommand(): SignUpRequestCommand = SignUpRequestCommand(
+        authId = authId!!,
         nickname = nickname!!,
         gender = gender!!,
         openChatUrl = openChatUrl!!,
