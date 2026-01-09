@@ -537,8 +537,8 @@ class GameService(
         sportId: Long,
     ) {
         // 승/패 수 갱신
-        winnerProfile.wins += 1
-        loserProfile.losses += 1
+        winnerProfile.recordWin()
+        loserProfile.recordLoss()
 
         // 각자 이번 경기가 몇 번째 경기인지 계산 (업데이트 후 wins+losses 기준)
         val winnerGameNo = (winnerProfile.wins + winnerProfile.losses)

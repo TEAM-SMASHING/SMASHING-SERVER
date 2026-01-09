@@ -73,4 +73,12 @@ class UserSportProfile(
     ) {
         tier = newTier
     }
+
+    fun recordWin() {
+        wins += 1
+    }
+
+    fun recordLoss() {
+        losses += 1
+    }
 }
