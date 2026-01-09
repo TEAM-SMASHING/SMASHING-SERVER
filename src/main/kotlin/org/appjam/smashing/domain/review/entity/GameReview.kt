@@ -73,4 +73,21 @@ class GameReview(
     )
     @Comment("경기 IDX")
     var game: Game,
-) : BaseEntity()
+) : BaseEntity() {
+
+    companion object {
+        fun create(
+            game: Game,
+            reviewer: User,
+            reviewee: User,
+            rating: ReviewRating,
+            content: String?,
+        ) = GameReview(
+            game = game,
+            reviewer = reviewer,
+            reviewee = reviewee,
+            rating = rating,
+            content = content,
+        )
+    }
+}

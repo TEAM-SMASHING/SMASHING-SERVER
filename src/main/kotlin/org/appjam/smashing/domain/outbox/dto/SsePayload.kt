@@ -1,5 +1,6 @@
 package org.appjam.smashing.domain.outbox.dto
 
+import org.appjam.smashing.domain.game.enums.GameResultStatus
 import org.appjam.smashing.domain.notification.enums.NotificationType
 import org.appjam.smashing.domain.outbox.enums.MatchingUpdateStatus
 import org.appjam.smashing.domain.outbox.enums.SseEventType
@@ -8,6 +9,18 @@ import org.appjam.smashing.domain.user.enums.Gender
 sealed interface SsePayload {
     val type: String
 }
+
+/**
+ * 매칭 상태 변경
+ * - 보낸 요청 / 매칭확정 / 요청삭제
+ * - 상대가 내 요청을 ACCEPT/REJECT 하는 순간
+ * - 상대가 보낸 요청을 CANCELLED 하는 순간
+ */
+data class MatchingUpdatedPayload(
+    override val type: String = SseEventType.MATCHING_UPDATED.eventName,
+    val matchingId: String,
+    val status: MatchingUpdateStatus,
+) : SsePayload
 
 /**
  * 매칭관리 - 받은 요청
@@ -31,28 +44,6 @@ data class MatchingReceivedPayload(
         val reviewCount: Long,
     )
 }
-
-/**
- * 매칭관리 - 보낸 요청 / 매칭확정 / 요청삭제
- * - 상대가 내 요청을 ACCEPT/REJECT 하는 순간
- * - 상대가 보낸 요청을 CANCELLED 하는 순간
- */
-data class MatchingUpdatedPayload(
-    override val type: String = SseEventType.MATCHING_UPDATED.eventName,
-    val matchingId: String,
-    val status: MatchingUpdateStatus,
-) : SsePayload
-
-/**
- * 알림 생성
- * - 알림이 생성된 순간만 SSE로 푸시
- */
-data class NotificationCreatedPayload(
-    override val type: String = SseEventType.NOTIFICATION_CREATED.eventName,
-    val notificationId: String,
-    val notificationType: NotificationType,
-    val targetId: String? = null,           // matchingId/gameId/reviewId 등
-) : SsePayload
 
 /**
  * 매칭 신청 알림 생성
@@ -92,6 +83,62 @@ data class MatchingAcceptNotificationCreatedPayload(
 ) : SsePayload {
 
     data class AcceptorSummary(
+        val userId: String,
+        val nickname: String,
+        val tierId: Long,
+    )
+}
+
+/**
+ * 게임 상태 변경
+ * - 게임 결과 상태(resultStatus)가 변경된 순간
+ */
+data class GameUpdatedPayload(
+    override val type: String = SseEventType.GAME_UPDATED.eventName,
+    val gameId: String,
+    val resultStatus: GameResultStatus,
+) : SsePayload
+
+/**
+ * 게임 결과 제출 알림 생성
+ * - 상대가 경기 결과를 제출한 순간 알림 생성
+ */
+data class GameResultSubmittedNotificationCreatedPayload(
+    override val type: String = SseEventType.GAME_RESULT_SUBMITTED_NOTIFICATION_CREATED.eventName,
+    val notificationId: String,
+    val notificationType: NotificationType,
+    val notificationCreatedAt: String,
+    val sportId: Long,
+    val receiverProfileId: String,
+    val gameId: String,
+    val submissionId: String,
+    val submitter: SubmitterSummary,
+) : SsePayload {
+
+    data class SubmitterSummary(
+        val userId: String,
+        val nickname: String,
+        val tierId: Long,
+    )
+}
+
+/**
+ * 리뷰(후기) 제출 알림 생성
+ * - 상대가 나에게 후기를 남긴 순간 알림 생성
+ */
+data class ReviewReceivedNotificationCreatedPayload(
+    override val type: String = SseEventType.REVIEW_RECEIVED_NOTIFICATION_CREATED.eventName,
+    val notificationId: String,
+    val notificationType: NotificationType,
+    val notificationCreatedAt: String,
+    val sportId: Long,
+    val receiverProfileId: String,
+    val gameId: String,
+    val reviewId: String,
+    val reviewer: ReviewerSummary,
+) : SsePayload {
+
+    data class ReviewerSummary(
         val userId: String,
         val nickname: String,
         val tierId: Long,

@@ -16,7 +16,7 @@ import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import org.appjam.smashing.domain.common.entity.BaseEntity
 import org.appjam.smashing.domain.matching.entity.Matching
-import org.appjam.smashing.domain.matching.enums.GameResultStatus
+import org.appjam.smashing.domain.game.enums.GameResultStatus
 import org.appjam.smashing.domain.sport.entity.Sport
 import org.appjam.smashing.domain.user.entity.User
 import org.hibernate.annotations.Comment
@@ -47,19 +47,19 @@ class Game(
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "VARCHAR(30)")
     @Comment("경기 결과 처리 상태")
-    val resultStatus: GameResultStatus,
+    var resultStatus: GameResultStatus,
 
     @Column
     @Comment("승자 점수(확정)")
-    val scoreWinner: Int? = null,
+    var scoreWinner: Int? = null,
 
     @Column
     @Comment("패자 점수(확정)")
-    val scoreLoser: Int? = null,
+    var scoreLoser: Int? = null,
 
     @Column
     @Comment("결과 확정 시각")
-    val confirmedAt: LocalDateTime? = null,
+    var confirmedAt: LocalDateTime? = null,
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(
@@ -72,7 +72,7 @@ class Game(
 
     @Column(name = "confirmed_submission_id", length = 13)
     @Comment("최종 확정된 결과 제출 IDX")
-    val confirmedSubmissionId: String? = null,
+    var confirmedSubmissionId: String? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
@@ -89,7 +89,7 @@ class Game(
         foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT)
     )
     @Comment("승자 유저 IDX(확정 시)")
-    val winner: User? = null,
+    var winner: User? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
@@ -97,16 +97,37 @@ class Game(
         foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT)
     )
     @Comment("패자 유저 IDX(확정 시)")
-    val loser: User? = null,
+    var loser: User? = null,
 ) : BaseEntity() {
 
     companion object {
         fun createFromMatching(
             matching: Matching
         ) = Game(
-                resultStatus = GameResultStatus.PENDING_RESULT,
-                matching = matching,
-                sport = matching.sport,
-            )
+            resultStatus = GameResultStatus.PENDING_RESULT,
+            matching = matching,
+            sport = matching.sport,
+        )
+    }
+
+    fun markWaitingConfirmation() {
+        resultStatus = GameResultStatus.WAITING_CONFIRMATION
+    }
+
+    fun confirmResult(
+        submissionId: String,
+        winner: User,
+        loser: User,
+        scoreWinner: Int,
+        scoreLoser: Int,
+        confirmedAt: LocalDateTime,
+    ) {
+        resultStatus = GameResultStatus.RESULT_CONFIRMED
+        confirmedSubmissionId = submissionId
+        this.winner = winner
+        this.loser = loser
+        this.scoreWinner = scoreWinner
+        this.scoreLoser = scoreLoser
+        this.confirmedAt = confirmedAt
     }
 }
