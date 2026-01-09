@@ -81,4 +81,18 @@ class UserSportProfile(
     fun recordLoss() {
         losses += 1
     }
+
+    companion object {
+        fun create(
+            lp: Int,
+            user: User,
+            sport: Sport,
+            tier: Tier,
+        ): UserSportProfile = UserSportProfile(
+            lp = lp,
+            user = user,
+            sport = sport,
+            tier = tier,
+        )
+    }
 }

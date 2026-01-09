@@ -64,7 +64,7 @@ class AuthService(
         ) ?: throw CustomException(ErrorCode.TIER_NOT_FOUND)
 
         val user = userRepository.save(
-            User(
+            User.create(
                 kakaoId = requestCommand.authId,
                 nickname = requestCommand.nickname,
                 gender = requestCommand.gender,
@@ -74,7 +74,7 @@ class AuthService(
         )
 
         val profile = userSportProfileRepository.save(
-            UserSportProfile(
+            UserSportProfile.create(
                 lp = InitTierLp.valueOf(tierName).initLp,
                 user = user,
                 sport = sport,

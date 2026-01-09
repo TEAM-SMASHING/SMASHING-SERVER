@@ -43,4 +43,22 @@ class User(
     @Column(name = "active_user_sport_profile_id", length = 13)
     @Comment("현재 활성화된 유저-스포츠 프로필 IDX")
     var activeUserSportProfileId: String? = null
-) : BaseEntity()
+) : BaseEntity() {
+
+    companion object {
+        fun create(
+            kakaoId: String,
+            nickname: String,
+            gender: Gender,
+            openchatUrl: String,
+            region: String,
+        ): User = User(
+            kakaoId = kakaoId,
+            nickname = nickname,
+            gender = gender,
+            openchatUrl = openchatUrl,
+            region = region,
+        )
+    }
+
+}
