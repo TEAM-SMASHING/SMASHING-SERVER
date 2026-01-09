@@ -45,6 +45,10 @@ class User(
     var activeUserSportProfileId: String? = null
 ) : BaseEntity() {
 
+    fun updateActiveProfile(profileId: String) {
+        this.activeUserSportProfileId = profileId
+    }
+
     companion object {
         fun create(
             kakaoId: String,

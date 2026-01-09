@@ -9,8 +9,4 @@ enum class InitTierLp(
     BRONZE_1(300),
     SILVER_3(400),
     ;
-
-    companion object {
-        fun isExist(tierName: String): Boolean = entries.any { it.name == tierName }
-    }
 }

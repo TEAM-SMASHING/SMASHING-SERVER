@@ -52,12 +52,12 @@ class AuthService(
     fun signUp(requestCommand: SignUpRequestCommand): SignUpResponse {
         validateUser(requestCommand)
 
-        val sport = sportRepository.findByCode(requestCommand.sportCode) ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
+        val sport = sportRepository.findByCode(requestCommand.sportCode)
+            ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
 
         val tierName = requestCommand.tier
-        if (!InitTierLp.isExist(tierName)) {
-            throw CustomException(ErrorCode.INVALID_INITIAL_TIER)
-        }
+        val initTier = runCatching { InitTierLp.valueOf(tierName) }.getOrNull()
+            ?: throw CustomException(ErrorCode.INVALID_INITIAL_TIER)
         val tier = tierRepository.findBySportIdAndName(
             sportId = sport.id!!,
             name = tierName
@@ -75,14 +75,14 @@ class AuthService(
 
         val profile = userSportProfileRepository.save(
             UserSportProfile.create(
-                lp = InitTierLp.valueOf(tierName).initLp,
+                lp = initTier.initLp,
                 user = user,
                 sport = sport,
                 tier = tier,
             )
         )
 
-        user.activeUserSportProfileId = profile.id
+        user.updateActiveProfile(profileId = profile.id!!)
 
         val userId = user.id ?: throw CustomException(ErrorCode.NOT_FOUND)
         val token = jwtProvider.issueToken(userId)
