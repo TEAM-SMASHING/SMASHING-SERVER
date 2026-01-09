@@ -84,8 +84,7 @@ class AuthService(
 
         user.updateActiveProfile(profileId = profile.id!!)
 
-        val userId = user.id ?: throw CustomException(ErrorCode.NOT_FOUND)
-        val token = jwtProvider.issueToken(userId)
+        val token = jwtProvider.issueToken(user.id!!)
 
         return SignUpResponse(
             accessToken = token.accessToken.token,
