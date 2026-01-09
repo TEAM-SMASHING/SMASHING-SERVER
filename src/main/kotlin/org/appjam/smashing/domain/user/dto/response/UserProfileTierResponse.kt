@@ -1,7 +1,7 @@
 package org.appjam.smashing.domain.user.dto.response
 
 data class UserProfileTierResponse(
-    val activeSport: ActiveSport?,
+    val activeSport: ActiveSport,
     val sports: List<SportInfo>,
 ) {
     data class ActiveSport(
