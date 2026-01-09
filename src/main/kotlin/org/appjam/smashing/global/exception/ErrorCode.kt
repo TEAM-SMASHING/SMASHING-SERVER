@@ -80,6 +80,7 @@ enum class ErrorCode(
     // Domain - Tier
     TIER_NOT_FOUND(HttpStatus.NOT_FOUND, "TIER-001", "LP에 해당하는 티어 정보를 찾을 수 없습니다."),
     INVALID_INITIAL_TIER(HttpStatus.BAD_REQUEST, "TIER-002", "초기 티어로 설정할 수 없는 등급입니다."),
+    INVALID_TIER_SETTING(HttpStatus.BAD_REQUEST, "TIER-003", "해당 종목에 존재하지 않는 티어 이름입니다."),
 
     // Domain - Notification
     NOTIFICATION_TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTI-001", "알림 템플릿을 찾을 수 없습니다."),

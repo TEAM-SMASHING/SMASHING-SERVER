@@ -61,7 +61,7 @@ class AuthService(
         val tier = tierRepository.findBySportIdAndName(
             sportId = sport.id!!,
             name = tierName
-        ) ?: throw CustomException(ErrorCode.TIER_NOT_FOUND)
+        ) ?: throw CustomException(ErrorCode.INVALID_TIER_SETTING)
 
         val user = userRepository.save(
             User.create(
