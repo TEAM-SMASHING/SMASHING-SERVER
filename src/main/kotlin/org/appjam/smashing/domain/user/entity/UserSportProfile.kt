@@ -4,7 +4,7 @@ import io.hypersistence.utils.hibernate.id.Tsid
 import jakarta.persistence.*
 import org.appjam.smashing.domain.common.entity.BaseEntity
 import org.appjam.smashing.domain.sport.entity.Sport
-import org.appjam.smashing.domain.sport.entity.Tier
+import org.appjam.smashing.domain.tier.entity.Tier
 import org.hibernate.annotations.Comment
 import org.hibernate.annotations.SQLDelete
 import org.hibernate.annotations.SQLRestriction
@@ -30,7 +30,7 @@ class UserSportProfile(
 
     @Column(nullable = false)
     @Comment("현재 LP")
-    var lp: Int,
+    var lp: Int = 0,
 
     @Column(nullable = false)
     @Comment("누적 승리 수")
@@ -65,5 +65,20 @@ class UserSportProfile(
         foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT)
     )
     @Comment("현재 티어 IDX")
-    val tier: Tier,
-) : BaseEntity()
+    var tier: Tier,
+) : BaseEntity() {
+
+    fun changeTier(
+        newTier: Tier
+    ) {
+        tier = newTier
+    }
+
+    fun recordWin() {
+        wins += 1
+    }
+
+    fun recordLoss() {
+        losses += 1
+    }
+}

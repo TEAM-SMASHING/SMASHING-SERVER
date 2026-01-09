@@ -1,21 +1,10 @@
 package org.appjam.smashing.domain.game.entity
 
 import io.hypersistence.utils.hibernate.id.Tsid
-import jakarta.persistence.Column
-import jakarta.persistence.ConstraintMode
-import jakarta.persistence.Entity
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
-import jakarta.persistence.FetchType
-import jakarta.persistence.ForeignKey
-import jakarta.persistence.Id
-import jakarta.persistence.Index
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
-import jakarta.persistence.Table
+import jakarta.persistence.*
 import org.appjam.smashing.domain.common.entity.BaseEntity
-import org.appjam.smashing.domain.matching.enums.RejectReason
-import org.appjam.smashing.domain.matching.enums.SubmissionStatus
+import org.appjam.smashing.domain.game.enums.RejectReason
+import org.appjam.smashing.domain.game.enums.SubmissionStatus
 import org.appjam.smashing.domain.user.entity.User
 import org.hibernate.annotations.Comment
 import org.hibernate.annotations.SQLDelete
@@ -52,7 +41,7 @@ class GameResultSubmission(
 
     @Column
     @Comment("상대가 맞음/틀림 누른 시각")
-    val actedAt: LocalDateTime? = null,
+    var actedAt: LocalDateTime? = null,
 
     @Column(nullable = false)
     @Comment("제출 회차")
@@ -61,7 +50,7 @@ class GameResultSubmission(
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "VARCHAR(20)")
     @Comment("제출 상태")
-    val status: SubmissionStatus,
+    var status: SubmissionStatus = SubmissionStatus.SUBMITTED,
 
     @Enumerated(EnumType.STRING)
     @Column(name = "reject_reason", columnDefinition = "VARCHAR(30)")
@@ -112,4 +101,34 @@ class GameResultSubmission(
     )
     @Comment("패자 유저 IDX(제출안 기준)")
     val loser: User,
-) : BaseEntity()
+) : BaseEntity() {
+
+    companion object {
+        fun create(
+            game: Game,
+            submitter: User,
+            confirmer: User,
+            winner: User,
+            loser: User,
+            attemptNo: Int,
+            scoreSubmitter: Int,
+            scoreConfirmer: Int,
+        ) = GameResultSubmission(
+            scoreSubmitter = scoreSubmitter,
+            scoreConfirmer = scoreConfirmer,
+            attemptNo = attemptNo,
+            game = game,
+            submitter = submitter,
+            confirmer = confirmer,
+            winner = winner,
+            loser = loser,
+        )
+    }
+
+    fun accept(
+        actedAt: LocalDateTime
+    ) {
+        status = SubmissionStatus.ACCEPTED
+        this.actedAt = actedAt
+    }
+}

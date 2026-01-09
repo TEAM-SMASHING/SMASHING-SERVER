@@ -47,4 +47,48 @@ class NotificationService(
             )
         )
     }
+
+    fun createMatchingResultSubmitted(
+        receiver: User,
+        gameId: String,
+        submissionId: String,
+        submitterNickname: String,
+        submitterTierId: Long,
+    ): Notification {
+        val template = notificationTemplateRepository.findByType(NotificationType.MATCHING_RESULT_SUBMITTED)
+            ?: throw CustomException(ErrorCode.NOTIFICATION_TEMPLATE_NOT_FOUND)
+
+        return notificationRepository.save(
+            Notification.createMatchingResultSubmitted(
+                receiver = receiver,
+                template = template,
+                gameId = gameId,
+                submissionId = submissionId,
+                submitterNickname = submitterNickname,
+                submitterTierId = submitterTierId,
+            )
+        )
+    }
+
+    fun createReviewReceived(
+        receiver: User,
+        reviewId: String,
+        reviewerNickname: String,
+        reviewerTierId: Long,
+        gameId: String,
+    ): Notification {
+        val template = notificationTemplateRepository.findByType(NotificationType.REVIEW_RECEIVED)
+            ?: throw CustomException(ErrorCode.NOTIFICATION_TEMPLATE_NOT_FOUND)
+
+        return notificationRepository.save(
+            Notification.createReviewReceived(
+                receiver = receiver,
+                template = template,
+                reviewId = reviewId,
+                reviewerNickname = reviewerNickname,
+                reviewerTierId = reviewerTierId,
+                gameId = gameId,
+            )
+        )
+    }
 }

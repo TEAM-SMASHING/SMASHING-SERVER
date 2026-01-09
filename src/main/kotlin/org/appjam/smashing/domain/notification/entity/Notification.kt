@@ -81,5 +81,35 @@ class Notification(
                 user = receiver,
                 notificationTemplate = template,
             )
+
+        fun createMatchingResultSubmitted(
+            receiver: User,
+            template: NotificationTemplate,
+            gameId: String,
+            submissionId: String,
+            submitterNickname: String,
+            submitterTierId: Long,
+        ) = Notification(
+            params = """{"submitterNickname":"$submitterNickname","submitterTierId":$submitterTierId,"gameId":"$gameId","submissionId":"$submissionId"}""",
+            isRead = false,
+            linkUrl = "/api/v1/users/me/matchings/accepted/pending-result",
+            user = receiver,
+            notificationTemplate = template,
+        )
+
+        fun createReviewReceived(
+            receiver: User,
+            template: NotificationTemplate,
+            reviewId: String,
+            reviewerNickname: String,
+            reviewerTierId: Long,
+            gameId: String,
+        ) = Notification(
+            params = """{"reviewerNickname":"$reviewerNickname","reviewerTierId":$reviewerTierId,"reviewId":"$reviewId","gameId":"$gameId"}""",
+            isRead = false,
+            linkUrl = "/api/v1/reviews/$reviewId",
+            user = receiver,
+            notificationTemplate = template,
+        )
     }
 }

@@ -1,4 +1,4 @@
-package org.appjam.smashing.domain.sport.entity
+package org.appjam.smashing.domain.tier.entity
 
 import jakarta.persistence.Column
 import jakarta.persistence.ConstraintMode
@@ -12,6 +12,7 @@ import jakarta.persistence.Index
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import org.appjam.smashing.domain.sport.entity.Sport
 import org.hibernate.annotations.Comment
 
 @Entity
