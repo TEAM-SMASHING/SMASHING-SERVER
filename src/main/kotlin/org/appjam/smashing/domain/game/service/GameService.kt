@@ -2,6 +2,7 @@ package org.appjam.smashing.domain.game.service
 
 import org.appjam.smashing.domain.game.dto.command.GameResultConfirmCommand
 import org.appjam.smashing.domain.game.dto.command.GameResultSubmitCommand
+import org.appjam.smashing.domain.game.dto.response.GameResultSubmissionDetailResponse
 import org.appjam.smashing.domain.game.entity.Game
 import org.appjam.smashing.domain.game.entity.GameResultSubmission
 import org.appjam.smashing.domain.game.enums.GameResultStatus
@@ -232,6 +233,38 @@ class GameService(
         }
     }
 
+    @Transactional(readOnly = true)
+    fun getSubmissionDetail(
+        gameId: String,
+        submissionId: String,
+    ): GameResultSubmissionDetailResponse {
+        val submission = submissionRepository.findDetailByIdAndGameId(
+            submissionId = submissionId,
+            gameId = gameId,
+        ) ?: throw CustomException(ErrorCode.GAME_SUBMISSION_NOT_FOUND)
+
+        // 점수 매핑
+        val winnerScore = scoreOf(submission, submission.winner.id!!)
+        val loserScore = scoreOf(submission, submission.loser.id!!)
+
+        return GameResultSubmissionDetailResponse.from(
+            submission = submission,
+            winnerScore = winnerScore,
+            loserScore = loserScore,
+        )
+    }
+
+    private fun scoreOf(
+        submission: GameResultSubmission,
+        userId: String,
+    ): Int {
+        return when (userId) {
+            submission.submitter.id!! -> submission.scoreSubmitter
+            submission.confirmer.id!! -> submission.scoreConfirmer
+            else -> throw CustomException(ErrorCode.GAME_RESULT_INVALID_PLAYERS)
+        }
+    }
+
     private fun validateConfirmReviewRule(
         attemptNo: Int,
         review: GameResultConfirmCommand.ReviewCommand?,
@@ -288,7 +321,7 @@ class GameService(
         scoreLoser: Int,
         requesterUserId: String,
         receiverUserId: String,
-    ) { // TODO: 승자 패자 결정 부분 기획 미확정. 동점 일시 기획 미확정. 확정 시 리팩토링 필요
+    ) {
         if (winnerUserId == loserUserId) throw CustomException(ErrorCode.GAME_RESULT_SAME_PLAYER)
         if (scoreWinner <= scoreLoser) throw CustomException(ErrorCode.GAME_RESULT_INVALID_SCORE)
 

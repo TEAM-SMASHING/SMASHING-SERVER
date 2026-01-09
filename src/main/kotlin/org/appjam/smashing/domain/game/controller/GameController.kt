@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.appjam.smashing.domain.game.dto.request.GameResultConfirmRequest
 import org.appjam.smashing.domain.game.dto.request.GameResultSubmitRequest
+import org.appjam.smashing.domain.game.dto.response.GameResultSubmissionDetailResponse
 import org.appjam.smashing.domain.game.service.GameService
 import org.appjam.smashing.global.common.dto.ApiResponse
 import org.springframework.http.ResponseEntity
@@ -90,5 +91,26 @@ class GameController(
         )
 
         return ApiResponse.success()
+    }
+
+    @Operation(
+        summary = "경기 결과 제출안 단건 조회 API",
+        description = """
+            경기 결과 제출안(submission) 단건을 조회합니다.
+            - 제출 회차(attemptNo) / 제출자(submitter) / 제출안 기준 승자/패자 + 점수 반환
+        """
+    )
+    @GetMapping("/{gameId}/submissions/{submissionId}")
+    fun getSubmissionDetail(
+        @RequestHeader("userId") confirmerUserId: String, // TODO: 인증/인가 적용시 변경
+        @PathVariable gameId: String,
+        @PathVariable submissionId: String,
+    ): ResponseEntity<ApiResponse<GameResultSubmissionDetailResponse>> {
+        val response = gameService.getSubmissionDetail(
+            gameId = gameId,
+            submissionId = submissionId,
+        )
+
+        return ApiResponse.success(response)
     }
 }

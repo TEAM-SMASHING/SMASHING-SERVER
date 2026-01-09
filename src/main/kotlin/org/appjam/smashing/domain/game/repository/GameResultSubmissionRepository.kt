@@ -28,4 +28,20 @@ interface GameResultSubmissionRepository : JpaRepository<GameResultSubmission, S
         gameId: String,
     ): GameResultSubmission?
 
+    @Query(
+        """
+        select s
+          from GameResultSubmission s
+          join fetch s.submitter
+          join fetch s.confirmer
+          join fetch s.winner
+          join fetch s.loser
+         where s.id = :submissionId
+           and s.game.id = :gameId
+        """
+    )
+    fun findDetailByIdAndGameId(
+        submissionId: String,
+        gameId: String,
+    ): GameResultSubmission?
 }
