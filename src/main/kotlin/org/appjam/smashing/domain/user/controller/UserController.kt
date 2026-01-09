@@ -7,7 +7,6 @@ import org.appjam.smashing.domain.user.dto.response.UserProfileTierResponse
 import org.appjam.smashing.domain.user.service.UserService
 import org.appjam.smashing.global.common.dto.ApiResponse
 import org.springframework.http.ResponseEntity
-import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -39,7 +38,7 @@ class UserController(
 
     @GetMapping("/me/profiles/tier")
     fun getUserProfileTier(
-        @AuthenticationPrincipal userId: String,
+        @RequestHeader("userId") userId: String, // TODO: 인증/인가 회복시 @AuthenticationPrincipal 으로 변경
     ): ResponseEntity<ApiResponse<UserProfileTierResponse>> {
         val response = userService.getUserProfileTier(userId)
 
