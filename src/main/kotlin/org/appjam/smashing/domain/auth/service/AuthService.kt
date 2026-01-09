@@ -6,8 +6,6 @@ import org.appjam.smashing.domain.auth.dto.response.SignInResponse
 import org.appjam.smashing.domain.auth.dto.response.SignUpResponse
 import org.appjam.smashing.domain.auth.social.SocialAuthServiceManager
 import org.appjam.smashing.domain.sport.entity.Sport
-import org.appjam.smashing.domain.sport.enums.SportCode
-import org.appjam.smashing.domain.sport.enums.TierType
 import org.appjam.smashing.domain.sport.repository.SportRepository
 import org.appjam.smashing.domain.tier.entity.Tier
 import org.appjam.smashing.domain.tier.repository.TierRepository
@@ -62,7 +60,7 @@ class AuthService(
             requestCommand = requestCommand,
         )
 
-        val sportCode = SportCode.from(requestCommand.sportCode)
+        val sportCode = requestCommand.sportCode
         val sport = sportRepository.save(
             Sport(
                 code = sportCode.name,
@@ -70,7 +68,7 @@ class AuthService(
             )
         )
 
-        val tierType = TierType.from(requestCommand.tier)
+        val tierType = requestCommand.tier
         if (tierType.initTier == null) {
             throw CustomException(ErrorCode.INVALID_INITIAL_TIER)
         }

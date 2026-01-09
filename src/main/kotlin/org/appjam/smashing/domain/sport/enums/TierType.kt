@@ -1,8 +1,5 @@
 package org.appjam.smashing.domain.sport.enums
 
-import org.appjam.smashing.global.exception.CustomException
-import org.appjam.smashing.global.exception.ErrorCode
-
 enum class TierType(
     val tierName: String,
     val orderNo: Int,
@@ -134,12 +131,5 @@ enum class TierType(
         initTier = null,
         minLp = 1600,
         maxLp = Int.MAX_VALUE,
-    ),
-    ;
-
-    companion object {
-        fun from(name: String): TierType =
-            entries.find { it.name == name.uppercase() }
-                ?: throw CustomException(ErrorCode.INVALID_TIER_NAME)
-    }
+    )
 }
