@@ -102,7 +102,7 @@ class GameController(
     )
     @GetMapping("/{gameId}/submissions/{submissionId}")
     fun getSubmissionDetail(
-        @RequestHeader("userId") confirmerUserId: String, // TODO: 인증/인가 적용시 변경
+        @RequestHeader("userId") userId: String, // TODO: 인증/인가 적용시 변경
         @PathVariable gameId: String,
         @PathVariable submissionId: String,
     ): ResponseEntity<ApiResponse<GameResultSubmissionDetailResponse>> {
