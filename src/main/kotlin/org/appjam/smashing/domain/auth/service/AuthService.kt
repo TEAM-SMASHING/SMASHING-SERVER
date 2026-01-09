@@ -6,11 +6,11 @@ import org.appjam.smashing.domain.auth.dto.response.SignInResponse
 import org.appjam.smashing.domain.auth.dto.response.SignUpResponse
 import org.appjam.smashing.domain.auth.social.SocialAuthServiceManager
 import org.appjam.smashing.domain.sport.entity.Sport
-import org.appjam.smashing.domain.sport.entity.Tier
 import org.appjam.smashing.domain.sport.enums.SportCode
 import org.appjam.smashing.domain.sport.enums.TierType
 import org.appjam.smashing.domain.sport.repository.SportRepository
-import org.appjam.smashing.domain.sport.repository.TierRepository
+import org.appjam.smashing.domain.tier.entity.Tier
+import org.appjam.smashing.domain.tier.repository.TierRepository
 import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.appjam.smashing.domain.user.enums.Gender
