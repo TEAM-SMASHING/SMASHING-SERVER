@@ -3,9 +3,11 @@ package org.appjam.smashing.domain.user.controller
 import org.appjam.smashing.domain.user.dto.request.OpenChatValidateRequest
 import org.appjam.smashing.domain.user.dto.response.NicknameCheckResponse
 import org.appjam.smashing.domain.user.dto.response.OpenChatValidateResponse
+import org.appjam.smashing.domain.user.dto.response.UserProfileTierResponse
 import org.appjam.smashing.domain.user.service.UserService
 import org.appjam.smashing.global.common.dto.ApiResponse
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -29,6 +31,17 @@ class UserController(
         @RequestBody openChatValidateRequest: OpenChatValidateRequest,
     ): ResponseEntity<ApiResponse<OpenChatValidateResponse>> {
         val response = userService.validateOpenChatUrl(openChatValidateRequest.toCommand())
+
+        return ApiResponse.success(
+            data = response
+        )
+    }
+
+    @GetMapping("/me/profiles/tier")
+    fun getUserProfileTier(
+        @AuthenticationPrincipal userId: String,
+    ): ResponseEntity<ApiResponse<UserProfileTierResponse>> {
+        val response = userService.getUserProfileTier(userId)
 
         return ApiResponse.success(
             data = response
