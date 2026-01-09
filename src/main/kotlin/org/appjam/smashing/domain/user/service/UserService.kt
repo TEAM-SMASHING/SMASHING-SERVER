@@ -1,6 +1,8 @@
 package org.appjam.smashing.domain.user.service
 
+import org.appjam.smashing.domain.user.command.OpenChatValidateCommand
 import org.appjam.smashing.domain.user.dto.response.NicknameCheckResponse
+import org.appjam.smashing.domain.user.dto.response.OpenChatValidateResponse
 import org.appjam.smashing.domain.user.repository.UserRepository
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
@@ -37,8 +39,31 @@ class UserService(
         }
     }
 
+    fun validateOpenChatUrl(
+        openChatValidateCommand: OpenChatValidateCommand,
+    ): OpenChatValidateResponse {
+        val openChatUrl = openChatValidateCommand.openchatUrl
+
+        val trimmedUrl = openChatUrl.trim()
+
+        validateOpenChatUrl(trimmedUrl)
+
+        return if (OPEN_CHAT_URL_REGEX.matches(trimmedUrl)) {
+            OpenChatValidateResponse(true)
+        } else {
+            OpenChatValidateResponse(false)
+        }
+    }
+
+    private fun validateOpenChatUrl(trimmedUrl: String) {
+        if (userRepository.existsByOpenchatUrl(trimmedUrl)) {
+            throw CustomException(ErrorCode.DUPLICATE_OPEN_CHAT_URL)
+        }
+    }
+
     companion object {
         private val NICKNAME_VALID_REGEX = Regex("^[a-zA-Z0-9가-힣]*$")
         private const val MAX_NICKNAME_LENGTH = 10
+        private val OPEN_CHAT_URL_REGEX = Regex("^https://open\\.kakao\\.com/.*$")
     }
 }
