@@ -5,7 +5,6 @@ data class UserProfileTierResponse(
     val sports: List<SportInfo>,
 ) {
     data class ActiveSport(
-
         val profileId: String,
         val code: String,
         val tier: String,
