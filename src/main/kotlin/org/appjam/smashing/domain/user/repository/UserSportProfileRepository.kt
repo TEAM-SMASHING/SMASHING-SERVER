@@ -54,4 +54,18 @@ interface UserSportProfileRepository : JpaRepository<UserSportProfile, String> {
         userId: String,
         sportId: Long,
     ): UserSportProfile?
+
+    @Query(
+        """
+            select usp 
+            from UserSportProfile usp
+            join fetch usp.sport s
+            join fetch usp.tier 
+            where usp.user.id = : userId
+            order by s.name asc
+        """
+    )
+    fun findAllByUserId(
+        userId: String,
+    ): List<UserSportProfile>
 }
