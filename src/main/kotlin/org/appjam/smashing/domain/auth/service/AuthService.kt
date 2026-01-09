@@ -5,9 +5,8 @@ import org.appjam.smashing.domain.auth.command.SignUpRequestCommand
 import org.appjam.smashing.domain.auth.dto.response.SignInResponse
 import org.appjam.smashing.domain.auth.dto.response.SignUpResponse
 import org.appjam.smashing.domain.auth.social.SocialAuthServiceManager
-import org.appjam.smashing.domain.sport.entity.Sport
+import org.appjam.smashing.domain.sport.enums.InitTier
 import org.appjam.smashing.domain.sport.repository.SportRepository
-import org.appjam.smashing.domain.tier.entity.Tier
 import org.appjam.smashing.domain.tier.repository.TierRepository
 import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.entity.UserSportProfile
@@ -53,27 +52,16 @@ class AuthService(
     fun signUp(requestCommand: SignUpRequestCommand): SignUpResponse {
         validateUser(requestCommand)
 
-        val sportCode = requestCommand.sportCode
-        val sport = sportRepository.save(
-            Sport(
-                code = sportCode.name,
-                name = sportCode.sportName,
-            )
-        )
+        val sport = sportRepository.findByCode(requestCommand.sportCode) ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
 
-        val tierType = requestCommand.tier
-        if (tierType.initTier == null) {
+        val tierName = requestCommand.tier
+        if (!InitTier.isExist(tierName)) {
             throw CustomException(ErrorCode.INVALID_INITIAL_TIER)
         }
-        val tier = tierRepository.save(
-            Tier(
-                name = tierType.tierName,
-                orderNo = tierType.orderNo,
-                minLp = tierType.minLp,
-                maxLp = tierType.maxLp,
-                sport = sport,
-            )
-        )
+        val tier = tierRepository.findBySportIdAndName(
+            sportId = sport.id!!,
+            name = tierName
+        ) ?: throw CustomException(ErrorCode.TIER_NOT_FOUND)
 
         val user = userRepository.save(
             User(
@@ -87,7 +75,7 @@ class AuthService(
 
         val profile = userSportProfileRepository.save(
             UserSportProfile(
-                lp = tierType.initTier,
+                lp = InitTier.valueOf(tierName).initLp,
                 user = user,
                 sport = sport,
                 tier = tier,

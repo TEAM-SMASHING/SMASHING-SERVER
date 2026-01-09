@@ -44,11 +44,6 @@ enum class ErrorCode(
     DUPLICATE_USER(HttpStatus.CONFLICT, "AUTH-019", "이미 존재하는 유저입니다."),
     DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "AUTH-020", "이미 사용 중인 닉네임입니다."),
 
-    // Auth - SignUp
-    INVALID_TIER_NAME(HttpStatus.BAD_REQUEST, "AUTH-021", "유효하지 않은 티어 이름입니다."),
-    INVALID_INITIAL_TIER(HttpStatus.BAD_REQUEST, "AUTH-022", "초기 티어로 설정할 수 없는 등급입니다."),
-    INVALID_SPORT_CODE(HttpStatus.BAD_REQUEST, "AUTH-023", "유효하지 않은 스포츠 코드입니다."),
-
     // Domain - User / Profile
     USER_SPORT_PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND, "USER-001", "유저 스포츠 프로필을 찾을 수 없습니다."),
 
@@ -71,16 +66,20 @@ enum class ErrorCode(
     GAME_RESULT_SUBMIT_BLOCKED_10M(HttpStatus.BAD_REQUEST, "GAME-006", "연속 경기의 경우 생성 후 10분 동안 결과 제출이 불가합니다."),
     GAME_RESULT_INVALID_SCORE(HttpStatus.BAD_REQUEST, "GAME-007", "승자 점수는 패자 점수보다 커야 합니다."),
     GAME_RESULT_SAME_PLAYER(HttpStatus.BAD_REQUEST, "GAME-008", "winnerUserId와 loserUserId는 같을 수 없습니다."),
-    GAME_RESULT_ALREADY_SUBMITTED(HttpStatus.BAD_REQUEST, "GAME-009","이미 결과 제출이 진행 중이거나 제출되었습니다."),
-    GAME_REVIEW_REQUIRED_ON_FIRST_SUBMISSION(HttpStatus.BAD_REQUEST, "GAME-010","첫 결과 제출에는 리뷰가 필수입니다."),
-    GAME_RESULT_SUBMISSION_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "GAME-011","결과 제출은 유저당 최대 2회까지만 가능합니다."),
+    GAME_RESULT_ALREADY_SUBMITTED(HttpStatus.BAD_REQUEST, "GAME-009", "이미 결과 제출이 진행 중이거나 제출되었습니다."),
+    GAME_REVIEW_REQUIRED_ON_FIRST_SUBMISSION(HttpStatus.BAD_REQUEST, "GAME-010", "첫 결과 제출에는 리뷰가 필수입니다."),
+    GAME_RESULT_SUBMISSION_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "GAME-011", "결과 제출은 유저당 최대 2회까지만 가능합니다."),
     GAME_RESULT_NOT_WAITING_CONFIRMATION(HttpStatus.BAD_REQUEST, "GAME-012", "현재 게임 상태에서는 결과를 확정할 수 없습니다."),
     GAME_SUBMISSION_NOT_FOUND(HttpStatus.NOT_FOUND, "GAME-013", "경기 결과 제출안을 찾을 수 없습니다."),
     GAME_SUBMISSION_NOT_SUBMITTED(HttpStatus.BAD_REQUEST, "GAME-014", "이미 처리된 제출안입니다."),
     GAME_SUBMISSION_CONFIRMER_MISMATCH(HttpStatus.FORBIDDEN, "GAME-015", "해당 제출안을 확정할 권한이 없습니다."),
 
+    // Domain - Sport
+    SPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "SPORT-001", "존재하지 않는 스포츠 코드입니다."),
+
     // Domain - Tier
     TIER_NOT_FOUND(HttpStatus.NOT_FOUND, "TIER-001", "LP에 해당하는 티어 정보를 찾을 수 없습니다."),
+    INVALID_INITIAL_TIER(HttpStatus.BAD_REQUEST, "TIER-002", "초기 티어로 설정할 수 없는 등급입니다."),
 
     // Domain - Notification
     NOTIFICATION_TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTI-001", "알림 템플릿을 찾을 수 없습니다."),
