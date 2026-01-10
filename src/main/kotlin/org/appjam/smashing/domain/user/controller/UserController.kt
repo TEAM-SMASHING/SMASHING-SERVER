@@ -5,6 +5,7 @@ import org.appjam.smashing.domain.user.dto.request.OpenChatValidateRequest
 import org.appjam.smashing.domain.user.dto.request.ProfileAddRequest
 import org.appjam.smashing.domain.user.dto.response.NicknameCheckResponse
 import org.appjam.smashing.domain.user.dto.response.OpenChatValidateResponse
+import org.appjam.smashing.domain.user.dto.response.OtherUserProfilesResponse
 import org.appjam.smashing.domain.user.dto.response.UserProfileTierResponse
 import org.appjam.smashing.domain.user.service.UserService
 import org.appjam.smashing.global.common.dto.ApiResponse
@@ -60,5 +61,22 @@ class UserController(
         )
 
         return ApiResponse.success()
+    }
+
+    @GetMapping("/{userId}/profiles")
+    fun getOtherUserProfiles(
+        @RequestHeader("userId") authId: String, // TODO: 인증/인가 회복시 @AuthenticationPrincipal 으로 변경
+        @PathVariable userId: String,
+        @RequestParam(required = false) sportCode: String?,
+    ): ResponseEntity<ApiResponse<OtherUserProfilesResponse>> {
+        val response = userService.getOtherUserProfiles(
+            authId = authId,
+            userId = userId,
+            sportCode = sportCode,
+        )
+
+        return ApiResponse.success(
+            data = response,
+        )
     }
 }
