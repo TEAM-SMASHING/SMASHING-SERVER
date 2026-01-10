@@ -317,6 +317,63 @@ class GameService(
         )
     }
 
+    @Transactional
+    fun deleteGame(
+        userId: String,
+        gameId: String,
+    ) {
+        // 게임 조회(잠금)
+        val game = gameRepository.findByIdFetchUsersForUpdate(gameId)
+            ?: throw CustomException(ErrorCode.GAME_NOT_FOUND)
+
+        // 삭제 가능 상태 검증
+        validateDeletable(game.resultStatus)
+
+        // 상대방 userId 조회
+        val opponentUserId = resolveOpponentUserId(
+            requesterId = game.matching.requester.id!!,
+            receiverId = game.matching.receiver.id!!,
+            userId = userId,
+        )
+
+        // 게임 취소 처리
+        game.cancel()
+        gameRepository.flush()
+
+        // submissions soft delete
+        submissionRepository.softDeleteAllByGameId(gameId)
+
+        // game soft delete
+        gameRepository.delete(game)
+
+        // 게임 상태 변경 SSE 발행
+        publishGameUpdated(
+            receiverUserId = opponentUserId,
+            gameId = game.id!!,
+            resultStatus = game.resultStatus,
+        )
+    }
+
+    private fun validateDeletable(
+        resultStatus: GameResultStatus
+    ) {
+        if (resultStatus == GameResultStatus.RESULT_CONFIRMED) {
+            throw CustomException(ErrorCode.GAME_RESULT_ALREADY_CONFIRMED)
+        }
+    }
+
+    private fun resolveOpponentUserId(
+        requesterId: String,
+        receiverId: String,
+        userId: String,
+    ): String {
+        return when (userId) {
+            requesterId -> receiverId
+            receiverId -> requesterId
+            else -> throw CustomException(ErrorCode.GAME_FORBIDDEN)
+        }
+    }
+
     private fun scoreOf(
         submission: GameResultSubmission,
         userId: String,

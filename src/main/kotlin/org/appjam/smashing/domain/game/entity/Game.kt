@@ -138,4 +138,8 @@ class Game(
         this.scoreLoser = scoreLoser
         this.confirmedAt = confirmedAt
     }
+
+    fun cancel() {
+        resultStatus = GameResultStatus.CANCELED
+    }
 }
