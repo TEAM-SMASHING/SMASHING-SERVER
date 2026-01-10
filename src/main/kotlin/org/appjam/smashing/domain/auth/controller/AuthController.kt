@@ -2,7 +2,9 @@ package org.appjam.smashing.domain.auth.controller
 
 import jakarta.validation.Valid
 import org.appjam.smashing.domain.auth.dto.request.SignInRequest
+import org.appjam.smashing.domain.auth.dto.request.SignUpRequest
 import org.appjam.smashing.domain.auth.dto.response.SignInResponse
+import org.appjam.smashing.domain.auth.dto.response.SignUpResponse
 import org.appjam.smashing.domain.auth.service.AuthService
 import org.appjam.smashing.global.common.dto.ApiResponse
 import org.appjam.smashing.global.common.enums.SuccessCode
@@ -33,5 +35,16 @@ class AuthController(
                 data = response
             )
         }
+    }
+
+    @PostMapping("/signup")
+    fun signUp(
+        @Valid @RequestBody signUpRequest: SignUpRequest,
+    ): ResponseEntity<ApiResponse<SignUpResponse>> {
+        val response = authService.signUp(signUpRequest.toCommand())
+
+        return ApiResponse.success(
+            data = response
+        )
     }
 }

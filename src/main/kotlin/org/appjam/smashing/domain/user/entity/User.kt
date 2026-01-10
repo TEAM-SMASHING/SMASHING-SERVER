@@ -36,7 +36,33 @@ class User(
     @Comment("오픈채팅 링크")
     val openchatUrl: String,
 
+    @Column(nullable = false)
+    @Comment("지역")
+    val region: String,
+
     @Column(name = "active_user_sport_profile_id", length = 13)
     @Comment("현재 활성화된 유저-스포츠 프로필 IDX")
     var activeUserSportProfileId: String? = null
-) : BaseEntity()
+) : BaseEntity() {
+
+    fun updateActiveProfile(profileId: String) {
+        this.activeUserSportProfileId = profileId
+    }
+
+    companion object {
+        fun create(
+            kakaoId: String,
+            nickname: String,
+            gender: Gender,
+            openchatUrl: String,
+            region: String,
+        ) = User(
+            kakaoId = kakaoId,
+            nickname = nickname,
+            gender = gender,
+            openchatUrl = openchatUrl,
+            region = region,
+        )
+    }
+
+}

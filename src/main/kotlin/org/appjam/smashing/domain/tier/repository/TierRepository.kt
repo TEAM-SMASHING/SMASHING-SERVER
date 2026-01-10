@@ -18,4 +18,9 @@ interface TierRepository : JpaRepository<Tier, Long> {
         sportId: Long,
         lp: Int,
     ): Tier?
+
+    fun findBySportIdAndName(
+        sportId: Long,
+        name: String,
+    ): Tier?
 }
