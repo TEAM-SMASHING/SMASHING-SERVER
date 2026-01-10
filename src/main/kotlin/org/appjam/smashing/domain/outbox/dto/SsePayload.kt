@@ -1,5 +1,6 @@
 package org.appjam.smashing.domain.outbox.dto
 
+import org.appjam.smashing.domain.game.enums.GameResultRejectReason
 import org.appjam.smashing.domain.game.enums.GameResultStatus
 import org.appjam.smashing.domain.notification.enums.NotificationType
 import org.appjam.smashing.domain.outbox.enums.MatchingUpdateStatus
@@ -139,6 +140,30 @@ data class ReviewReceivedNotificationCreatedPayload(
 ) : SsePayload {
 
     data class ReviewerSummary(
+        val userId: String,
+        val nickname: String,
+        val tierId: Long,
+    )
+}
+
+/**
+ * 경기 결과 거절 알림 생성
+ * - 상대가 나의 결과 제출을 거절한 순간 알림 생성
+ */
+data class GameResultRejectedNotificationCreatedPayload(
+    override val type: String = SseEventType.GAME_RESULT_REJECTED_NOTIFICATION_CREATED.eventName,
+    val notificationId: String,
+    val notificationType: NotificationType,
+    val notificationCreatedAt: String,
+    val sportId: Long,
+    val receiverProfileId: String,
+    val gameId: String,
+    val submissionId: String,
+    val reason: GameResultRejectReason,
+    val rejector: RejectorSummary,
+) : SsePayload {
+
+    data class RejectorSummary(
         val userId: String,
         val nickname: String,
         val tierId: Long,
