@@ -114,6 +114,10 @@ class Game(
         resultStatus = GameResultStatus.WAITING_CONFIRMATION
     }
 
+    fun markRejected() {
+        resultStatus = GameResultStatus.RESULT_REJECTED
+    }
+
     fun confirmResult(
         submissionId: String,
         winner: User,

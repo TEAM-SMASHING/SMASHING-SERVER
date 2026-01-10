@@ -70,4 +70,16 @@ interface GameRepository : JpaRepository<Game, String> {
         userA: String,
         userB: String,
     ): LocalDateTime?
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query(
+        """
+        select g
+        from Game g
+        where g.id = :gameId
+        """
+    )
+    fun findByIdForUpdate(
+        gameId: String,
+    ): Game?
 }

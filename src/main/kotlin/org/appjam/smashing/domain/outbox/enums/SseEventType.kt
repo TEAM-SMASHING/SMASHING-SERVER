@@ -24,6 +24,9 @@ enum class SseEventType(
     // 게임 결과 제출 알림 생성
     GAME_RESULT_SUBMITTED_NOTIFICATION_CREATED("game.result.submitted.notification.created"),
 
+    // 게임 결과 거절 알림 생성
+    GAME_RESULT_REJECTED_NOTIFICATION_CREATED("game.result.rejected.notification.created"),
+
     // 리뷰 제출 알림 생성
     REVIEW_RECEIVED_NOTIFICATION_CREATED("review.received.notification.created"),
 }
