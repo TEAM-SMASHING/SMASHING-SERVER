@@ -63,14 +63,15 @@ class AuthService(
             name = tierName
         ) ?: throw CustomException(ErrorCode.INVALID_TIER_SETTING)
 
-        validateOpenChatUrl(requestCommand.openChatUrl.trim())
+        val trimmedOpenChatUrl = requestCommand.openChatUrl.trim()
+        validateOpenChatUrl(trimmedOpenChatUrl)
 
         val user = userRepository.save(
             User.create(
                 kakaoId = requestCommand.authId,
                 nickname = requestCommand.nickname,
                 gender = requestCommand.gender,
-                openchatUrl = requestCommand.openChatUrl,
+                openchatUrl = trimmedOpenChatUrl,
                 region = requestCommand.region,
             )
         )
