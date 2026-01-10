@@ -77,14 +77,14 @@ class UserService(
         val sportsList = allProfiles
             .filter { it.id != user.activeUserSportProfileId }
             .map {
-                UserProfileTierResponse.SportInfo(
+                UserProfileTierResponse.SportInfo.from(
                     profileId = it.id!!,
                     sportCode = it.sport.code
                 )
             }
 
         return UserProfileTierResponse(
-            activeSport = UserProfileTierResponse.ActiveSport(
+            activeSport = UserProfileTierResponse.ActiveSport.from(
                 profileId = activeProfile.id!!,
                 sportCode = activeProfile.sport.code,
                 tier = activeProfile.tier.name,
