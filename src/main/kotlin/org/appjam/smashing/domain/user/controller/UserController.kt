@@ -1,5 +1,6 @@
 package org.appjam.smashing.domain.user.controller
 
+import jakarta.validation.Valid
 import org.appjam.smashing.domain.user.dto.request.OpenChatValidateRequest
 import org.appjam.smashing.domain.user.dto.response.NicknameCheckResponse
 import org.appjam.smashing.domain.user.dto.response.OpenChatValidateResponse
@@ -26,7 +27,7 @@ class UserController(
 
     @PostMapping("/openchat/validate")
     fun validateOpenChatUrl(
-        @RequestBody openChatValidateRequest: OpenChatValidateRequest,
+        @Valid @RequestBody openChatValidateRequest: OpenChatValidateRequest,
     ): ResponseEntity<ApiResponse<OpenChatValidateResponse>> {
         val response = userService.validateOpenChatUrl(openChatValidateRequest.toCommand())
 
