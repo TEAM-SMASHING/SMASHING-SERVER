@@ -106,12 +106,12 @@ class AuthService(
     }
 
     private fun validateOpenChatUrl(trimmedUrl: String) {
-        if (!OPEN_CHAT_URL_REGEX.matches(trimmedUrl)) {
+        if (!OPEN_CHAT_URL_REGEX.matches(trimmedUrl) || trimmedUrl.isBlank()) {
             throw CustomException(ErrorCode.INVALID_OPENCHAT_FORMAT)
         }
     }
 
     companion object {
-        private val OPEN_CHAT_URL_REGEX = Regex("^https://open\\.kakao\\.com/.*$")
+        private val OPEN_CHAT_URL_REGEX = Regex("^https://open\\.kakao\\.com/o/[a-zA-Z0-9]+\$")
     }
 }
