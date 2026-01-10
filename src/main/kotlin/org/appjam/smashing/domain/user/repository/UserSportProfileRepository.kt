@@ -54,4 +54,30 @@ interface UserSportProfileRepository : JpaRepository<UserSportProfile, String> {
         userId: String,
         sportId: Long,
     ): UserSportProfile?
+
+    @Query(
+        """
+        select usp.id
+        from UserSportProfile usp
+        where usp.user.id = :userId
+          and usp.sport.id = :sportId
+        """
+    )
+    fun findProfileIdByUserIdAndSportId(
+        userId: String,
+        sportId: Long,
+    ): String?
+
+    @Query(
+        """
+        select usp.tier.id
+        from UserSportProfile usp
+        where usp.user.id = :userId
+          and usp.sport.id = :sportId
+        """
+    )
+    fun findTierIdByUserIdAndSportId(
+        userId: String,
+        sportId: Long,
+    ): Long?
 }
