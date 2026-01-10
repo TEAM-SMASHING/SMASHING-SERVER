@@ -3,6 +3,7 @@ package org.appjam.smashing.domain.notification.entity
 import io.hypersistence.utils.hibernate.id.Tsid
 import jakarta.persistence.*
 import org.appjam.smashing.domain.common.entity.BaseEntity
+import org.appjam.smashing.domain.game.enums.GameResultRejectReason
 import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.hibernate.annotations.Comment
@@ -108,6 +109,36 @@ class Notification(
             params = """{"reviewerNickname":"$reviewerNickname","reviewerTierId":$reviewerTierId,"reviewId":"$reviewId","gameId":"$gameId"}""",
             isRead = false,
             linkUrl = "/api/v1/reviews/$reviewId",
+            user = receiver,
+            notificationTemplate = template,
+        )
+
+        fun createResultRejectedScoreMismatch(
+            receiver: User,
+            template: NotificationTemplate,
+            gameId: String,
+            submissionId: String,
+            rejectorNickname: String,
+            rejectorTierId: Long,
+        ) = Notification(
+            params = """{"rejectorNickname":"$rejectorNickname","rejectorTierId":$rejectorTierId,"gameId":"$gameId","submissionId":"$submissionId","reason":"${GameResultRejectReason.SCORE_MISMATCH.name}"}""",
+            isRead = false,
+            linkUrl = "/api/v1/users/me/matchings/accepted/pending-result",
+            user = receiver,
+            notificationTemplate = template,
+        )
+
+        fun createResultRejectedWinLoseReversed(
+            receiver: User,
+            template: NotificationTemplate,
+            gameId: String,
+            submissionId: String,
+            rejectorNickname: String,
+            rejectorTierId: Long,
+        ) = Notification(
+            params = """{"rejectorNickname":"$rejectorNickname","rejectorTierId":$rejectorTierId,"gameId":"$gameId","submissionId":"$submissionId","reason":"${GameResultRejectReason.WIN_LOSE_REVERSED.name}"}""",
+            isRead = false,
+            linkUrl = "/api/v1/users/me/matchings/accepted/pending-result",
             user = receiver,
             notificationTemplate = template,
         )
