@@ -12,6 +12,7 @@ import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.appjam.smashing.domain.user.repository.UserRepository
 import org.appjam.smashing.domain.user.repository.UserSportProfileRepository
+import org.appjam.smashing.domain.user.service.UserService.Companion.OPEN_CHAT_URL_REGEX
 import org.appjam.smashing.global.auth.jwt.components.JwtProvider
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
@@ -63,12 +64,15 @@ class AuthService(
             name = tierName
         ) ?: throw CustomException(ErrorCode.INVALID_TIER_SETTING)
 
+        val trimmedUrl = requestCommand.openChatUrl.trim()
+        validateOpenChatUrl(trimmedUrl)
+
         val user = userRepository.save(
             User.create(
                 kakaoId = requestCommand.authId,
                 nickname = requestCommand.nickname,
                 gender = requestCommand.gender,
-                openchatUrl = requestCommand.openChatUrl,
+                openchatUrl = trimmedUrl,
                 region = requestCommand.region,
             )
         )
@@ -99,6 +103,12 @@ class AuthService(
 
         if (userRepository.existsByNickname(requestCommand.nickname)) {
             throw CustomException(ErrorCode.DUPLICATE_NICKNAME)
+        }
+    }
+
+    private fun validateOpenChatUrl(trimmedUrl: String) {
+        if (!OPEN_CHAT_URL_REGEX.matches(trimmedUrl)) {
+            throw CustomException(ErrorCode.INVALID_OPENCHAT_FORMAT)
         }
     }
 }

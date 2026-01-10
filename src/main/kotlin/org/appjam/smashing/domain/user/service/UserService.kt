@@ -25,7 +25,7 @@ class UserService(
 
         validateNickName(trimmedNickname)
 
-        return if (userRepository.existsByNickname(nickname)) {
+        return if (userRepository.existsByNickname(trimmedNickname)) {
             NicknameCheckResponse(false)
         } else {
             NicknameCheckResponse(true)
@@ -45,11 +45,9 @@ class UserService(
     fun validateOpenChatUrl(
         openChatValidateCommand: OpenChatValidateCommand,
     ): OpenChatValidateResponse {
-        val openChatUrl = openChatValidateCommand.openchatUrl
+        val trimmedUrl = openChatValidateCommand.openchatUrl.trim()
 
-        val trimmedUrl = openChatUrl.trim()
-
-        validateOpenChatUrl(trimmedUrl)
+        checkDuplicateOpenChatUrl(trimmedUrl)
 
         return if (OPEN_CHAT_URL_REGEX.matches(trimmedUrl)) {
             OpenChatValidateResponse(true)
@@ -58,7 +56,7 @@ class UserService(
         }
     }
 
-    private fun validateOpenChatUrl(trimmedUrl: String) {
+    private fun checkDuplicateOpenChatUrl(trimmedUrl: String) {
         if (userRepository.existsByOpenchatUrl(trimmedUrl)) {
             throw CustomException(ErrorCode.DUPLICATE_OPEN_CHAT_URL)
         }
@@ -103,6 +101,6 @@ class UserService(
     companion object {
         private val NICKNAME_VALID_REGEX = Regex("^[a-zA-Z0-9가-힣]*$")
         private const val MAX_NICKNAME_LENGTH = 10
-        private val OPEN_CHAT_URL_REGEX = Regex("^https://open\\.kakao\\.com/.*$")
+        val OPEN_CHAT_URL_REGEX = Regex("^https://open\\.kakao\\.com/o/[a-zA-Z0-9]+\$")
     }
 }

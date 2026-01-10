@@ -23,7 +23,7 @@ data class SignUpRequest(
     @field:NotBlank(message = "region을 입력해주세요.")
     val region: String?,
 ) {
-    fun toCommand(): SignUpRequestCommand = SignUpRequestCommand(
+    fun toCommand() = SignUpRequestCommand(
         authId = authId!!,
         nickname = nickname!!,
         gender = ofIgnoreCase<Gender>(gender!!),

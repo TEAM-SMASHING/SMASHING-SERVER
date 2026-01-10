@@ -52,6 +52,7 @@ enum class ErrorCode(
     NICKNAME_TOO_LONG(HttpStatus.BAD_REQUEST, "USER-003", "닉네임은 최대 10글자 이하로 가능합니다."),
     INVALID_NICKNAME_FORMAT(HttpStatus.BAD_REQUEST, "USER-004", "특수문자는 사용할 수 없습니다."),
     DUPLICATE_OPEN_CHAT_URL(HttpStatus.CONFLICT, "USER-005", "이미 사용중인 오픈채팅방 링크입니다."),
+    INVALID_OPENCHAT_FORMAT(HttpStatus.BAD_REQUEST, "USER-006", "잘못된 오픈채팅 링크 형식입니다."),
 
     // Domain - Matching
     MATCHING_REQUESTER_NOT_FOUND(HttpStatus.NOT_FOUND, "MATCH-001", "요청자 유저를 찾을 수 없습니다."),
