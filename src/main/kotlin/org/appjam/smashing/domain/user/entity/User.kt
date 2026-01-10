@@ -9,6 +9,11 @@ import org.hibernate.annotations.SQLDelete
 import org.hibernate.annotations.SQLRestriction
 
 @Entity
+@Table(
+    indexes = [
+        Index(name = "idx_nickname", columnList = "nickname")
+    ]
+)
 @Comment("유저 정보")
 @SQLRestriction("deleted_at is null")
 @SQLDelete(sql = "update user set deleted_at = now() where id = ?")
@@ -56,7 +61,7 @@ class User(
             gender: Gender,
             openchatUrl: String,
             region: String,
-        ): User = User(
+        ) = User(
             kakaoId = kakaoId,
             nickname = nickname,
             gender = gender,

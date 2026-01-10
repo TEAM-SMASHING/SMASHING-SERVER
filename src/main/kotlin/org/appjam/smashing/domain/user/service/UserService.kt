@@ -22,7 +22,7 @@ class UserService(
 
         validateNickName(trimmedNickname)
 
-        return if (userRepository.existsByNickname(nickname)) {
+        return if (userRepository.existsByNickname(trimmedNickname)) {
             NicknameCheckResponse(false)
         } else {
             NicknameCheckResponse(true)

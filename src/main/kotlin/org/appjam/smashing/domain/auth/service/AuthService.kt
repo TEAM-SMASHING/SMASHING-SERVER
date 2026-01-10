@@ -63,12 +63,15 @@ class AuthService(
             name = tierName
         ) ?: throw CustomException(ErrorCode.INVALID_TIER_SETTING)
 
+        val trimmedOpenChatUrl = requestCommand.openChatUrl.trim()
+        validateOpenChatUrl(trimmedOpenChatUrl)
+
         val user = userRepository.save(
             User.create(
                 kakaoId = requestCommand.authId,
                 nickname = requestCommand.nickname,
                 gender = requestCommand.gender,
-                openchatUrl = requestCommand.openChatUrl,
+                openchatUrl = trimmedOpenChatUrl,
                 region = requestCommand.region,
             )
         )
@@ -100,5 +103,15 @@ class AuthService(
         if (userRepository.existsByNickname(requestCommand.nickname)) {
             throw CustomException(ErrorCode.DUPLICATE_NICKNAME)
         }
+    }
+
+    private fun validateOpenChatUrl(trimmedUrl: String) {
+        if (!OPEN_CHAT_URL_REGEX.matches(trimmedUrl) || trimmedUrl.isBlank()) {
+            throw CustomException(ErrorCode.INVALID_OPENCHAT_FORMAT)
+        }
+    }
+
+    companion object {
+        private val OPEN_CHAT_URL_REGEX = Regex("^https://open\\.kakao\\.com/o/[a-zA-Z0-9]+\$")
     }
 }
