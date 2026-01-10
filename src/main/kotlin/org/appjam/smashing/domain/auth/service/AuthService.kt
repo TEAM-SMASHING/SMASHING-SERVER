@@ -12,6 +12,7 @@ import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.appjam.smashing.domain.user.repository.UserRepository
 import org.appjam.smashing.domain.user.repository.UserSportProfileRepository
+import org.appjam.smashing.domain.user.service.UserService.Companion.OPEN_CHAT_URL_REGEX
 import org.appjam.smashing.global.auth.jwt.components.JwtProvider
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
@@ -109,9 +110,5 @@ class AuthService(
         if (!OPEN_CHAT_URL_REGEX.matches(trimmedUrl)) {
             throw CustomException(ErrorCode.INVALID_OPENCHAT_FORMAT)
         }
-    }
-
-    companion object {
-        private val OPEN_CHAT_URL_REGEX = Regex("^https://open\\.kakao\\.com/o/[a-zA-Z0-9]+\$")
     }
 }
