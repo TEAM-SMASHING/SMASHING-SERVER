@@ -48,7 +48,9 @@ enum class ErrorCode(
     USER_SPORT_PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND, "USER-001", "유저 스포츠 프로필을 찾을 수 없습니다."),
 
     // Domain - User
-    INVALID_OPENCHAT_FORMAT(HttpStatus.BAD_REQUEST, "USER-002", "잘못된 오픈채팅 링크 형식입니다."),
+    NICKNAME_TOO_LONG(HttpStatus.BAD_REQUEST, "USER-002", "닉네임은 최대 10글자 이하로 가능합니다."),
+    INVALID_NICKNAME_FORMAT(HttpStatus.BAD_REQUEST, "USER-003", "특수문자는 사용할 수 없습니다."),
+    INVALID_OPENCHAT_FORMAT(HttpStatus.BAD_REQUEST, "USER-004", "잘못된 오픈채팅 링크 형식입니다."),
 
     // Domain - Matching
     MATCHING_REQUESTER_NOT_FOUND(HttpStatus.NOT_FOUND, "MATCH-001", "요청자 유저를 찾을 수 없습니다."),
