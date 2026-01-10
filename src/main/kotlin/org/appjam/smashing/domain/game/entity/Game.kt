@@ -14,6 +14,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
+import jakarta.persistence.UniqueConstraint
 import org.appjam.smashing.domain.common.entity.BaseEntity
 import org.appjam.smashing.domain.matching.entity.Matching
 import org.appjam.smashing.domain.game.enums.GameResultStatus
@@ -26,6 +27,9 @@ import java.time.LocalDateTime
 
 @Entity
 @Table(
+    uniqueConstraints = [
+        UniqueConstraint(name = "uk_game_matching_id", columnNames = ["matching_id"])
+    ],
     indexes = [
         Index(name = "idx_game_matching_id", columnList = "matching_id"),
         Index(name = "idx_game_sport_id", columnList = "sport_id"),
