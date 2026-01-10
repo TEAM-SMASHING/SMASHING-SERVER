@@ -56,7 +56,7 @@ class UserController(
     ): ResponseEntity<ApiResponse<Unit>> {
         userService.addProfile(
             userId = userId,
-            command = profileAddCommand
+            requestCommand = profileAddCommand
         )
 
         return ApiResponse.success()

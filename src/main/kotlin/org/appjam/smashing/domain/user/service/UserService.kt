@@ -1,9 +1,14 @@
 package org.appjam.smashing.domain.user.service
 
+import org.appjam.smashing.domain.sport.enums.InitTierLp
+import org.appjam.smashing.domain.sport.repository.SportRepository
+import org.appjam.smashing.domain.tier.repository.TierRepository
 import org.appjam.smashing.domain.user.command.OpenChatValidateCommand
+import org.appjam.smashing.domain.user.command.ProfileAddCommand
 import org.appjam.smashing.domain.user.dto.response.NicknameCheckResponse
 import org.appjam.smashing.domain.user.dto.response.OpenChatValidateResponse
 import org.appjam.smashing.domain.user.dto.response.UserProfileTierResponse
+import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.appjam.smashing.domain.user.repository.UserRepository
 import org.appjam.smashing.domain.user.repository.UserSportProfileRepository
 import org.appjam.smashing.global.exception.CustomException
@@ -16,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional
 class UserService(
     private val userRepository: UserRepository,
     private val userSportProfileRepository: UserSportProfileRepository,
+    private val sportRepository: SportRepository,
+    private val tierRepository: TierRepository,
 ) {
     @Transactional(readOnly = true)
     fun checkNicknameAvailability(
@@ -96,6 +103,35 @@ class UserService(
             ),
             sports = sportsList
         )
+    }
+
+    fun addProfile(
+        userId: String,
+        requestCommand: ProfileAddCommand,
+    ) {
+        val user = userRepository.findById(userId).orElseThrow { CustomException(ErrorCode.USER_NOT_FOUND) }
+
+        val sport = sportRepository.findByCode(requestCommand.sportCode)
+            ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
+
+        val tierName = requestCommand.tier
+        val initTier = runCatching { InitTierLp.valueOf(tierName) }.getOrNull()
+            ?: throw CustomException(ErrorCode.INVALID_INITIAL_TIER)
+        val tier = tierRepository.findBySportIdAndName(
+            sportId = sport.id!!,
+            name = tierName,
+        ) ?: throw CustomException(ErrorCode.INVALID_TIER_SETTING)
+
+        val profile = userSportProfileRepository.save(
+            UserSportProfile.create(
+                lp = initTier.initLp,
+                user = user,
+                sport = sport,
+                tier = tier,
+            )
+        )
+
+        user.updateActiveProfile(profile.id!!)
     }
 
     companion object {
