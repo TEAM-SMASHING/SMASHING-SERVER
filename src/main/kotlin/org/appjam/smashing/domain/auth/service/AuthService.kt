@@ -107,7 +107,7 @@ class AuthService(
     }
 
     private fun validateOpenChatUrl(trimmedUrl: String) {
-        if (!OPEN_CHAT_URL_REGEX.matches(trimmedUrl) || trimmedUrl.isBlank()) {
+        if (!OPEN_CHAT_URL_REGEX.matches(trimmedUrl)) {
             throw CustomException(ErrorCode.INVALID_OPENCHAT_FORMAT)
         }
     }
