@@ -42,11 +42,9 @@ class UserService(
     fun validateOpenChatUrl(
         openChatValidateCommand: OpenChatValidateCommand,
     ): OpenChatValidateResponse {
-        val openChatUrl = openChatValidateCommand.openchatUrl
+        val trimmedUrl = openChatValidateCommand.openchatUrl.trim()
 
-        val trimmedUrl = openChatUrl.trim()
-
-        validateOpenChatUrl(trimmedUrl)
+        checkDuplicateOpenChatUrl(trimmedUrl)
 
         return if (OPEN_CHAT_URL_REGEX.matches(trimmedUrl)) {
             OpenChatValidateResponse(true)
@@ -55,7 +53,7 @@ class UserService(
         }
     }
 
-    private fun validateOpenChatUrl(trimmedUrl: String) {
+    private fun checkDuplicateOpenChatUrl(trimmedUrl: String) {
         if (userRepository.existsByOpenchatUrl(trimmedUrl)) {
             throw CustomException(ErrorCode.DUPLICATE_OPEN_CHAT_URL)
         }
