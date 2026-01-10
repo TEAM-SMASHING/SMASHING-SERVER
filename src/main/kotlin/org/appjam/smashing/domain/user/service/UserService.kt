@@ -114,6 +114,8 @@ class UserService(
         val sport = sportRepository.findByCode(requestCommand.sportCode)
             ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
 
+        validateAlreadyRegisteredSport(user.id!!, sport.id!!)
+
         val tierName = requestCommand.tier
         val initTier = runCatching { InitTierLp.valueOf(tierName) }.getOrNull()
             ?: throw CustomException(ErrorCode.INVALID_INITIAL_TIER)
@@ -132,6 +134,12 @@ class UserService(
         )
 
         user.updateActiveProfile(profile.id!!)
+    }
+
+    private fun validateAlreadyRegisteredSport(userId: String, sportId: Long) {
+        if (userSportProfileRepository.existsByUserIdAndSportId(userId, sportId)) {
+            throw CustomException(ErrorCode.ALREADY_EXIST_SPORT_PROFILE)
+        }
     }
 
     companion object {
