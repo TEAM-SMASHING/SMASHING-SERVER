@@ -56,7 +56,7 @@ class User(
             gender: Gender,
             openchatUrl: String,
             region: String,
-        ): User = User(
+        ) = User(
             kakaoId = kakaoId,
             nickname = nickname,
             gender = gender,
