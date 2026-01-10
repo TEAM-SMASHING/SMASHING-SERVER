@@ -47,6 +47,9 @@ enum class ErrorCode(
     // Domain - User / Profile
     USER_SPORT_PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND, "USER-001", "유저 스포츠 프로필을 찾을 수 없습니다."),
 
+    // Domain - User
+    INVALID_OPENCHAT_FORMAT(HttpStatus.BAD_REQUEST, "USER-002", "잘못된 오픈채팅 링크 형식입니다."),
+
     // Domain - Matching
     MATCHING_REQUESTER_NOT_FOUND(HttpStatus.NOT_FOUND, "MATCH-001", "요청자 유저를 찾을 수 없습니다."),
     MATCHING_RECEIVER_PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND, "MATCH-002", "상대 유저 스포츠 프로필을 찾을 수 없습니다."),
