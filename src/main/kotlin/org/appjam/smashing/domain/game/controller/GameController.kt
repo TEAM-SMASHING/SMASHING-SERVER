@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.appjam.smashing.domain.game.dto.request.GameResultConfirmRequest
+import org.appjam.smashing.domain.game.dto.request.GameResultRejectRequest
 import org.appjam.smashing.domain.game.dto.request.GameResultSubmitRequest
 import org.appjam.smashing.domain.game.dto.response.GameResultSubmissionDetailResponse
 import org.appjam.smashing.domain.game.service.GameService
@@ -112,5 +113,57 @@ class GameController(
         )
 
         return ApiResponse.success(response)
+    }
+
+    @Operation(
+        summary = "경기 결과 거절 API",
+        description = """
+            상대가 제출한 경기 결과 제출안(submission)을 거절합니다.
+            - 거절은 submission.confirmer(받은 사람)만 가능합니다.
+            - 상태 변경 sse가 발행됩니다.
+            - 거절 사유에 따라 NotificationType이 분리되어 전송됩니다. (알림+sse)
+              - SCORE_MISMATCH -> RESULT_REJECTED_SCORE_MISMATCH
+              - WIN_LOSE_REVERSED -> RESULT_REJECTED_WIN_LOSE_REVERSED
+        """
+    )
+    @PostMapping("/{gameId}/submissions/{submissionId}/reject")
+    fun rejectGameResult(
+        @RequestHeader("userId") confirmerUserId: String, // TODO: 인증/인가 적용시 변경
+        @PathVariable gameId: String,
+        @PathVariable submissionId: String,
+        @Valid @RequestBody request: GameResultRejectRequest,
+    ): ResponseEntity<ApiResponse<Unit>> {
+        gameService.rejectResult(
+            confirmerUserId = confirmerUserId,
+            gameId = gameId,
+            submissionId = submissionId,
+            command = request.toCommand(),
+        )
+
+        return ApiResponse.success()
+    }
+
+    @Operation(
+        summary = "경기 삭제 API",
+        description = """
+            경기를 삭제(soft delete)합니다.
+            - 게임의 resultStatus를 CANCELED로 변경.
+            - 단, RESULT_CONFIRMED(확정) 상태면 삭제 불가
+            - 삭제 시 제출안(GameResultSubmission)도 함께 soft delete 처리.
+            - 경기 참여자(매칭 requester/receiver)만 삭제 가능
+            - 게임 상태 변경 SSE(game.updated)가 상대에게 발행. (resultStatus = CANCELED)
+        """
+    )
+    @DeleteMapping("/{gameId}")
+    fun deleteGame(
+        @RequestHeader("userId") userId: String, // TODO: 인증/인가 적용시 변경
+        @PathVariable gameId: String,
+    ): ResponseEntity<ApiResponse<Unit>> {
+        gameService.deleteGame(
+            userId = userId,
+            gameId = gameId,
+        )
+
+        return ApiResponse.success()
     }
 }
