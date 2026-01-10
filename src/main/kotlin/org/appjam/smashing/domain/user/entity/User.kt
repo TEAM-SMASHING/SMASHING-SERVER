@@ -53,7 +53,6 @@ class User(
     fun updateActiveProfile(profileId: String) {
         this.activeUserSportProfileId = profileId
     }
-    
 
     companion object {
         fun create(
