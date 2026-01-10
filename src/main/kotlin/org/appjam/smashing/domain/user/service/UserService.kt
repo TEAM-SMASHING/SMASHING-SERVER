@@ -67,7 +67,7 @@ class UserService(
         userId: String,
     ): UserProfileTierResponse {
         val user = userRepository.findById(userId)
-            .orElseThrow { CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND) }
+            .orElseThrow { CustomException(ErrorCode.USER_NOT_FOUND) }
 
         val allProfiles = userSportProfileRepository.findAllByUserId(userId)
 
