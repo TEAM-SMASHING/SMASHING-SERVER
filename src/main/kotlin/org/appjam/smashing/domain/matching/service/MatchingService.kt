@@ -110,7 +110,7 @@ class MatchingService(
         receiverUserId: String,
         matchingId: String,
     ) {
-        val matching = matchingRepository.findByIdFetchAll(matchingId)
+        val matching = matchingRepository.findByIdFetchAllForUpdate(matchingId)
             ?: throw CustomException(ErrorCode.MATCHING_NOT_FOUND)
 
         // 수락 가능 여부 검증
@@ -162,7 +162,7 @@ class MatchingService(
         receiverUserId: String,
         matchingId: String,
     ) {
-        val matching = matchingRepository.findByIdFetchAll(matchingId)
+        val matching = matchingRepository.findByIdFetchAllForUpdate(matchingId)
             ?: throw CustomException(ErrorCode.MATCHING_NOT_FOUND)
 
         validateRejectable(matching, receiverUserId)
@@ -186,7 +186,7 @@ class MatchingService(
         requesterUserId: String,
         matchingId: String,
     ) {
-        val matching = matchingRepository.findByIdFetchAll(matchingId)
+        val matching = matchingRepository.findByIdFetchAllForUpdate(matchingId)
             ?: throw CustomException(ErrorCode.MATCHING_NOT_FOUND)
 
         validateCancellableByRequester(matching, requesterUserId)

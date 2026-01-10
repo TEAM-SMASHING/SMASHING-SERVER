@@ -3,7 +3,7 @@ package org.appjam.smashing.domain.game.entity
 import io.hypersistence.utils.hibernate.id.Tsid
 import jakarta.persistence.*
 import org.appjam.smashing.domain.common.entity.BaseEntity
-import org.appjam.smashing.domain.game.enums.RejectReason
+import org.appjam.smashing.domain.game.enums.GameResultRejectReason
 import org.appjam.smashing.domain.game.enums.SubmissionStatus
 import org.appjam.smashing.domain.user.entity.User
 import org.hibernate.annotations.Comment
@@ -55,7 +55,7 @@ class GameResultSubmission(
     @Enumerated(EnumType.STRING)
     @Column(name = "reject_reason", columnDefinition = "VARCHAR(30)")
     @Comment("거절 사유")
-    var rejectReason: RejectReason? = null,
+    var gameResultRejectReason: GameResultRejectReason? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
@@ -129,6 +129,15 @@ class GameResultSubmission(
         actedAt: LocalDateTime
     ) {
         status = SubmissionStatus.ACCEPTED
+        this.actedAt = actedAt
+    }
+
+    fun reject(
+        reason: GameResultRejectReason,
+        actedAt: LocalDateTime,
+    ) {
+        status = SubmissionStatus.REJECTED
+        gameResultRejectReason = reason
         this.actedAt = actedAt
     }
 }

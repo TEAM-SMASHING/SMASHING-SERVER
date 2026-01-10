@@ -91,4 +91,42 @@ class NotificationService(
             )
         )
     }
+
+    fun createResultRejected(
+        receiver: User,
+        notificationType: NotificationType,
+        gameId: String,
+        submissionId: String,
+        rejectorNickname: String,
+        rejectorTierId: Long,
+    ): Notification {
+        val template = notificationTemplateRepository.findByType(notificationType)
+            ?: throw CustomException(ErrorCode.NOTIFICATION_TEMPLATE_NOT_FOUND)
+
+        val notification = when (notificationType) {
+            NotificationType.RESULT_REJECTED_SCORE_MISMATCH ->
+                Notification.createResultRejectedScoreMismatch(
+                    receiver = receiver,
+                    template = template,
+                    gameId = gameId,
+                    submissionId = submissionId,
+                    rejectorNickname = rejectorNickname,
+                    rejectorTierId = rejectorTierId,
+                )
+
+            NotificationType.RESULT_REJECTED_WIN_LOSE_REVERSED ->
+                Notification.createResultRejectedWinLoseReversed(
+                    receiver = receiver,
+                    template = template,
+                    gameId = gameId,
+                    submissionId = submissionId,
+                    rejectorNickname = rejectorNickname,
+                    rejectorTierId = rejectorTierId,
+                )
+
+            else -> throw CustomException(ErrorCode.NOTIFICATION_RESULT_REJECTED_TYPE_MISMATCH)
+        }
+
+        return notificationRepository.save(notification)
+    }
 }

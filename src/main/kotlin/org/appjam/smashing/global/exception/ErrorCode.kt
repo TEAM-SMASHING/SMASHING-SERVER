@@ -71,11 +71,13 @@ enum class ErrorCode(
     GAME_SUBMISSION_NOT_FOUND(HttpStatus.NOT_FOUND, "GAME-013", "경기 결과 제출안을 찾을 수 없습니다."),
     GAME_SUBMISSION_NOT_SUBMITTED(HttpStatus.BAD_REQUEST, "GAME-014", "이미 처리된 제출안입니다."),
     GAME_SUBMISSION_CONFIRMER_MISMATCH(HttpStatus.FORBIDDEN, "GAME-015", "해당 제출안을 확정할 권한이 없습니다."),
+    GAME_RESULT_ALREADY_CONFIRMED(HttpStatus.BAD_REQUEST, "GAME-016", "확정된 경기는 삭제할 수 없습니다."),
 
     // Domain - Tier
     TIER_NOT_FOUND(HttpStatus.NOT_FOUND, "TIER-001", "LP에 해당하는 티어 정보를 찾을 수 없습니다."),
 
     // Domain - Notification
     NOTIFICATION_TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTI-001", "알림 템플릿을 찾을 수 없습니다."),
+    NOTIFICATION_RESULT_REJECTED_TYPE_MISMATCH(HttpStatus.INTERNAL_SERVER_ERROR, "NOTI-002", "결과 반려 알림 타입이 올바르지 않습니다."),
 
 }
