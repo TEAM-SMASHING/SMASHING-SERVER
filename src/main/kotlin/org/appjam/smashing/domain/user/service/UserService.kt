@@ -79,14 +79,14 @@ class UserService(
             .map {
                 UserProfileTierResponse.SportInfo(
                     profileId = it.id!!,
-                    code = it.sport.code
+                    sportCode = it.sport.code
                 )
             }
 
         return UserProfileTierResponse(
             activeSport = UserProfileTierResponse.ActiveSport(
                 profileId = activeProfile.id!!,
-                code = activeProfile.sport.code,
+                sportCode = activeProfile.sport.code,
                 tier = activeProfile.tier.name,
                 lp = activeProfile.lp,
                 minLp = activeProfile.tier.minLp,
