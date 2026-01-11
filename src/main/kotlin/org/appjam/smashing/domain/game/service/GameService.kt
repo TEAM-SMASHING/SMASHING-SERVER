@@ -4,6 +4,8 @@ import org.appjam.smashing.domain.game.dto.command.GameResultConfirmCommand
 import org.appjam.smashing.domain.game.dto.command.GameResultRejectCommand
 import org.appjam.smashing.domain.game.dto.command.GameResultSubmitCommand
 import org.appjam.smashing.domain.game.dto.response.GameResultSubmissionDetailResponse
+import org.appjam.smashing.domain.game.dto.response.GameResultSubmitLockResponse
+import org.appjam.smashing.domain.game.dto.response.PendingResultAcceptedGameSummaryResponse
 import org.appjam.smashing.domain.game.entity.Game
 import org.appjam.smashing.domain.game.entity.GameResultSubmission
 import org.appjam.smashing.domain.game.enums.GameResultRejectReason
@@ -24,9 +26,14 @@ import org.appjam.smashing.domain.tier.entity.Tier
 import org.appjam.smashing.domain.tier.repository.TierRepository
 import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.entity.UserSportProfile
+import org.appjam.smashing.domain.user.repository.UserRepository
 import org.appjam.smashing.domain.user.repository.UserSportProfileRepository
+import org.appjam.smashing.global.common.dto.CommonCursorRequest
+import org.appjam.smashing.global.common.dto.CursorResponse
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
+import org.appjam.smashing.global.util.TimeUtils
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -36,6 +43,7 @@ import java.time.temporal.ChronoUnit
 @Service
 class GameService(
     private val gameRepository: GameRepository,
+    private val userRepository: UserRepository,
     private val submissionRepository: GameResultSubmissionRepository,
     private val notificationService: NotificationService,
     private val outboxEventPublisher: OutboxEventPublisher,
@@ -363,6 +371,106 @@ class GameService(
             gameId = game.id!!,
             resultStatus = game.resultStatus,
         )
+    }
+
+    @Transactional(readOnly = true)
+    fun getPendingResultAcceptedGames(
+        userId: String,
+        request: CommonCursorRequest,
+    ): CursorResponse<PendingResultAcceptedGameSummaryResponse> {
+        val user = userRepository.findByIdOrNull(userId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+
+        val activeProfileId = user.activeUserSportProfileId
+            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+
+        val activeProfile = userSportProfileRepository.findByIdOrNull(activeProfileId)
+            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+
+        val sportId = activeProfile.sport.id
+            ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
+
+        val snapshotAt = request.snapshotAt ?: TimeUtils.nowOffsetDateTime()
+
+        val response = gameRepository.fetchPendingResultAcceptedGamesPage(
+            userId = userId,
+            sportId = sportId,
+            request = request,
+            snapshotAt = snapshotAt,
+        )
+
+        val now = LocalDateTime.now(TimeUtils.DEFAULT_ZONE_ID)
+        val startOfDay = now.toLocalDate().atStartOfDay()
+
+        val results = response.results.map { projection ->
+            val availableAt = calcSubmitAvailableAt(
+                now = now,
+                startOfDay = startOfDay,
+                gameCreatedAt = projection.createdAtLdt,
+                requesterId = projection.requesterUserId,
+                receiverId = projection.receiverUserId,
+            )
+
+            val lockResponse = GameResultSubmitLockResponse.from(
+                now = now,
+                availableAt = availableAt,
+            )
+
+            PendingResultAcceptedGameSummaryResponse.from(
+                projection = projection,
+                submitAvailableAt = lockResponse.submitAvailableAt,
+                remainingSeconds = lockResponse.remainingSeconds,
+                isSubmitLocked = lockResponse.isLocked,
+            )
+        }
+
+        return CursorResponse(
+            snapshotAt = response.snapshotAt,
+            results = results,
+            nextCursor = response.nextCursor,
+            hasNext = response.hasNext,
+        )
+    }
+
+    /**
+     * 오늘 기준(00:00~)
+     * - 오늘 확정 0건이면(= 오늘 첫 확정 후보): 생성 후 1시간 제출 불가
+     * - 오늘 확정 1~2건이면(= 오늘 2~3번째 확정 후보):
+     *   직전 확정이 30분 이내에 있었던 연속 확정 상황일 때만 생성 후 10분 제출 불가
+     */
+    private fun calcSubmitAvailableAt(
+        now: LocalDateTime,
+        startOfDay: LocalDateTime,
+        gameCreatedAt: LocalDateTime,
+        requesterId: String,
+        receiverId: String,
+    ): LocalDateTime {
+
+        val todayConfirmedCount = gameRepository.countTodayConfirmedGamesBetweenUsers(
+            startAt = startOfDay,
+            userA = requesterId,
+            userB = receiverId,
+        )
+
+        // 오늘 첫 확정 후보 → 생성 후 1시간 제한
+        if (todayConfirmedCount == 0L) {
+            return gameCreatedAt.plusHours(1)
+        }
+
+        // 오늘 2~3번째 확정 후보 → 연속 확정일 때만 10분 제한
+        if (todayConfirmedCount in 1L..2L) {
+            val prevConfirmedAt = gameRepository.findTodayLatestConfirmedAtBetweenUsers(
+                startAt = startOfDay,
+                userA = requesterId,
+                userB = receiverId,
+            ) ?: return gameCreatedAt
+
+            if (ChronoUnit.MINUTES.between(prevConfirmedAt, now) <= 30) {
+                return gameCreatedAt.plusMinutes(10)
+            }
+        }
+
+        return gameCreatedAt
     }
 
     private fun validateDeletable(

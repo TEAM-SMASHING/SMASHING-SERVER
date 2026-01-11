@@ -61,10 +61,12 @@ class NotificationController(
     fun getMyNotifications(
         @RequestHeader("userId") userId: String, // TODO: 인증/인가 적용 시 변경
         request: CommonCursorRequest,
-    ): CursorResponse<NotificationSummaryResponse> {
-        return notificationService.getMyNotifications(
+    ): ResponseEntity<ApiResponse<CursorResponse<NotificationSummaryResponse>>> {
+        val response = notificationService.getMyNotifications(
             userId = userId,
             request = request,
         )
+
+        return ApiResponse.success(response)
     }
 }
