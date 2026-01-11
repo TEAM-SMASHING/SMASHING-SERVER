@@ -7,6 +7,7 @@ import org.appjam.smashing.domain.user.command.OpenChatValidateCommand
 import org.appjam.smashing.domain.user.command.ProfileAddCommand
 import org.appjam.smashing.domain.user.dto.response.NicknameCheckResponse
 import org.appjam.smashing.domain.user.dto.response.OpenChatValidateResponse
+import org.appjam.smashing.domain.user.dto.response.OtherUserProfilesResponse
 import org.appjam.smashing.domain.user.dto.response.UserProfileTierResponse
 import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.appjam.smashing.domain.user.repository.UserRepository
@@ -140,6 +141,48 @@ class UserService(
         if (userSportProfileRepository.existsByUserIdAndSportId(userId, sportId)) {
             throw CustomException(ErrorCode.ALREADY_EXIST_SPORT_PROFILE)
         }
+    }
+
+    fun getOtherUserProfiles(
+        otherUserId: String,
+        sportCode: String?,
+    ): OtherUserProfilesResponse {
+        val otherUser = userRepository.findById(otherUserId)
+            .orElseThrow { CustomException(ErrorCode.USER_NOT_FOUND) }
+
+        val allProfiles = userSportProfileRepository.findAllByUserId(otherUserId)
+
+        val selectedSport = if (sportCode == null) {
+            allProfiles.find { it.id == otherUser.activeUserSportProfileId }
+                ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
+        } else {
+            allProfiles.find { it.sport.code == sportCode }
+                ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+        }
+
+        val sportsList = allProfiles
+            .filter { selectedSport.id != it.id }
+            .map {
+                OtherUserProfilesResponse.SportInfo.from(
+                    profileId = it.id!!,
+                    sportCode = it.sport.code
+                )
+            }
+
+        return OtherUserProfilesResponse(
+            nickname = otherUser.nickname,
+            selectedSport = OtherUserProfilesResponse.SelectedSport.from(
+                profileId = selectedSport.id!!,
+                sportCode = selectedSport.sport.code,
+                tier = selectedSport.tier.orderNo,
+                lp = selectedSport.lp,
+                minLp = selectedSport.tier.minLp,
+                maxLp = selectedSport.tier.maxLp,
+                wins = selectedSport.wins,
+                losses = selectedSport.losses
+            ),
+            sports = sportsList
+        )
     }
 
     companion object {
