@@ -2,10 +2,10 @@ package org.appjam.smashing.domain.user.dto.response
 
 data class OtherUserProfilesResponse(
     val nickname: String,
-    val activeSport: ActiveSport,
+    val selectedSport: SelectedSport,
     val sports: List<SportInfo>,
 ) {
-    data class ActiveSport(
+    data class SelectedSport(
         val profileId: String,
         val sportCode: String,
         val tier: Int,
@@ -25,7 +25,7 @@ data class OtherUserProfilesResponse(
                 maxLp: Int,
                 wins: Int,
                 losses: Int,
-            ) = ActiveSport(
+            ) = SelectedSport(
                 profileId = profileId,
                 sportCode = sportCode,
                 tier = tier,
