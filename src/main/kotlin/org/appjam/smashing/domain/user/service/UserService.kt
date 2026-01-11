@@ -3,9 +3,12 @@ package org.appjam.smashing.domain.user.service
 import org.appjam.smashing.domain.user.command.OpenChatValidateCommand
 import org.appjam.smashing.domain.user.dto.response.NicknameCheckResponse
 import org.appjam.smashing.domain.user.dto.response.OpenChatValidateResponse
+import org.appjam.smashing.domain.user.dto.response.UserProfileTierResponse
 import org.appjam.smashing.domain.user.repository.UserRepository
+import org.appjam.smashing.domain.user.repository.UserSportProfileRepository
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -13,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 class UserService(
     private val userRepository: UserRepository,
+    private val userSportProfileRepository: UserSportProfileRepository,
 ) {
     @Transactional(readOnly = true)
     fun checkNicknameAvailability(
@@ -57,6 +61,42 @@ class UserService(
         if (userRepository.existsByOpenchatUrl(trimmedUrl)) {
             throw CustomException(ErrorCode.DUPLICATE_OPEN_CHAT_URL)
         }
+    }
+
+    @Transactional(readOnly = true)
+    fun getUserProfileTier(
+        userId: String,
+    ): UserProfileTierResponse {
+        val user = userRepository.findByIdOrNull(userId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+
+        val allProfiles = userSportProfileRepository.findAllByUserId(userId)
+
+        val activeProfile = allProfiles.find { it.id == user.activeUserSportProfileId }
+            ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
+
+        val sportsList = allProfiles
+            .filter { it.id != user.activeUserSportProfileId }
+            .map {
+                UserProfileTierResponse.SportInfo.from(
+                    profileId = it.id!!,
+                    sportCode = it.sport.code
+                )
+            }
+
+        return UserProfileTierResponse(
+            activeSport = UserProfileTierResponse.ActiveSport.from(
+                profileId = activeProfile.id!!,
+                sportCode = activeProfile.sport.code,
+                tier = activeProfile.tier.orderNo,
+                lp = activeProfile.lp,
+                minLp = activeProfile.tier.minLp,
+                maxLp = activeProfile.tier.maxLp,
+                wins = activeProfile.wins,
+                losses = activeProfile.losses
+            ),
+            sports = sportsList
+        )
     }
 
     companion object {

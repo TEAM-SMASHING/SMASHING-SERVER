@@ -4,6 +4,7 @@ import jakarta.validation.Valid
 import org.appjam.smashing.domain.user.dto.request.OpenChatValidateRequest
 import org.appjam.smashing.domain.user.dto.response.NicknameCheckResponse
 import org.appjam.smashing.domain.user.dto.response.OpenChatValidateResponse
+import org.appjam.smashing.domain.user.dto.response.UserProfileTierResponse
 import org.appjam.smashing.domain.user.service.UserService
 import org.appjam.smashing.global.common.dto.ApiResponse
 import org.springframework.http.ResponseEntity
@@ -30,6 +31,17 @@ class UserController(
         @Valid @RequestBody openChatValidateRequest: OpenChatValidateRequest,
     ): ResponseEntity<ApiResponse<OpenChatValidateResponse>> {
         val response = userService.validateOpenChatUrl(openChatValidateRequest.toCommand())
+
+        return ApiResponse.success(
+            data = response
+        )
+    }
+
+    @GetMapping("/me/profiles/tier")
+    fun getUserProfileTier(
+        @RequestHeader("userId") userId: String, // TODO: 인증/인가 회복시 @AuthenticationPrincipal 으로 변경
+    ): ResponseEntity<ApiResponse<UserProfileTierResponse>> {
+        val response = userService.getUserProfileTier(userId)
 
         return ApiResponse.success(
             data = response
