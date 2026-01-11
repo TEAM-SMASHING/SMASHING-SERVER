@@ -192,6 +192,8 @@ class UserService(
     ) {
         val user = userRepository.findById(userId).orElseThrow { CustomException(ErrorCode.USER_NOT_FOUND) }
 
+        // TODO: 지역 관련 검증 로직 추가 필요
+        
         user.updateRegion(requestCommand.region)
     }
 
