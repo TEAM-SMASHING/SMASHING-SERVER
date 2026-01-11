@@ -15,12 +15,16 @@ import org.appjam.smashing.domain.outbox.dto.MatchingUpdatedPayload
 import org.appjam.smashing.domain.outbox.enums.MatchingUpdateStatus
 import org.appjam.smashing.domain.outbox.enums.SseEventType
 import org.appjam.smashing.domain.review.repository.GameReviewRepository
+import org.appjam.smashing.domain.matching.dto.response.ReceivedMatchingSummaryResponse
 import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.appjam.smashing.domain.user.repository.UserRepository
 import org.appjam.smashing.domain.user.repository.UserSportProfileRepository
+import org.appjam.smashing.global.common.dto.CommonCursorRequest
+import org.appjam.smashing.global.common.dto.CursorResponse
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
+import org.appjam.smashing.global.util.TimeUtils
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -209,6 +213,41 @@ class MatchingService(
         publishMatchingUpdatedCancelled(
             receiverUserId = matching.receiver.id!!,
             matchingId = matchingId,
+        )
+    }
+
+    @Transactional(readOnly = true)
+    fun getReceivedMatchings(
+        userId: String,
+        request: CommonCursorRequest,
+    ): CursorResponse<ReceivedMatchingSummaryResponse> {
+
+        val user = userRepository.findByIdOrNull(userId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+
+        val activeProfileId = user.activeUserSportProfileId
+            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+
+        val activeProfile = userSportProfileRepository.findByIdOrNull(activeProfileId)
+            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+
+        val sportId = activeProfile.sport.id
+            ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
+
+        val snapshotAt = request.snapshotAt ?: TimeUtils.nowOffsetDateTime()
+
+        val response = matchingRepository.fetchReceivedRequestedPage(
+            receiverUserId = userId,
+            sportId = sportId,
+            request = request,
+            snapshotAt = snapshotAt,
+        )
+
+        return CursorResponse(
+            snapshotAt = response.snapshotAt,
+            results = ReceivedMatchingSummaryResponse.from(response.results),
+            nextCursor = response.nextCursor,
+            hasNext = response.hasNext,
         )
     }
 

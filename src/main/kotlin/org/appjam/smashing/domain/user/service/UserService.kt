@@ -1,6 +1,6 @@
 package org.appjam.smashing.domain.user.service
 
-import org.appjam.smashing.domain.user.command.OpenChatValidateCommand
+import org.appjam.smashing.domain.user.dto.command.OpenChatValidateCommand
 import org.appjam.smashing.domain.user.dto.response.NicknameCheckResponse
 import org.appjam.smashing.domain.user.dto.response.OpenChatValidateResponse
 import org.appjam.smashing.domain.user.repository.UserRepository
