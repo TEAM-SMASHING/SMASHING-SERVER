@@ -80,7 +80,7 @@ class UserController(
         )
     }
 
-    @PostMapping("/me/regions")
+    @PutMapping("/me/regions")
     fun updateRegion(
         @RequestHeader("userId") userId: String, // TODO: 인증/인가 회복시 @AuthenticationPrincipal 으로 변경
         @Valid @RequestBody addressUpdateRequest: AddressUpdateRequest,
