@@ -70,8 +70,7 @@ class UserController(
         @RequestParam(required = false) sportCode: String?,
     ): ResponseEntity<ApiResponse<OtherUserProfilesResponse>> {
         val response = userService.getOtherUserProfiles(
-            authId = authId,
-            userId = userId,
+            otherUserId = userId,
             sportCode = sportCode,
         )
 
