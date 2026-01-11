@@ -52,4 +52,16 @@ data class OtherUserProfilesResponse(
             )
         }
     }
+
+    companion object {
+        fun from(
+            nickname: String,
+            selectedSport: SelectedSport,
+            sports: List<SportInfo>
+        ) = OtherUserProfilesResponse(
+            nickname = nickname,
+            selectedSport = selectedSport,
+            sports = sports
+        )
+    }
 }
