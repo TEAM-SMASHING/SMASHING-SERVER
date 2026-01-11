@@ -9,6 +9,7 @@ import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class NotificationService(
@@ -128,5 +129,22 @@ class NotificationService(
         }
 
         return notificationRepository.save(notification)
+    }
+
+    @Transactional
+    fun markAsRead(
+        userId: String,
+        notificationId: String,
+    ) {
+        val notification = notificationRepository.findByIdFetchUser(notificationId)
+            ?: throw CustomException(ErrorCode.NOTIFICATION_NOT_FOUND)
+
+        // 본인 알림인지 검증
+        if (notification.user.id != userId) {
+            throw CustomException(ErrorCode.NOTIFICATION_FORBIDDEN)
+        }
+
+        // 읽음 처리
+        notification.markAsRead()
     }
 }

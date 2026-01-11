@@ -143,4 +143,10 @@ class Notification(
             notificationTemplate = template,
         )
     }
+
+    fun markAsRead() {
+        if (!isRead) {
+            isRead = true
+        }
+    }
 }
