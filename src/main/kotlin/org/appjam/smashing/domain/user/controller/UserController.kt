@@ -92,4 +92,9 @@ class UserController(
 
         return ApiResponse.success()
     }
+
+    @PutMapping("/me/active-profile")
+    fun updateActiveProfile() {
+        
+    }
 }
