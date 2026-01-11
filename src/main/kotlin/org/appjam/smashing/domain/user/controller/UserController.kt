@@ -81,11 +81,14 @@ class UserController(
     }
 
     @PostMapping("/me/regions")
-    fun updateAddress(
-        @RequestHeader("userId") authId: String, // TODO: 인증/인가 회복시 @AuthenticationPrincipal 으로 변경
+    fun updateRegion(
+        @RequestHeader("userId") userId: String, // TODO: 인증/인가 회복시 @AuthenticationPrincipal 으로 변경
         @Valid @RequestBody addressUpdateRequest: AddressUpdateRequest,
     ): ResponseEntity<ApiResponse<Unit>> {
-        userService.updateAddress(addressUpdateRequest.toCommand())
+        userService.updateRegion(
+            userId = userId,
+            requestCommand = addressUpdateRequest.toCommand()
+        )
 
         return ApiResponse.success()
     }

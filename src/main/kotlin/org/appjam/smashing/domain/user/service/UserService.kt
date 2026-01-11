@@ -3,6 +3,7 @@ package org.appjam.smashing.domain.user.service
 import org.appjam.smashing.domain.sport.enums.InitTierLp
 import org.appjam.smashing.domain.sport.repository.SportRepository
 import org.appjam.smashing.domain.tier.repository.TierRepository
+import org.appjam.smashing.domain.user.command.AddressUpdateCommand
 import org.appjam.smashing.domain.user.command.OpenChatValidateCommand
 import org.appjam.smashing.domain.user.command.ProfileAddCommand
 import org.appjam.smashing.domain.user.dto.response.NicknameCheckResponse
@@ -183,6 +184,15 @@ class UserService(
             ),
             sports = sportsList
         )
+    }
+
+    fun updateRegion(
+        userId: String,
+        requestCommand: AddressUpdateCommand,
+    ) {
+        val user = userRepository.findById(userId).orElseThrow { CustomException(ErrorCode.USER_NOT_FOUND) }
+
+        user.updateRegion(requestCommand.region)
     }
 
     companion object {
