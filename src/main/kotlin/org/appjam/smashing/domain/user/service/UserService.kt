@@ -13,6 +13,7 @@ import org.appjam.smashing.domain.user.repository.UserRepository
 import org.appjam.smashing.domain.user.repository.UserSportProfileRepository
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -73,8 +74,8 @@ class UserService(
     fun getUserProfileTier(
         userId: String,
     ): UserProfileTierResponse {
-        val user = userRepository.findById(userId)
-            .orElseThrow { CustomException(ErrorCode.USER_NOT_FOUND) }
+        val user = userRepository.findByIdOrNull(userId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
         val allProfiles = userSportProfileRepository.findAllByUserId(userId)
 

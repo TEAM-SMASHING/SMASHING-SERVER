@@ -95,5 +95,7 @@ enum class ErrorCode(
     // Domain - Notification
     NOTIFICATION_TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTI-001", "알림 템플릿을 찾을 수 없습니다."),
     NOTIFICATION_RESULT_REJECTED_TYPE_MISMATCH(HttpStatus.INTERNAL_SERVER_ERROR, "NOTI-002", "결과 반려 알림 타입이 올바르지 않습니다."),
+    NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTI-003", "알림을 찾을 수 없습니다."),
+    NOTIFICATION_FORBIDDEN(HttpStatus.FORBIDDEN, "NOTI-004", "해당 알림에 대한 권한이 없습니다."),
 
 }
