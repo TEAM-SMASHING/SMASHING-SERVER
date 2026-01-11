@@ -149,8 +149,8 @@ class UserService(
         otherUserId: String,
         sportCode: String?,
     ): OtherUserProfilesResponse {
-        val otherUser = userRepository.findById(otherUserId)
-            .orElseThrow { CustomException(ErrorCode.USER_NOT_FOUND) }
+        val otherUser = userRepository.findByIdOrNull(otherUserId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
         val allProfiles = userSportProfileRepository.findAllByUserId(otherUserId)
 
