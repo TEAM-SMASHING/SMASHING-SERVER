@@ -75,6 +75,7 @@ class MatchingService(
         // 알림 생성
         val savedNotification = notificationService.createMatchingRequested(
             receiver = receiverProfile.user,
+            receiverProfile = receiverProfile,
             requesterProfile = requesterProfile,
         )
 
@@ -126,9 +127,15 @@ class MatchingService(
 
         val receiverProfile = findUserProfileBySport(receiverUserId, matching.sport.id!!)
 
+        val requesterProfile = findUserProfileBySport(
+            userId = matching.requester.id!!,
+            sportId = matching.sport.id!!,
+        )
+
         // 알림 생성
         val savedNotification = notificationService.createMatchingAccepted(
             receiver = matching.requester,
+            receiverProfile = requesterProfile,
             acceptorProfile = receiverProfile,
         )
 

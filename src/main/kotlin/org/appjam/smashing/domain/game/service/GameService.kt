@@ -128,10 +128,10 @@ class GameService(
         // 결과 제출 알림 + SSE 발행
         notifyGameResultSubmitted(
             receiver = confirmer,
+            receiverProfile = confirmerProfile,
             game = game,
             submission = submission,
             submitter = submitter,
-            receiverProfileId = confirmerProfile.id!!,
             submitterTierId = submitterProfile.tier.id!!,
         )
 
@@ -141,8 +141,8 @@ class GameService(
                 game = game,
                 reviewer = submitter,
                 reviewee = confirmer,
+                receiverProfile = confirmerProfile,
                 review = command.review!!,
-                receiverProfileId = confirmerProfile.id!!,
                 reviewerTierId = submitterProfile.tier.id!!,
             )
         }
@@ -230,8 +230,8 @@ class GameService(
                 game = game,
                 reviewer = submission.confirmer,
                 reviewee = submission.submitter,
+                receiverProfile = submitterProfile,
                 review = command.review!!,
-                receiverProfileId = submitterProfile.id!!,
                 reviewerTierId = confirmerProfile.tier.id!!,
             )
         }
@@ -306,13 +306,24 @@ class GameService(
             resultStatus = game.resultStatus,
         )
 
+        val receiverProfile = userSportProfileRepository.findByUserIdAndSportIdFetch(
+            userId = submission.submitter.id!!,
+            sportId = sportId,
+        ) ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+
+        val rejectorProfile = userSportProfileRepository.findByUserIdAndSportIdFetch(
+            userId = submission.confirmer.id!!,
+            sportId = sportId,
+        ) ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+
         // 결과 거절 알림 + SSE 발행
         notifyGameResultRejected(
             receiver = submission.submitter,
+            receiverProfile = receiverProfile,
             rejector = submission.confirmer,
+            rejectorTierId = rejectorProfile.tier.id!!,
             gameId = game.id!!,
             submissionId = submission.id!!,
-            sportId = sportId,
             reason = command.reason,
         )
     }
@@ -497,14 +508,15 @@ class GameService(
 
     private fun notifyGameResultSubmitted(
         receiver: User,
+        receiverProfile: UserSportProfile,
         game: Game,
         submission: GameResultSubmission,
         submitter: User,
-        receiverProfileId: String,
         submitterTierId: Long,
     ) {
         val notification = notificationService.createMatchingResultSubmitted(
             receiver = receiver,
+            receiverProfile = receiverProfile,
             gameId = game.id!!,
             submissionId = submission.id!!,
             submitterNickname = submitter.nickname,
@@ -524,7 +536,7 @@ class GameService(
                 notificationType = NotificationType.MATCHING_RESULT_SUBMITTED,
                 notificationCreatedAt = notificationCreatedAt,
                 sportId = game.sport.id!!,
-                receiverProfileId = receiverProfileId,
+                receiverProfileId = receiverProfile.id!!,
                 gameId = game.id!!,
                 submissionId = submission.id!!,
                 submitter = GameResultSubmittedNotificationCreatedPayload.SubmitterSummary(
@@ -540,8 +552,8 @@ class GameService(
         game: Game,
         reviewer: User,
         reviewee: User,
+        receiverProfile: UserSportProfile,
         review: GameResultSubmitCommand.ReviewCommand,
-        receiverProfileId: String,
         reviewerTierId: Long,
     ) {
         val savedReview = gameReviewService.createReview(
@@ -555,6 +567,7 @@ class GameService(
 
         val notification = notificationService.createReviewReceived(
             receiver = reviewee,
+            receiverProfile = receiverProfile,
             reviewId = savedReview.id!!,
             reviewerNickname = reviewer.nickname,
             reviewerTierId = reviewerTierId,
@@ -574,7 +587,7 @@ class GameService(
                 notificationType = NotificationType.REVIEW_RECEIVED,
                 notificationCreatedAt = notificationCreatedAt,
                 sportId = game.sport.id!!,
-                receiverProfileId = receiverProfileId,
+                receiverProfileId = receiverProfile.id!!,
                 gameId = game.id!!,
                 reviewId = savedReview.id!!,
                 reviewer = ReviewReceivedNotificationCreatedPayload.ReviewerSummary(
@@ -590,8 +603,8 @@ class GameService(
         game: Game,
         reviewer: User,
         reviewee: User,
+        receiverProfile: UserSportProfile,
         review: GameResultConfirmCommand.ReviewCommand,
-        receiverProfileId: String,
         reviewerTierId: Long,
     ) {
         val savedReview = gameReviewService.createReview(
@@ -605,6 +618,7 @@ class GameService(
 
         val notification = notificationService.createReviewReceived(
             receiver = reviewee,
+            receiverProfile = receiverProfile,
             reviewId = savedReview.id!!,
             reviewerNickname = reviewer.nickname,
             reviewerTierId = reviewerTierId,
@@ -624,7 +638,7 @@ class GameService(
                 notificationType = NotificationType.REVIEW_RECEIVED,
                 notificationCreatedAt = notificationCreatedAt,
                 sportId = game.sport.id!!,
-                receiverProfileId = receiverProfileId,
+                receiverProfileId = receiverProfile.id!!,
                 gameId = game.id!!,
                 reviewId = savedReview.id!!,
                 reviewer = ReviewReceivedNotificationCreatedPayload.ReviewerSummary(
@@ -653,22 +667,13 @@ class GameService(
 
     private fun notifyGameResultRejected(
         receiver: User,
+        receiverProfile: UserSportProfile,
         rejector: User,
+        rejectorTierId: Long,
         gameId: String,
         submissionId: String,
-        sportId: Long,
         reason: GameResultRejectReason,
     ) {
-        val receiverProfileId = userSportProfileRepository.findProfileIdByUserIdAndSportId(
-            userId = receiver.id!!,
-            sportId = sportId,
-        ) ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
-
-        val rejectorTierId = userSportProfileRepository.findTierIdByUserIdAndSportId(
-            userId = rejector.id!!,
-            sportId = sportId,
-        ) ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
-
         val notificationType = when (reason) {
             GameResultRejectReason.SCORE_MISMATCH -> NotificationType.RESULT_REJECTED_SCORE_MISMATCH
             GameResultRejectReason.WIN_LOSE_REVERSED -> NotificationType.RESULT_REJECTED_WIN_LOSE_REVERSED
@@ -676,6 +681,7 @@ class GameService(
 
         val notification = notificationService.createResultRejected(
             receiver = receiver,
+            receiverProfile = receiverProfile,
             notificationType = notificationType,
             gameId = gameId,
             submissionId = submissionId,
@@ -695,8 +701,8 @@ class GameService(
                 notificationId = notification.id!!,
                 notificationType = notificationType,
                 notificationCreatedAt = notificationCreatedAt,
-                sportId = sportId,
-                receiverProfileId = receiverProfileId,
+                sportId = receiverProfile.sport.id!!,
+                receiverProfileId = receiverProfile.id!!,
                 gameId = gameId,
                 submissionId = submissionId,
                 reason = reason,
