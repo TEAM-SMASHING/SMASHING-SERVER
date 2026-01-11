@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RestController
 
 @Tag(name = "Game")
 @RestController
-@RequestMapping("/api/v1/games")
-class GameQueryController(
+@RequestMapping("/api/v1/users/me/games")
+class MyGameController(
     private val gameService: GameService,
 ) {
 
@@ -44,7 +44,7 @@ class GameQueryController(
               - 잠금 시간 계산만 '오늘 기준 정책'으로 계산해 내려줌
         """
     )
-    @GetMapping("/accepted/pending-result")
+    @GetMapping("/pending-results")
     fun getPendingResultAcceptedGames(
         @RequestHeader("userId") userId: String, // TODO: 인증/인가 적용 시 변경
         @Valid request: CommonCursorRequest,
