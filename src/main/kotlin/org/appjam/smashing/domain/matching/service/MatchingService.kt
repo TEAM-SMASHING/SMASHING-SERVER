@@ -16,6 +16,7 @@ import org.appjam.smashing.domain.outbox.enums.MatchingUpdateStatus
 import org.appjam.smashing.domain.outbox.enums.SseEventType
 import org.appjam.smashing.domain.review.repository.GameReviewRepository
 import org.appjam.smashing.domain.matching.dto.response.ReceivedMatchingSummaryResponse
+import org.appjam.smashing.domain.matching.dto.response.SentMatchingSummaryResponse
 import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.appjam.smashing.domain.user.repository.UserRepository
@@ -246,6 +247,41 @@ class MatchingService(
         return CursorResponse(
             snapshotAt = response.snapshotAt,
             results = ReceivedMatchingSummaryResponse.from(response.results),
+            nextCursor = response.nextCursor,
+            hasNext = response.hasNext,
+        )
+    }
+
+    @Transactional(readOnly = true)
+    fun getSentMatchings(
+        userId: String,
+        request: CommonCursorRequest,
+    ): CursorResponse<SentMatchingSummaryResponse> {
+
+        val user = userRepository.findByIdOrNull(userId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+
+        val activeProfileId = user.activeUserSportProfileId
+            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+
+        val activeProfile = userSportProfileRepository.findByIdOrNull(activeProfileId)
+            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+
+        val sportId = activeProfile.sport.id
+            ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
+
+        val snapshotAt = request.snapshotAt ?: TimeUtils.nowOffsetDateTime()
+
+        val response = matchingRepository.fetchSentRequestedPage(
+            requesterUserId = userId,
+            sportId = sportId,
+            request = request,
+            snapshotAt = snapshotAt,
+        )
+
+        return CursorResponse(
+            snapshotAt = response.snapshotAt,
+            results = SentMatchingSummaryResponse.from(response.results),
             nextCursor = response.nextCursor,
             hasNext = response.hasNext,
         )
