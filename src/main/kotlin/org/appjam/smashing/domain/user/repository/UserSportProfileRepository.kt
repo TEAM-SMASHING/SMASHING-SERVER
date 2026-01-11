@@ -94,4 +94,6 @@ interface UserSportProfileRepository : JpaRepository<UserSportProfile, String> {
     fun findAllByUserId(
         userId: String,
     ): List<UserSportProfile>
+
+    fun existsByUserIdAndSportId(userId: String, sportId: Long): Boolean
 }
