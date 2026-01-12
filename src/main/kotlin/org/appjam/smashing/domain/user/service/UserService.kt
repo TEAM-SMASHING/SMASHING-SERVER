@@ -3,6 +3,7 @@ package org.appjam.smashing.domain.user.service
 import org.appjam.smashing.domain.sport.enums.InitTierLp
 import org.appjam.smashing.domain.sport.repository.SportRepository
 import org.appjam.smashing.domain.tier.repository.TierRepository
+import org.appjam.smashing.domain.user.dto.command.ActiveProfileUpdateCommand
 import org.appjam.smashing.domain.user.dto.command.AddressUpdateCommand
 import org.appjam.smashing.domain.user.dto.command.OpenChatValidateCommand
 import org.appjam.smashing.domain.user.dto.command.ProfileAddCommand
@@ -18,6 +19,7 @@ import org.appjam.smashing.global.exception.ErrorCode
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.reactive.TransactionalOperator
 
 @Service
 @Transactional
@@ -26,6 +28,7 @@ class UserService(
     private val userSportProfileRepository: UserSportProfileRepository,
     private val sportRepository: SportRepository,
     private val tierRepository: TierRepository,
+    private val transactionalOperator: TransactionalOperator,
 ) {
     @Transactional(readOnly = true)
     fun checkNicknameAvailability(
@@ -179,6 +182,16 @@ class UserService(
         // TODO: 지역 관련 검증 로직 추가 필요
 
         user.updateRegion(requestCommand.region)
+    }
+
+    fun updateActiveProfile(
+        userId: String,
+        requestCommand: ActiveProfileUpdateCommand,
+    ) {
+        val user = userRepository.findByIdOrNull(userId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+
+        user.updateActiveProfile(requestCommand.profileId)
     }
 
     companion object {

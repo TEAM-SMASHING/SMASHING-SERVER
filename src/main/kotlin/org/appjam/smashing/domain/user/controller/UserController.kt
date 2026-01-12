@@ -99,7 +99,10 @@ class UserController(
         @RequestHeader("userId") userId: String, // TODO: 인증/인가 회복시 @AuthenticationPrincipal 으로 변경
         @Valid @RequestBody activeProfileUpdateRequest: ActiveProfileUpdateRequest,
     ): ResponseEntity<ApiResponse<Unit>> {
-        userService.updateActiveProfile(activeProfileUpdateRequest.toCommand())
+        userService.updateActiveProfile(
+            userId = userId,
+            requestCommand = activeProfileUpdateRequest.toCommand()
+        )
 
         return ApiResponse.success()
     }
