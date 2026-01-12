@@ -174,7 +174,7 @@ class UserService(
         userId: String,
         requestCommand: AddressUpdateCommand,
     ) {
-        val user = userRepository.findById(userId).orElseThrow { CustomException(ErrorCode.USER_NOT_FOUND) }
+        val user = userRepository.findByIdOrNull(userId) ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
         // TODO: 지역 관련 검증 로직 추가 필요
 
