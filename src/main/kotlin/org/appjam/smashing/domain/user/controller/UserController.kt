@@ -94,7 +94,10 @@ class UserController(
     }
 
     @PutMapping("/me/active-profile")
-    fun updateActiveProfile() {
-        
+    fun updateActiveProfile(
+        @RequestHeader("userId") userId: String, // TODO: 인증/인가 회복시 @AuthenticationPrincipal 으로 변경
+
+    ) {
+
     }
 }
