@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import java.time.LocalDateTime
 
-interface GameRepository : JpaRepository<Game, String> {
+interface GameRepository : JpaRepository<Game, String>, GameRepositoryCustom {
     fun existsByMatchingId(
         matchingId: String
     ): Boolean

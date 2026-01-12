@@ -1,7 +1,7 @@
 package org.appjam.smashing.domain.user.dto.request
 
 import jakarta.validation.constraints.NotBlank
-import org.appjam.smashing.domain.user.command.ProfileAddCommand
+import org.appjam.smashing.domain.user.dto.command.ProfileAddCommand
 
 data class ProfileAddRequest(
     @field:NotBlank(message = "sportCode를 입력해주세요.")

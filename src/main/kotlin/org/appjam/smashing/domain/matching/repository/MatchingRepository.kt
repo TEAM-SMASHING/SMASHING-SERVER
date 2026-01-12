@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Lock
 import org.springframework.data.jpa.repository.Query
 
-interface MatchingRepository : JpaRepository<Matching, String> {
+interface MatchingRepository : JpaRepository<Matching, String>, MatchingRepositoryCustom {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query(
