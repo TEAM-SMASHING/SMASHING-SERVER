@@ -10,7 +10,7 @@ data class OtherUserProfilesResponse(
     data class SelectedSport(
         val profileId: String,
         val sportCode: String,
-        val tier: Int,
+        val tierId: Int,
         val lp: Int,
         val minLp: Int,
         val maxLp: Int,
@@ -23,7 +23,7 @@ data class OtherUserProfilesResponse(
             ) = SelectedSport(
                 profileId = u.id!!,
                 sportCode = u.sport.code,
-                tier = u.tier.orderNo,
+                tierId = u.tier.orderNo,
                 lp = u.lp,
                 minLp = u.tier.minLp,
                 maxLp = u.tier.maxLp,

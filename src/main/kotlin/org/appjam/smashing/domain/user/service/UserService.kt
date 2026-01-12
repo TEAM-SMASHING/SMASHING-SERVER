@@ -96,7 +96,7 @@ class UserService(
             activeSport = UserProfileTierResponse.ActiveSport.from(
                 profileId = activeProfile.id!!,
                 sportCode = activeProfile.sport.code,
-                tier = activeProfile.tier.orderNo,
+                tierId = activeProfile.tier.orderNo,
                 lp = activeProfile.lp,
                 minLp = activeProfile.tier.minLp,
                 maxLp = activeProfile.tier.maxLp,
