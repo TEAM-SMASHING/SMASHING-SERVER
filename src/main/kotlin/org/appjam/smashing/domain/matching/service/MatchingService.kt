@@ -60,8 +60,14 @@ class MatchingService(
 
         // 하루 (00:00 ~) 최대 3회 게임 가능
         validateDailyLimit(
-            requesterUserId,
-            receiverProfile.user.id!!
+            requesterUserId = requesterUserId,
+            receiverUserId = receiverProfile.user.id!!,
+        )
+
+        // 24시간 내 매칭 요청이 남아있는 경우, 동일 상대방에 대해 중복 매칭 요청 불가
+        validateNoPendingMatching(
+            requesterUserId = requesterUserId,
+            receiverUserId = receiverProfile.user.id!!,
         )
 
         // 매칭 생성
@@ -124,6 +130,15 @@ class MatchingService(
 
         // 매칭 수락 처리
         matching.accept(LocalDateTime.now(DEFAULT_ZONE_ID)) // TODO: 인증 붙으면 receiver 타임존으로 교체
+
+        // 다른 매칭 요청들 soft delete 처리
+        matchingRepository.softDeleteRequestedBetweenUsersExcept(
+            deletedAt = LocalDateTime.now(DEFAULT_ZONE_ID),
+            status = MatchingStatus.REQUESTED,
+            excludeMatchingId = matchingId,
+            userA = matching.requester.id!!,
+            userB = matching.receiver.id!!,
+        )
 
         // 게임 엔티티 생성 (중복 방지)
         if (!gameRepository.existsByMatchingId(matchingId)) {
@@ -349,6 +364,25 @@ class MatchingService(
         // REQUESTED 상태만 삭제 가능
         if (matching.status != MatchingStatus.REQUESTED) {
             throw CustomException(ErrorCode.MATCHING_ALREADY_RESPONDED)
+        }
+    }
+
+    private fun validateNoPendingMatching(
+        requesterUserId: String,
+        receiverUserId: String,
+    ) {
+        val now = LocalDateTime.now(DEFAULT_ZONE_ID)
+        val since = now.minusHours(24)
+
+        val existsPending = matchingRepository.existsBetweenUsersSinceWithStatus(
+            startAt = since,
+            userA = requesterUserId,
+            userB = receiverUserId,
+            status = MatchingStatus.REQUESTED,
+        )
+
+        if (existsPending) {
+            throw CustomException(ErrorCode.MATCHING_PENDING_EXISTS)
         }
     }
 
