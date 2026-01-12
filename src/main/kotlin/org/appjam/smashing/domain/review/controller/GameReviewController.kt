@@ -17,7 +17,6 @@ class GameReviewController(
         @PathVariable("reviewId") reviewId: String,
     ): ResponseEntity<ApiResponse<ReviewDetailResponse>> {
         val response = gameReviewService.getReviewDetail(
-            userId = userId,
             reviewId = reviewId,
         )
 

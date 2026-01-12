@@ -1,6 +1,7 @@
 package org.appjam.smashing.domain.review.service
 
 import org.appjam.smashing.domain.game.repository.GameRepository
+import org.appjam.smashing.domain.review.dto.response.ReviewDetailResponse
 import org.appjam.smashing.domain.review.entity.GameReview
 import org.appjam.smashing.domain.review.enums.ReviewRating
 import org.appjam.smashing.domain.review.enums.ReviewTag
@@ -41,5 +42,20 @@ class GameReviewService(
         review.tags.addAll(tags.orEmpty())
 
         return gameReviewRepository.save(review)
+    }
+
+    @Transactional(readOnly = true)
+    fun getReviewDetail(
+        reviewId: String,
+    ): ReviewDetailResponse {
+        val review = gameReviewRepository.findByIdFetchAll(reviewId)
+            ?: throw CustomException(ErrorCode.REVIEW_NOT_FOUND)
+
+        return ReviewDetailResponse(
+            reviewerNickname = review.reviewer.nickname,
+            revieweeNickname = review.reviewee.nickname,
+            tag = review.tags.map { it.name },
+            content = review.content.orEmpty(),
+        )
     }
 }
