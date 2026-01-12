@@ -7,7 +7,7 @@ data class UserProfileTierResponse(
     data class ActiveSport(
         val profileId: String,
         val sportCode: String,
-        val tier: Int,
+        val tierId: Int,
         val lp: Int,
         val minLp: Int,
         val maxLp: Int,
@@ -18,7 +18,7 @@ data class UserProfileTierResponse(
             fun from(
                 profileId: String,
                 sportCode: String,
-                tier: Int,
+                tierId: Int,
                 lp: Int,
                 minLp: Int,
                 maxLp: Int,
@@ -27,7 +27,7 @@ data class UserProfileTierResponse(
             ) = ActiveSport(
                 profileId = profileId,
                 sportCode = sportCode,
-                tier = tier,
+                tierId = tierId,
                 lp = lp,
                 minLp = minLp,
                 maxLp = maxLp,

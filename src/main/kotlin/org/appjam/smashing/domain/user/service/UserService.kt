@@ -1,8 +1,13 @@
 package org.appjam.smashing.domain.user.service
 
-import org.appjam.smashing.domain.user.command.OpenChatValidateCommand
+import org.appjam.smashing.domain.sport.enums.InitTierLp
+import org.appjam.smashing.domain.sport.repository.SportRepository
+import org.appjam.smashing.domain.tier.repository.TierRepository
+import org.appjam.smashing.domain.user.command.ProfileAddCommand
+import org.appjam.smashing.domain.user.dto.command.OpenChatValidateCommand
 import org.appjam.smashing.domain.user.dto.response.NicknameCheckResponse
 import org.appjam.smashing.domain.user.dto.response.OpenChatValidateResponse
+import org.appjam.smashing.domain.user.dto.response.OtherUserProfilesResponse
 import org.appjam.smashing.domain.user.dto.response.UserProfileTierResponse
 import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.appjam.smashing.domain.user.repository.UserRepository
@@ -91,7 +96,7 @@ class UserService(
             activeSport = UserProfileTierResponse.ActiveSport.from(
                 profileId = activeProfile.id!!,
                 sportCode = activeProfile.sport.code,
-                tier = activeProfile.tier.orderNo,
+                tierId = activeProfile.tier.orderNo,
                 lp = activeProfile.lp,
                 minLp = activeProfile.tier.minLp,
                 maxLp = activeProfile.tier.maxLp,
@@ -138,6 +143,30 @@ class UserService(
         if (userSportProfileRepository.existsByUserIdAndSportId(userId, sportId)) {
             throw CustomException(ErrorCode.ALREADY_EXIST_SPORT_PROFILE)
         }
+    }
+
+    fun getOtherUserProfiles(
+        otherUserId: String,
+        sportCode: String?,
+    ): OtherUserProfilesResponse {
+        val otherUser = userRepository.findByIdOrNull(otherUserId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+
+        val allProfiles = userSportProfileRepository.findAllByUserId(otherUserId)
+
+        val selectedSport = if (sportCode == null) {
+            allProfiles.find { it.id == otherUser.activeUserSportProfileId }
+                ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
+        } else {
+            allProfiles.find { it.sport.code == sportCode }
+                ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+        }
+
+        return OtherUserProfilesResponse.from(
+            nickname = otherUser.nickname,
+            selectedSport = selectedSport,
+            allProfiles = allProfiles
+        )
     }
 
     companion object {
