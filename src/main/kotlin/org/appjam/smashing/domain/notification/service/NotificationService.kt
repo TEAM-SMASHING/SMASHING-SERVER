@@ -1,13 +1,17 @@
 package org.appjam.smashing.domain.notification.service
 
+import org.appjam.smashing.domain.notification.dto.response.NotificationSummaryResponse
 import org.appjam.smashing.domain.notification.entity.Notification
 import org.appjam.smashing.domain.notification.enums.NotificationType
 import org.appjam.smashing.domain.notification.repository.NotificationRepository
 import org.appjam.smashing.domain.notification.repository.NotificationTemplateRepository
 import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.entity.UserSportProfile
+import org.appjam.smashing.global.common.dto.CommonCursorRequest
+import org.appjam.smashing.global.common.dto.CursorResponse
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
+import org.appjam.smashing.global.util.TimeUtils
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -19,6 +23,7 @@ class NotificationService(
 
     fun createMatchingRequested(
         receiver: User,
+        receiverProfile: UserSportProfile,
         requesterProfile: UserSportProfile,
     ): Notification {
         val template = notificationTemplateRepository.findByType(NotificationType.MATCHING_REQUESTED)
@@ -27,6 +32,7 @@ class NotificationService(
         return notificationRepository.save(
             Notification.createMatchingRequested(
                 receiver = receiver,
+                receiverProfile = receiverProfile,
                 template = template,
                 requesterProfile = requesterProfile,
             )
@@ -35,6 +41,7 @@ class NotificationService(
 
     fun createMatchingAccepted(
         receiver: User,
+        receiverProfile: UserSportProfile,
         acceptorProfile: UserSportProfile,
     ): Notification {
         val template = notificationTemplateRepository.findByType(NotificationType.MATCHING_ACCEPTED)
@@ -43,6 +50,7 @@ class NotificationService(
         return notificationRepository.save(
             Notification.createMatchingRequestAccepted(
                 receiver = receiver,
+                receiverProfile = receiverProfile,
                 template = template,
                 acceptorProfile = acceptorProfile,
             )
@@ -51,6 +59,7 @@ class NotificationService(
 
     fun createMatchingResultSubmitted(
         receiver: User,
+        receiverProfile: UserSportProfile,
         gameId: String,
         submissionId: String,
         submitterNickname: String,
@@ -62,6 +71,7 @@ class NotificationService(
         return notificationRepository.save(
             Notification.createMatchingResultSubmitted(
                 receiver = receiver,
+                receiverProfile = receiverProfile,
                 template = template,
                 gameId = gameId,
                 submissionId = submissionId,
@@ -73,6 +83,7 @@ class NotificationService(
 
     fun createReviewReceived(
         receiver: User,
+        receiverProfile: UserSportProfile,
         reviewId: String,
         reviewerNickname: String,
         reviewerTierId: Long,
@@ -84,6 +95,7 @@ class NotificationService(
         return notificationRepository.save(
             Notification.createReviewReceived(
                 receiver = receiver,
+                receiverProfile = receiverProfile,
                 template = template,
                 reviewId = reviewId,
                 reviewerNickname = reviewerNickname,
@@ -95,6 +107,7 @@ class NotificationService(
 
     fun createResultRejected(
         receiver: User,
+        receiverProfile: UserSportProfile,
         notificationType: NotificationType,
         gameId: String,
         submissionId: String,
@@ -108,6 +121,7 @@ class NotificationService(
             NotificationType.RESULT_REJECTED_SCORE_MISMATCH ->
                 Notification.createResultRejectedScoreMismatch(
                     receiver = receiver,
+                    receiverProfile = receiverProfile,
                     template = template,
                     gameId = gameId,
                     submissionId = submissionId,
@@ -118,6 +132,7 @@ class NotificationService(
             NotificationType.RESULT_REJECTED_WIN_LOSE_REVERSED ->
                 Notification.createResultRejectedWinLoseReversed(
                     receiver = receiver,
+                    receiverProfile = receiverProfile,
                     template = template,
                     gameId = gameId,
                     submissionId = submissionId,
@@ -146,5 +161,29 @@ class NotificationService(
 
         // 읽음 처리
         notification.markAsRead()
+    }
+
+    @Transactional(readOnly = true)
+    fun getMyNotifications(
+        userId: String,
+        request: CommonCursorRequest,
+    ): CursorResponse<NotificationSummaryResponse> {
+        // 스냅샷 시각 설정
+        val snapshotAt = request.snapshotAt ?: TimeUtils.nowOffsetDateTime()
+
+        // 알림 페이지 조회
+        val page = notificationRepository.fetchMyNotificationPage(
+            userId = userId,
+            request = request,
+            snapshotAt = snapshotAt,
+        )
+
+        // 응답 반환
+        return CursorResponse(
+            snapshotAt = page.snapshotAt,
+            results = NotificationSummaryResponse.from(page.results),
+            nextCursor = page.nextCursor,
+            hasNext = page.hasNext,
+        )
     }
 }
