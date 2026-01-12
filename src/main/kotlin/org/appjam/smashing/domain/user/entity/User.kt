@@ -43,15 +43,23 @@ class User(
 
     @Column(nullable = false)
     @Comment("지역")
-    val region: String,
+    var region: String,
 
     @Column(name = "active_user_sport_profile_id", length = 13)
     @Comment("현재 활성화된 유저-스포츠 프로필 IDX")
     var activeUserSportProfileId: String? = null
 ) : BaseEntity() {
 
-    fun updateActiveProfile(profileId: String) {
+    fun updateActiveProfile(
+        profileId: String,
+    ) {
         this.activeUserSportProfileId = profileId
+    }
+
+    fun updateRegion(
+        newRegion: String,
+    ) {
+        this.region = newRegion
     }
 
     companion object {

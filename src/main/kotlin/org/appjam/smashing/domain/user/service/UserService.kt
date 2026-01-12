@@ -3,8 +3,9 @@ package org.appjam.smashing.domain.user.service
 import org.appjam.smashing.domain.sport.enums.InitTierLp
 import org.appjam.smashing.domain.sport.repository.SportRepository
 import org.appjam.smashing.domain.tier.repository.TierRepository
-import org.appjam.smashing.domain.user.command.ProfileAddCommand
+import org.appjam.smashing.domain.user.dto.command.AddressUpdateCommand
 import org.appjam.smashing.domain.user.dto.command.OpenChatValidateCommand
+import org.appjam.smashing.domain.user.dto.command.ProfileAddCommand
 import org.appjam.smashing.domain.user.dto.response.NicknameCheckResponse
 import org.appjam.smashing.domain.user.dto.response.OpenChatValidateResponse
 import org.appjam.smashing.domain.user.dto.response.OtherUserProfilesResponse
@@ -19,7 +20,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-@Transactional
 class UserService(
     private val userRepository: UserRepository,
     private val userSportProfileRepository: UserSportProfileRepository,
@@ -51,6 +51,7 @@ class UserService(
         }
     }
 
+    @Transactional
     fun validateOpenChatUrl(
         openChatValidateCommand: OpenChatValidateCommand,
     ): OpenChatValidateResponse {
@@ -107,6 +108,7 @@ class UserService(
         )
     }
 
+    @Transactional
     fun addProfile(
         userId: String,
         requestCommand: ProfileAddCommand,
@@ -145,6 +147,7 @@ class UserService(
         }
     }
 
+    @Transactional(readOnly = true)
     fun getOtherUserProfiles(
         otherUserId: String,
         sportCode: String?,
@@ -167,6 +170,18 @@ class UserService(
             selectedSport = selectedSport,
             allProfiles = allProfiles
         )
+    }
+
+    @Transactional
+    fun updateRegion(
+        userId: String,
+        requestCommand: AddressUpdateCommand,
+    ) {
+        val user = userRepository.findByIdOrNull(userId) ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+
+        // TODO: 지역 관련 검증 로직 추가 필요
+
+        user.updateRegion(requestCommand.region)
     }
 
     companion object {
