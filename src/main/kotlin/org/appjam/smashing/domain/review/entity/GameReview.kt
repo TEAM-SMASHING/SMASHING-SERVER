@@ -4,7 +4,8 @@ import io.hypersistence.utils.hibernate.id.Tsid
 import jakarta.persistence.*
 import org.appjam.smashing.domain.common.entity.BaseEntity
 import org.appjam.smashing.domain.game.entity.Game
-import org.appjam.smashing.domain.review.enums.*
+import org.appjam.smashing.domain.review.enums.ReviewRating
+import org.appjam.smashing.domain.review.enums.ReviewTag
 import org.appjam.smashing.domain.user.entity.User
 import org.hibernate.annotations.Comment
 import org.hibernate.annotations.SQLDelete
@@ -28,7 +29,7 @@ class GameReview(
     @Comment("경기 후기 IDX")
     val id: String? = null,
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", length = 100)
     @Comment("후기 내용")
     var content: String? = null,
 
