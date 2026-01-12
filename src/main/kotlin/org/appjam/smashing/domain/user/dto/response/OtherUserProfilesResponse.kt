@@ -48,7 +48,7 @@ data class OtherUserProfilesResponse(
             fun listForm(
                 allProfiles: List<UserSportProfile>,
                 selectedSportProfileId: String,
-            ): List<SportInfo> = allProfiles
+            ) = allProfiles
                 .filter { userSportProfile ->
                     userSportProfile.id != selectedSportProfileId
                 }
@@ -61,14 +61,14 @@ data class OtherUserProfilesResponse(
     companion object {
         fun from(
             nickname: String,
-            selectedSport: SelectedSport,
+            selectedSport: UserSportProfile,
             allProfiles: List<UserSportProfile>,
         ) = OtherUserProfilesResponse(
             nickname = nickname,
-            selectedSport = selectedSport,
+            selectedSport = SelectedSport.from(selectedSport),
             sports = SportInfo.listForm(
-                allProfiles,
-                selectedSport.profileId
+                allProfiles = allProfiles,
+                selectedSportProfileId = selectedSport.id!!
             )
         )
     }
