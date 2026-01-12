@@ -19,4 +19,18 @@ interface GameReviewRepository : JpaRepository<GameReview, String> {
         revieweeUserId: String,
         sportId: Long,
     ): Long
+
+    @Query(
+        """
+            select gr
+            from GameReview gr
+            join fetch gr.reviewer
+            join fetch gr.reviewee
+            left join fetch gr.tags
+            where gr.id = :reviewId
+        """
+    )
+    fun findByIdFetchAll(
+        reviewId: String,
+    ): GameReview?
 }
