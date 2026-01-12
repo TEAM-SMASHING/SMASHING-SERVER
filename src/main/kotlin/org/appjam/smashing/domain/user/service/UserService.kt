@@ -3,6 +3,7 @@ package org.appjam.smashing.domain.user.service
 import org.appjam.smashing.domain.sport.enums.InitTierLp
 import org.appjam.smashing.domain.sport.repository.SportRepository
 import org.appjam.smashing.domain.tier.repository.TierRepository
+import org.appjam.smashing.domain.user.dto.command.ActiveProfileUpdateCommand
 import org.appjam.smashing.domain.user.dto.command.AddressUpdateCommand
 import org.appjam.smashing.domain.user.dto.command.OpenChatValidateCommand
 import org.appjam.smashing.domain.user.dto.command.ProfileAddCommand
@@ -182,6 +183,21 @@ class UserService(
         // TODO: 지역 관련 검증 로직 추가 필요
 
         user.updateRegion(requestCommand.region)
+    }
+
+    @Transactional
+    fun updateActiveProfile(
+        userId: String,
+        requestCommand: ActiveProfileUpdateCommand,
+    ) {
+        val user = userRepository.findByIdOrNull(userId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+
+        if (!userSportProfileRepository.existsById(requestCommand.profileId)) {
+            throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+        }
+
+        user.updateActiveProfile(requestCommand.profileId)
     }
 
     companion object {
