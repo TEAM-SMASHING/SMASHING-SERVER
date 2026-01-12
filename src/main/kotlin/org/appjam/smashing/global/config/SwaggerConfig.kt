@@ -23,11 +23,11 @@ class SwaggerConfig {
             .url("http://localhost:8080")
             .description("Local Server")
 
-        // val prodServer = Server()
-        //     .url("https://api.smashing.app")
-        //     .description("Production Server")
+        val devServer = Server()
+            .url("http://15.164.76.231:8080")
+            .description("Dev Server")
 
         return OpenAPI()
-            .servers(listOf(localServer))
+            .servers(listOf(localServer, devServer))
     }
 }
