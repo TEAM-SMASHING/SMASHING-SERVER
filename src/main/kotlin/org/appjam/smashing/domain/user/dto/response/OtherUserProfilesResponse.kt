@@ -51,8 +51,7 @@ data class OtherUserProfilesResponse(
             ) = allProfiles
                 .filter { userSportProfile ->
                     userSportProfile.id != selectedSportProfileId
-                }
-                .map { userSportProfile ->
+                }.map { userSportProfile ->
                     from(userSportProfile)
                 }
         }
