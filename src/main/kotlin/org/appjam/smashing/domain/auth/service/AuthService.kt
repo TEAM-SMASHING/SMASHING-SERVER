@@ -39,7 +39,7 @@ class AuthService(
                 authId = kakaoId,
             )
 
-        val userId = user.id ?: throw CustomException(ErrorCode.INTERNAL_SERVER_ERROR)
+        val userId = user.id ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
         val token = jwtProvider.issueToken(userId)
 
