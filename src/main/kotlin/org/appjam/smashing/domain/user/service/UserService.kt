@@ -7,10 +7,7 @@ import org.appjam.smashing.domain.user.dto.command.ActiveProfileUpdateCommand
 import org.appjam.smashing.domain.user.dto.command.AddressUpdateCommand
 import org.appjam.smashing.domain.user.dto.command.OpenChatValidateCommand
 import org.appjam.smashing.domain.user.dto.command.ProfileAddCommand
-import org.appjam.smashing.domain.user.dto.response.NicknameCheckResponse
-import org.appjam.smashing.domain.user.dto.response.OpenChatValidateResponse
-import org.appjam.smashing.domain.user.dto.response.OtherUserProfilesResponse
-import org.appjam.smashing.domain.user.dto.response.UserProfileTierResponse
+import org.appjam.smashing.domain.user.dto.response.*
 import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.appjam.smashing.domain.user.repository.UserRepository
 import org.appjam.smashing.domain.user.repository.UserSportProfileRepository
@@ -146,6 +143,11 @@ class UserService(
         if (userSportProfileRepository.existsByUserIdAndSportId(userId, sportId)) {
             throw CustomException(ErrorCode.ALREADY_EXIST_SPORT_PROFILE)
         }
+    }
+
+    @Transactional
+    fun getUserProfiles(): UserProfilesResponse {
+
     }
 
     @Transactional(readOnly = true)
