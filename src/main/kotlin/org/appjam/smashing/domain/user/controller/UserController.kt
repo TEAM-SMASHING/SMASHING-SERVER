@@ -1,6 +1,7 @@
 package org.appjam.smashing.domain.user.controller
 
 import jakarta.validation.Valid
+import org.appjam.smashing.domain.user.dto.request.ActiveProfileUpdateRequest
 import org.appjam.smashing.domain.user.dto.request.AddressUpdateRequest
 import org.appjam.smashing.domain.user.dto.request.OpenChatValidateRequest
 import org.appjam.smashing.domain.user.dto.request.ProfileAddRequest
@@ -96,8 +97,10 @@ class UserController(
     @PutMapping("/me/active-profile")
     fun updateActiveProfile(
         @RequestHeader("userId") userId: String, // TODO: 인증/인가 회복시 @AuthenticationPrincipal 으로 변경
+        @Valid @RequestBody activeProfileUpdateRequest: ActiveProfileUpdateRequest,
+    ): ResponseEntity<ApiResponse<Unit>> {
+        userService.updateActiveProfile(activeProfileUpdateRequest.toCommand())
 
-    ) {
-
+        return ApiResponse.success()
     }
 }
