@@ -15,8 +15,6 @@ import org.hibernate.annotations.SQLRestriction
     indexes = [
         Index(name = "idx_notification_user_id", columnList = "user_id"),
         Index(name = "idx_notification_template_id", columnList = "notification_template_id"),
-        Index(name = "idx_notification_receiver_profile_id", columnList = "receiver_profile_id"),
-        Index(name = "idx_notification_receiver_sport_id", columnList = "receiver_sport_id"),
     ]
 )
 @Comment("알림 정보")
