@@ -145,9 +145,23 @@ class UserService(
         }
     }
 
-    @Transactional
-    fun getUserProfiles(): UserProfilesResponse {
+    @Transactional(readOnly = true)
+    fun getUserProfiles(
+        userId: String,
+    ): UserProfilesResponse {
+        val user = userRepository.findByIdOrNull(userId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
+        val allProfiles = userSportProfileRepository.findAllByUserId(userId)
+
+        val activeSport = allProfiles.find { it.id == user.id }
+            ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
+
+        return UserProfilesResponse.from(
+            nickname = user.nickname,
+            activeSport = activeSport,
+            allProfiles = allProfiles,
+        )
     }
 
     @Transactional(readOnly = true)

@@ -64,9 +64,11 @@ class UserController(
 
     @GetMapping("me/profiles")
     fun getUserProfiles(
-        @RequestHeader("userId") authId: String, // TODO: 인증/인가 회복시 @AuthenticationPrincipal 으로 변경
+        @RequestHeader("userId") userId: String, // TODO: 인증/인가 회복시 @AuthenticationPrincipal 으로 변경
     ): ResponseEntity<ApiResponse<UserProfilesResponse>> {
-        val response = userService.getUserProfiles()
+        val response = userService.getUserProfiles(
+            userId = userId,
+        )
 
         return ApiResponse.success(
             data = response,
