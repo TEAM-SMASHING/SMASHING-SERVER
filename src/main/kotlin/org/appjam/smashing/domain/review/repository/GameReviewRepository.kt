@@ -26,6 +26,7 @@ interface GameReviewRepository : JpaRepository<GameReview, String> {
             from GameReview gr
             join fetch gr.reviewer
             join fetch gr.reviewee
+            left join fetch gr.tags
             where gr.id = :reviewId
         """
     )
