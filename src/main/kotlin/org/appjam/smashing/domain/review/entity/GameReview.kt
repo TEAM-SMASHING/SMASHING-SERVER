@@ -29,7 +29,7 @@ class GameReview(
     @Comment("경기 후기 IDX")
     val id: String? = null,
 
-    @Column(columnDefinition = "TEXT", length = 100)
+    @Column(length = 100)
     @Comment("후기 내용")
     var content: String? = null,
 
