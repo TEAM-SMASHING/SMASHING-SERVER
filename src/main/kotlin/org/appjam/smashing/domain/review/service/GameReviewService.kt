@@ -51,11 +51,6 @@ class GameReviewService(
         val review = gameReviewRepository.findByIdFetchAll(reviewId)
             ?: throw CustomException(ErrorCode.REVIEW_NOT_FOUND)
 
-        return ReviewDetailResponse(
-            reviewerNickname = review.reviewer.nickname,
-            revieweeNickname = review.reviewee.nickname,
-            tag = review.tags.map { it.name },
-            content = review.content.orEmpty(),
-        )
+        return ReviewDetailResponse.from(review)
     }
 }
