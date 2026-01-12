@@ -1,5 +1,7 @@
 package org.appjam.smashing.domain.user.dto.response
 
+import org.appjam.smashing.domain.user.entity.UserSportProfile
+
 data class OtherUserProfilesResponse(
     val nickname: String,
     val selectedSport: SelectedSport,
@@ -8,7 +10,7 @@ data class OtherUserProfilesResponse(
     data class SelectedSport(
         val profileId: String,
         val sportCode: String,
-        val tier: Int,
+        val tierId: Int,
         val lp: Int,
         val minLp: Int,
         val maxLp: Int,
@@ -17,23 +19,16 @@ data class OtherUserProfilesResponse(
     ) {
         companion object {
             fun from(
-                profileId: String,
-                sportCode: String,
-                tier: Int,
-                lp: Int,
-                minLp: Int,
-                maxLp: Int,
-                wins: Int,
-                losses: Int,
+                u: UserSportProfile,
             ) = SelectedSport(
-                profileId = profileId,
-                sportCode = sportCode,
-                tier = tier,
-                lp = lp,
-                minLp = minLp,
-                maxLp = maxLp,
-                wins = wins,
-                losses = losses,
+                profileId = u.id!!,
+                sportCode = u.sport.code,
+                tierId = u.tier.orderNo,
+                lp = u.lp,
+                minLp = u.tier.minLp,
+                maxLp = u.tier.maxLp,
+                wins = u.wins,
+                losses = u.losses,
             )
         }
     }
@@ -44,12 +39,37 @@ data class OtherUserProfilesResponse(
     ) {
         companion object {
             fun from(
-                profileId: String,
-                sportCode: String,
+                u: UserSportProfile,
             ) = SportInfo(
-                profileId = profileId,
-                sportCode = sportCode,
+                profileId = u.id!!,
+                sportCode = u.sport.code,
             )
+
+            fun listForm(
+                allProfiles: List<UserSportProfile>,
+                selectedSportProfileId: String,
+            ): List<SportInfo> = allProfiles
+                .filter { userSportProfile ->
+                    userSportProfile.id != selectedSportProfileId
+                }
+                .map { userSportProfile ->
+                    from(userSportProfile)
+                }
         }
+    }
+
+    companion object {
+        fun from(
+            nickname: String,
+            selectedSport: SelectedSport,
+            allProfiles: List<UserSportProfile>,
+        ) = OtherUserProfilesResponse(
+            nickname = nickname,
+            selectedSport = selectedSport,
+            sports = SportInfo.listForm(
+                allProfiles,
+                selectedSport.profileId
+            )
+        )
     }
 }

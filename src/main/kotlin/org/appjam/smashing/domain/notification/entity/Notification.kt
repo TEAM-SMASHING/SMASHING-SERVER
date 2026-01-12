@@ -39,6 +39,14 @@ class Notification(
     @Comment("알림 연결 URL(라우팅 경로)")
     val linkUrl: String,
 
+    @Column(name = "receiver_profile_id", nullable = false, length = 13)
+    @Comment("수신자 유저-스포츠 프로필 IDX")
+    val receiverProfileId: String,
+
+    @Column(name = "receiver_sport_id", nullable = false)
+    @Comment("수신 스포츠 IDX")
+    val receiverSportId: Long,
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
         name = "user_id",
@@ -61,30 +69,37 @@ class Notification(
     companion object {
         fun createMatchingRequested(
             receiver: User,
+            receiverProfile: UserSportProfile,
             template: NotificationTemplate,
             requesterProfile: UserSportProfile,
         ) = Notification(
                 params = """{"requesterNickname":"${requesterProfile.user.nickname}","requesterTierName":"${requesterProfile.tier.name}"}""",
                 isRead = false,
                 linkUrl = "/api/v1/users/me/matchings/received",
+                receiverProfileId = receiverProfile.id!!,
+                receiverSportId = receiverProfile.sport.id!!,
                 user = receiver,
                 notificationTemplate = template,
             )
 
         fun createMatchingRequestAccepted(
             receiver: User,
+            receiverProfile: UserSportProfile,
             template: NotificationTemplate,
             acceptorProfile: UserSportProfile,
         ) = Notification(
                 params = """{"acceptorNickname":"${acceptorProfile.user.nickname}","acceptorTierId":${acceptorProfile.tier.id!!}}""",
                 isRead = false,
-                linkUrl = "/api/v1/users/me/matchings/accepted/pending-result",
+                linkUrl = "/api/v1/users/me/games/pending-results",
+                receiverProfileId = receiverProfile.id!!,
+                receiverSportId = receiverProfile.sport.id!!,
                 user = receiver,
                 notificationTemplate = template,
             )
 
         fun createMatchingResultSubmitted(
             receiver: User,
+            receiverProfile: UserSportProfile,
             template: NotificationTemplate,
             gameId: String,
             submissionId: String,
@@ -93,13 +108,16 @@ class Notification(
         ) = Notification(
             params = """{"submitterNickname":"$submitterNickname","submitterTierId":$submitterTierId,"gameId":"$gameId","submissionId":"$submissionId"}""",
             isRead = false,
-            linkUrl = "/api/v1/users/me/matchings/accepted/pending-result",
+            linkUrl = "/api/v1/users/me/games/pending-results",
             user = receiver,
+            receiverProfileId = receiverProfile.id!!,
+            receiverSportId = receiverProfile.sport.id!!,
             notificationTemplate = template,
         )
 
         fun createReviewReceived(
             receiver: User,
+            receiverProfile: UserSportProfile,
             template: NotificationTemplate,
             reviewId: String,
             reviewerNickname: String,
@@ -110,11 +128,14 @@ class Notification(
             isRead = false,
             linkUrl = "/api/v1/reviews/$reviewId",
             user = receiver,
+            receiverProfileId = receiverProfile.id!!,
+            receiverSportId = receiverProfile.sport.id!!,
             notificationTemplate = template,
         )
 
         fun createResultRejectedScoreMismatch(
             receiver: User,
+            receiverProfile: UserSportProfile,
             template: NotificationTemplate,
             gameId: String,
             submissionId: String,
@@ -123,13 +144,16 @@ class Notification(
         ) = Notification(
             params = """{"rejectorNickname":"$rejectorNickname","rejectorTierId":$rejectorTierId,"gameId":"$gameId","submissionId":"$submissionId","reason":"${GameResultRejectReason.SCORE_MISMATCH.name}"}""",
             isRead = false,
-            linkUrl = "/api/v1/users/me/matchings/accepted/pending-result",
+            linkUrl = "/api/v1/users/me/games/pending-results",
             user = receiver,
+            receiverProfileId = receiverProfile.id!!,
+            receiverSportId = receiverProfile.sport.id!!,
             notificationTemplate = template,
         )
 
         fun createResultRejectedWinLoseReversed(
             receiver: User,
+            receiverProfile: UserSportProfile,
             template: NotificationTemplate,
             gameId: String,
             submissionId: String,
@@ -138,9 +162,17 @@ class Notification(
         ) = Notification(
             params = """{"rejectorNickname":"$rejectorNickname","rejectorTierId":$rejectorTierId,"gameId":"$gameId","submissionId":"$submissionId","reason":"${GameResultRejectReason.WIN_LOSE_REVERSED.name}"}""",
             isRead = false,
-            linkUrl = "/api/v1/users/me/matchings/accepted/pending-result",
+            linkUrl = "/api/v1/users/me/games/pending-results",
             user = receiver,
+            receiverProfileId = receiverProfile.id!!,
+            receiverSportId = receiverProfile.sport.id!!,
             notificationTemplate = template,
         )
+    }
+
+    fun markAsRead() {
+        if (!isRead) {
+            isRead = true
+        }
     }
 }

@@ -51,7 +51,7 @@ class UserController(
         )
     }
 
-    @PostMapping("me/profiles")
+    @PostMapping("/me/profiles")
     fun addProfile(
         @RequestHeader("userId") userId: String, // TODO: 인증/인가 회복시 @AuthenticationPrincipal 으로 변경
         @Valid @RequestBody profileAddRequest: ProfileAddRequest,
