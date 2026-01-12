@@ -116,4 +116,15 @@ class UserController(
 
         return ApiResponse.success()
     }
+
+    @GetMapping("/regions/recommendation")
+    fun getOtherUsersRecommendation(
+        @RequestHeader("userId") userId: String, // TODO: 인증/인가 회복시 @AuthenticationPrincipal 으로 변경
+    ): ResponseEntity<ApiResponse<OtherUsersRecommendationResponse>> {
+        val response = userService.getOtherUsersRecommendation(userId)
+
+        return ApiResponse.success(
+            data = response,
+        )
+    }
 }
