@@ -50,11 +50,15 @@ class User(
     var activeUserSportProfileId: String? = null
 ) : BaseEntity() {
 
-    fun updateActiveProfile(profileId: String) {
+    fun updateActiveProfile(
+        profileId: String,
+    ) {
         this.activeUserSportProfileId = profileId
     }
 
-    fun updateRegion(newRegion: String) {
+    fun updateRegion(
+        newRegion: String,
+    ) {
         this.region = newRegion
     }
 
