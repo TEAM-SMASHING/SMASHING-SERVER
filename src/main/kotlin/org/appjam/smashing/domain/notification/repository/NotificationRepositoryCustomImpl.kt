@@ -9,10 +9,8 @@ import org.appjam.smashing.domain.notification.entity.QNotificationTemplate.Comp
 import org.appjam.smashing.global.common.dto.CommonCursorRequest
 import org.appjam.smashing.global.common.dto.CursorPageResponse
 import org.appjam.smashing.global.util.CursorCodec
-import org.springframework.stereotype.Repository
 import java.time.OffsetDateTime
 
-@Repository
 class NotificationRepositoryCustomImpl(
     private val queryFactory: JPAQueryFactory,
     private val cursorCodec: CursorCodec,

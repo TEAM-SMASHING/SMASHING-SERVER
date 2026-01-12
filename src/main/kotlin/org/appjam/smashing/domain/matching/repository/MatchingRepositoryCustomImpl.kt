@@ -17,10 +17,8 @@ import org.appjam.smashing.global.common.dto.CommonCursorRequest
 import org.appjam.smashing.global.common.dto.CursorPageResponse
 import org.appjam.smashing.global.util.CursorCodec
 import org.appjam.smashing.global.util.TimeUtils
-import org.springframework.stereotype.Repository
 import java.time.OffsetDateTime
 
-@Repository
 class MatchingRepositoryCustomImpl(
     private val queryFactory: JPAQueryFactory,
     private val cursorCodec: CursorCodec,
