@@ -90,7 +90,7 @@ class Notification(
         ) = Notification(
                 params = """{"acceptorNickname":"${acceptorProfile.user.nickname}","acceptorTierId":${acceptorProfile.tier.id!!}}""",
                 isRead = false,
-                linkUrl = "/api/v1/users/me/matchings/accepted/pending-result",
+                linkUrl = "/api/v1/users/me/games/pending-results",
                 receiverProfileId = receiverProfile.id!!,
                 receiverSportId = receiverProfile.sport.id!!,
                 user = receiver,
@@ -108,7 +108,7 @@ class Notification(
         ) = Notification(
             params = """{"submitterNickname":"$submitterNickname","submitterTierId":$submitterTierId,"gameId":"$gameId","submissionId":"$submissionId"}""",
             isRead = false,
-            linkUrl = "/api/v1/users/me/matchings/accepted/pending-result",
+            linkUrl = "/api/v1/users/me/games/pending-results",
             user = receiver,
             receiverProfileId = receiverProfile.id!!,
             receiverSportId = receiverProfile.sport.id!!,
@@ -144,7 +144,7 @@ class Notification(
         ) = Notification(
             params = """{"rejectorNickname":"$rejectorNickname","rejectorTierId":$rejectorTierId,"gameId":"$gameId","submissionId":"$submissionId","reason":"${GameResultRejectReason.SCORE_MISMATCH.name}"}""",
             isRead = false,
-            linkUrl = "/api/v1/users/me/matchings/accepted/pending-result",
+            linkUrl = "/api/v1/users/me/games/pending-results",
             user = receiver,
             receiverProfileId = receiverProfile.id!!,
             receiverSportId = receiverProfile.sport.id!!,
@@ -162,7 +162,7 @@ class Notification(
         ) = Notification(
             params = """{"rejectorNickname":"$rejectorNickname","rejectorTierId":$rejectorTierId,"gameId":"$gameId","submissionId":"$submissionId","reason":"${GameResultRejectReason.WIN_LOSE_REVERSED.name}"}""",
             isRead = false,
-            linkUrl = "/api/v1/users/me/matchings/accepted/pending-result",
+            linkUrl = "/api/v1/users/me/games/pending-results",
             user = receiver,
             receiverProfileId = receiverProfile.id!!,
             receiverSportId = receiverProfile.sport.id!!,
