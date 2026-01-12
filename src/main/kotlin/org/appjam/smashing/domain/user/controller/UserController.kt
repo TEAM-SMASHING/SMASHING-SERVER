@@ -5,10 +5,7 @@ import org.appjam.smashing.domain.user.dto.request.ActiveProfileUpdateRequest
 import org.appjam.smashing.domain.user.dto.request.AddressUpdateRequest
 import org.appjam.smashing.domain.user.dto.request.OpenChatValidateRequest
 import org.appjam.smashing.domain.user.dto.request.ProfileAddRequest
-import org.appjam.smashing.domain.user.dto.response.NicknameCheckResponse
-import org.appjam.smashing.domain.user.dto.response.OpenChatValidateResponse
-import org.appjam.smashing.domain.user.dto.response.OtherUserProfilesResponse
-import org.appjam.smashing.domain.user.dto.response.UserProfileTierResponse
+import org.appjam.smashing.domain.user.dto.response.*
 import org.appjam.smashing.domain.user.service.UserService
 import org.appjam.smashing.global.common.dto.ApiResponse
 import org.springframework.http.ResponseEntity
@@ -63,6 +60,17 @@ class UserController(
         )
 
         return ApiResponse.success()
+    }
+
+    @GetMapping("me/profiles")
+    fun getUserProfiles(
+        @RequestHeader("userId") authId: String, // TODO: 인증/인가 회복시 @AuthenticationPrincipal 으로 변경
+    ): ResponseEntity<ApiResponse<UserProfilesResponse>> {
+        val response = userService.getUserProfiles()
+
+        return ApiResponse.success(
+            data = response,
+        )
     }
 
     @GetMapping("/{userId}/profiles")
