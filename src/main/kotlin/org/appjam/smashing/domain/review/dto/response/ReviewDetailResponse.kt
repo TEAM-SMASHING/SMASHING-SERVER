@@ -10,12 +10,12 @@ data class ReviewDetailResponse(
 ) {
     companion object {
         fun from(
-            r: GameReview,
+            gr: GameReview,
         ) = ReviewDetailResponse(
-            reviewerNickname = r.reviewer.nickname,
-            revieweeNickname = r.reviewee.nickname,
-            tag = r.tags.map { it.name },
-            content = r.content.orEmpty()
+            reviewerNickname = gr.reviewer.nickname,
+            revieweeNickname = gr.reviewee.nickname,
+            tag = gr.tags.map { it.name },
+            content = gr.content.orEmpty()
         )
     }
 }
