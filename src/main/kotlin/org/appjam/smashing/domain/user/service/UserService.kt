@@ -19,7 +19,6 @@ import org.appjam.smashing.global.exception.ErrorCode
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.transaction.reactive.TransactionalOperator
 
 @Service
 @Transactional
@@ -28,7 +27,6 @@ class UserService(
     private val userSportProfileRepository: UserSportProfileRepository,
     private val sportRepository: SportRepository,
     private val tierRepository: TierRepository,
-    private val transactionalOperator: TransactionalOperator,
 ) {
     @Transactional(readOnly = true)
     fun checkNicknameAvailability(
@@ -190,6 +188,10 @@ class UserService(
     ) {
         val user = userRepository.findByIdOrNull(userId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+
+        if (!userSportProfileRepository.existsById(requestCommand.profileId)) {
+            throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+        }
 
         user.updateActiveProfile(requestCommand.profileId)
     }
