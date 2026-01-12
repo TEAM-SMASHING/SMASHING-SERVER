@@ -357,6 +357,8 @@ class GameService(
 
         // 게임 취소 처리
         game.cancel()
+
+        /* 앱잼 기간 내 삭제 기능 제외
         gameRepository.flush()
 
         // submissions soft delete
@@ -371,6 +373,7 @@ class GameService(
             gameId = game.id!!,
             resultStatus = game.resultStatus,
         )
+        */
     }
 
     @Transactional(readOnly = true)

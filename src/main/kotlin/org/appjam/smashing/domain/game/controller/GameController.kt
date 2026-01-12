@@ -148,13 +148,14 @@ class GameController(
         description = """
             경기를 삭제(soft delete)합니다.
             - 게임의 resultStatus를 CANCELED로 변경.
+            - 앱잼 기간 내 삭제 x. canceled로만 변경.
             - 단, RESULT_CONFIRMED(확정) 상태면 삭제 불가
             - 삭제 시 제출안(GameResultSubmission)도 함께 soft delete 처리.
             - 경기 참여자(매칭 requester/receiver)만 삭제 가능
             - 게임 상태 변경 SSE(game.updated)가 상대에게 발행. (resultStatus = CANCELED)
         """
     )
-    @DeleteMapping("/{gameId}")
+    @PutMapping("/{gameId}")
     fun deleteGame(
         @RequestHeader("userId") userId: String, // TODO: 인증/인가 적용시 변경
         @PathVariable gameId: String,
