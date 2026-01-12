@@ -164,7 +164,7 @@ class UserService(
 
         return OtherUserProfilesResponse.from(
             nickname = otherUser.nickname,
-            selectedSport = OtherUserProfilesResponse.SelectedSport.from(selectedSport),
+            selectedSport = selectedSport,
             allProfiles = allProfiles
         )
     }
