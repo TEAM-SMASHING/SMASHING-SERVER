@@ -4,11 +4,13 @@ import jakarta.validation.Valid
 import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
-import jakarta.validation.constraints.Size
 import org.appjam.smashing.domain.game.dto.command.GameResultSubmitCommand
 import org.appjam.smashing.domain.review.enums.ReviewRating
 import org.appjam.smashing.domain.review.enums.ReviewTag
 import org.appjam.smashing.global.common.validator.annotation.ValidEnum
+import org.appjam.smashing.global.exception.CustomException
+import org.appjam.smashing.global.exception.ErrorCode
+import org.appjam.smashing.global.extensions.getActualLength
 import org.appjam.smashing.global.extensions.ofIgnoreCase
 import org.appjam.smashing.global.extensions.ofIgnoreCaseOrNull
 
@@ -43,15 +45,20 @@ data class GameResultSubmitRequest(
         @field:ValidEnum(message = "잘못된 rating 값입니다.", enumClass = ReviewRating::class)
         val rating: String?,
 
-        @field:Size(max = 100, message = "후기 내용은 최대 100자까지 입력 가능합니다.")
         val content: String?,
 
         val tags: Set<@ValidEnum(message = "잘못된 tag 값입니다.", enumClass = ReviewTag::class) String>?,
     ) {
-        fun toCommand() = GameResultSubmitCommand.ReviewCommand(
-            rating = ofIgnoreCase<ReviewRating>(rating!!),
-            content = content,
-            tags = tags?.mapNotNull { ofIgnoreCaseOrNull<ReviewTag>(it) }?.toSet(),
-        )
+        fun toCommand(): GameResultSubmitCommand.ReviewCommand {
+            if ((content?.getActualLength() ?: 0) > 100) {
+                throw CustomException(ErrorCode.REVIEW_CONTENT_TOO_LONG)
+            }
+
+            return GameResultSubmitCommand.ReviewCommand(
+                rating = ofIgnoreCase<ReviewRating>(rating!!),
+                content = content,
+                tags = tags?.mapNotNull { ofIgnoreCaseOrNull<ReviewTag>(it) }?.toSet(),
+            )
+        }
     }
 }
