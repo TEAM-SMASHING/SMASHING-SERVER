@@ -48,7 +48,7 @@ data class OtherUserProfilesResponse(
             fun listForm(
                 allProfiles: List<UserSportProfile>,
                 selectedSportProfileId: String,
-            ): List<SportInfo> = allProfiles
+            ) = allProfiles
                 .filter { userSportProfile ->
                     userSportProfile.id != selectedSportProfileId
                 }
