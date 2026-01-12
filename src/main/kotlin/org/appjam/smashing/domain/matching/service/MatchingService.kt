@@ -64,7 +64,7 @@ class MatchingService(
             receiverUserId = receiverProfile.user.id!!,
         )
 
-        // 오늘 매칭 요청이 남아있는 경우, 동일 상대방에 대해 하루(00:00 ~) 중복 매칭 요청 불가
+        // 24시간 내 매칭 요청이 남아있는 경우, 동일 상대방에 대해 중복 매칭 요청 불가
         validateNoPendingMatching(
             requesterUserId = requesterUserId,
             receiverUserId = receiverProfile.user.id!!,
@@ -372,11 +372,10 @@ class MatchingService(
         receiverUserId: String,
     ) {
         val now = LocalDateTime.now(DEFAULT_ZONE_ID)
-        val startOfDay = now.toLocalDate().atStartOfDay()
+        val since = now.minusHours(24)
 
-        // 요청이 남아있는 경우, 동일 상대방에 대해 하루(00:00 ~) 중복 매칭 요청 불가
         val existsPending = matchingRepository.existsBetweenUsersSinceWithStatus(
-            startAt = startOfDay,
+            startAt = since,
             userA = requesterUserId,
             userB = receiverUserId,
             status = MatchingStatus.REQUESTED,
