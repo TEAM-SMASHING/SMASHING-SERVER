@@ -62,7 +62,7 @@ class UserController(
         return ApiResponse.success()
     }
 
-    @GetMapping("me/profiles")
+    @GetMapping("/me/profiles")
     fun getUserProfiles(
         @RequestHeader("userId") userId: String, // TODO: 인증/인가 회복시 @AuthenticationPrincipal 으로 변경
     ): ResponseEntity<ApiResponse<UserProfilesResponse>> {

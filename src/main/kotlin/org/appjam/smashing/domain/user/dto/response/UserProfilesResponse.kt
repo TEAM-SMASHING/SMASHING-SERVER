@@ -26,7 +26,7 @@ data class UserProfilesResponse(
                 tierId = u.tier.orderNo,
                 lp = u.lp,
                 minLp = u.tier.minLp,
-                maxLp = u.tier.minLp,
+                maxLp = u.tier.maxLp,
                 wins = u.wins,
                 losses = u.losses,
             )
