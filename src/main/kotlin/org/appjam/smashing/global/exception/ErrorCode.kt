@@ -65,7 +65,7 @@ enum class ErrorCode(
     MATCHING_NOT_FOUND(HttpStatus.NOT_FOUND, "MATCH-006", "매칭을 찾을 수 없습니다."),
     MATCHING_FORBIDDEN(HttpStatus.FORBIDDEN, "MATCH-007", "해당 매칭에 대한 권한이 없습니다."),
     MATCHING_ALREADY_RESPONDED(HttpStatus.BAD_REQUEST, "MATCH-008", "이미 응답된 매칭 요청입니다."),
-    MATCHING_PENDING_EXISTS(HttpStatus.BAD_REQUEST, "MATCH-009", "오늘 처리되지 않은 매칭 요청이 남아 있어 다시 신청할 수 없습니다."),
+    MATCHING_PENDING_EXISTS(HttpStatus.BAD_REQUEST, "MATCH-009", "24시간 내 처리되지 않은 매칭 요청이 남아 있어 다시 신청할 수 없습니다."),
 
     // Domain - Game
     GAME_NOT_FOUND(HttpStatus.NOT_FOUND, "GAME-001", "경기를 찾을 수 없습니다."),
