@@ -1,5 +1,7 @@
 package org.appjam.smashing.domain.user.dto.response
 
+import org.appjam.smashing.domain.user.entity.UserSportProfile
+
 data class OtherUserProfilesResponse(
     val nickname: String,
     val selectedSport: SelectedSport,
@@ -17,23 +19,16 @@ data class OtherUserProfilesResponse(
     ) {
         companion object {
             fun from(
-                profileId: String,
-                sportCode: String,
-                tier: Int,
-                lp: Int,
-                minLp: Int,
-                maxLp: Int,
-                wins: Int,
-                losses: Int,
+                u: UserSportProfile,
             ) = SelectedSport(
-                profileId = profileId,
-                sportCode = sportCode,
-                tier = tier,
-                lp = lp,
-                minLp = minLp,
-                maxLp = maxLp,
-                wins = wins,
-                losses = losses,
+                profileId = u.id!!,
+                sportCode = u.sport.code,
+                tier = u.tier.orderNo,
+                lp = u.lp,
+                minLp = u.tier.minLp,
+                maxLp = u.tier.maxLp,
+                wins = u.wins,
+                losses = u.losses,
             )
         }
     }
@@ -44,12 +39,22 @@ data class OtherUserProfilesResponse(
     ) {
         companion object {
             fun from(
-                profileId: String,
-                sportCode: String,
+                u: UserSportProfile,
             ) = SportInfo(
-                profileId = profileId,
-                sportCode = sportCode,
+                profileId = u.id!!,
+                sportCode = u.sport.code,
             )
+
+            fun listForm(
+                allProfiles: List<UserSportProfile>,
+                selectedSportProfileId: String,
+            ): List<SportInfo> = allProfiles
+                .filter { userSportProfile ->
+                    userSportProfile.id != selectedSportProfileId
+                }
+                .map { userSportProfile ->
+                    from(userSportProfile)
+                }
         }
     }
 
@@ -57,11 +62,14 @@ data class OtherUserProfilesResponse(
         fun from(
             nickname: String,
             selectedSport: SelectedSport,
-            sports: List<SportInfo>
+            allProfiles: List<UserSportProfile>,
         ) = OtherUserProfilesResponse(
             nickname = nickname,
             selectedSport = selectedSport,
-            sports = sports
+            sports = SportInfo.listForm(
+                allProfiles,
+                selectedSport.profileId
+            )
         )
     }
 }

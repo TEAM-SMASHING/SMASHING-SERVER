@@ -162,28 +162,10 @@ class UserService(
                 ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
         }
 
-        val sportsList = allProfiles
-            .filter { selectedSport.id != it.id }
-            .map {
-                OtherUserProfilesResponse.SportInfo.from(
-                    profileId = it.id!!,
-                    sportCode = it.sport.code
-                )
-            }
-
         return OtherUserProfilesResponse.from(
             nickname = otherUser.nickname,
-            selectedSport = OtherUserProfilesResponse.SelectedSport.from(
-                profileId = selectedSport.id!!,
-                sportCode = selectedSport.sport.code,
-                tier = selectedSport.tier.orderNo,
-                lp = selectedSport.lp,
-                minLp = selectedSport.tier.minLp,
-                maxLp = selectedSport.tier.maxLp,
-                wins = selectedSport.wins,
-                losses = selectedSport.losses
-            ),
-            sports = sportsList
+            selectedSport = OtherUserProfilesResponse.SelectedSport.from(selectedSport),
+            allProfiles = allProfiles
         )
     }
 
