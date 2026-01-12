@@ -11,6 +11,6 @@ data class CommonCursorRequest(
     val snapshotAt: OffsetDateTime? = null,
 ) {
     companion object {
-        const val DEFAULT_SIZE: Long = 20
+        private const val DEFAULT_SIZE: Long = 20
     }
 }
