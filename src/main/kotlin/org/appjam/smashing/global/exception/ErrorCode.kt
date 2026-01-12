@@ -84,6 +84,9 @@ enum class ErrorCode(
     GAME_SUBMISSION_CONFIRMER_MISMATCH(HttpStatus.FORBIDDEN, "GAME-015", "해당 제출안을 확정할 권한이 없습니다."),
     GAME_RESULT_ALREADY_CONFIRMED(HttpStatus.BAD_REQUEST, "GAME-016", "확정된 경기는 삭제할 수 없습니다."),
 
+    // Domain - Game Review
+    REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "GAMEREVIEW-001", "해당 리뷰를 찾을 수 없습니다."),
+
     // Domain - Sport
     SPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "SPORT-001", "존재하지 않는 스포츠 코드입니다."),
 
