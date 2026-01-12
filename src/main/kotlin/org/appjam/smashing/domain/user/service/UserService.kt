@@ -185,6 +185,7 @@ class UserService(
         user.updateRegion(requestCommand.region)
     }
 
+    @Transactional
     fun updateActiveProfile(
         userId: String,
         requestCommand: ActiveProfileUpdateCommand,
