@@ -2,8 +2,10 @@ package org.appjam.smashing.domain.user.controller
 
 import jakarta.validation.Valid
 import org.appjam.smashing.domain.user.dto.request.OpenChatValidateRequest
+import org.appjam.smashing.domain.user.dto.request.ProfileAddRequest
 import org.appjam.smashing.domain.user.dto.response.NicknameCheckResponse
 import org.appjam.smashing.domain.user.dto.response.OpenChatValidateResponse
+import org.appjam.smashing.domain.user.dto.response.UserProfileTierResponse
 import org.appjam.smashing.domain.user.service.UserService
 import org.appjam.smashing.global.common.dto.ApiResponse
 import org.springframework.http.ResponseEntity
@@ -34,5 +36,29 @@ class UserController(
         return ApiResponse.success(
             data = response
         )
+    }
+
+    @GetMapping("/me/profiles/tier")
+    fun getUserProfileTier(
+        @RequestHeader("userId") userId: String, // TODO: 인증/인가 회복시 @AuthenticationPrincipal 으로 변경
+    ): ResponseEntity<ApiResponse<UserProfileTierResponse>> {
+        val response = userService.getUserProfileTier(userId)
+
+        return ApiResponse.success(
+            data = response
+        )
+    }
+
+    @PostMapping("/me/profiles")
+    fun addProfile(
+        @RequestHeader("userId") userId: String, // TODO: 인증/인가 회복시 @AuthenticationPrincipal 으로 변경
+        @Valid @RequestBody profileAddRequest: ProfileAddRequest,
+    ): ResponseEntity<ApiResponse<Unit>> {
+        userService.addProfile(
+            userId = userId,
+            requestCommand = profileAddRequest.toCommand()
+        )
+
+        return ApiResponse.success()
     }
 }
