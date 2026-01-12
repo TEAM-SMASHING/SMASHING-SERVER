@@ -4,6 +4,7 @@ import jakarta.validation.Valid
 import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
+import jakarta.validation.constraints.Size
 import org.appjam.smashing.domain.game.dto.command.GameResultSubmitCommand
 import org.appjam.smashing.domain.review.enums.ReviewRating
 import org.appjam.smashing.domain.review.enums.ReviewTag
@@ -42,6 +43,7 @@ data class GameResultSubmitRequest(
         @field:ValidEnum(message = "잘못된 rating 값입니다.", enumClass = ReviewRating::class)
         val rating: String?,
 
+        @field:Size(max = 100, message = "후기 내용은 최대 100자까지 입력 가능합니다.")
         val content: String?,
 
         val tags: Set<@ValidEnum(message = "잘못된 tag 값입니다.", enumClass = ReviewTag::class) String>?,
