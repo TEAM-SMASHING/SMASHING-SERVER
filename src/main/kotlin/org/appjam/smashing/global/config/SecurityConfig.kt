@@ -41,7 +41,7 @@ class SecurityConfig(
 
                 PERMIT_ALL.forEach { authorize(it, permitAll) }
 
-                authorize(anyRequest, permitAll) // TODO: 추후 로그인 기능 구현 시 수정
+                authorize(anyRequest, authenticated)
             }
 
             exceptionHandling {
