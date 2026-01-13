@@ -216,6 +216,21 @@ class UserService(
         user.updateActiveProfile(requestCommand.profileId)
     }
 
+    @Transactional(readOnly = true)
+    fun getOtherUsersRecommendation(
+        userId: String,
+    ): OtherUsersRecommendationResponse {
+        val user = userRepository.findByIdOrNull(userId) ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+
+        //  val allRecommendUser = userRepository.existsAllOrderByUserId(user.id!!)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+
+
+        return OtherUsersRecommendationResponse.from(
+            users = listOf()
+        )
+    }
+
     companion object {
         private val NICKNAME_VALID_REGEX = Regex("^[a-zA-Z0-9가-힣]*$")
         private const val MAX_NICKNAME_LENGTH = 10
