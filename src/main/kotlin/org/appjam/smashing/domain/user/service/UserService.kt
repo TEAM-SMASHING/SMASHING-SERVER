@@ -276,7 +276,7 @@ class UserService(
             region = user.region,
             sportId = activeProfile.sport.id!!,
             excludeUserId = user.id!!
-        ).take(MAX_LEADERBOARD)
+        )
 
         return OtherUsersLeaderBoardResponse.from(
             topUsers = leaderBoardProfiles
@@ -289,6 +289,5 @@ class UserService(
         val OPEN_CHAT_URL_REGEX = Regex("^https://open\\.kakao\\.com/o/[a-zA-Z0-9]+\$")
         private const val MAX_SHUFFLE_LP = 200
         private const val MAX_LP_GAP = 5
-        private const val MAX_LEADERBOARD = 30
     }
 }
