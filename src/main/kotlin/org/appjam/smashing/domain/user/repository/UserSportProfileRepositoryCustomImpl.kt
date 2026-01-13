@@ -2,9 +2,9 @@ package org.appjam.smashing.domain.user.repository
 
 import com.querydsl.core.types.dsl.Expressions
 import com.querydsl.jpa.impl.JPAQueryFactory
+import org.appjam.smashing.domain.user.dto.projection.OtherUserRecommendationProjection
 import org.appjam.smashing.domain.user.entity.QUser.Companion.user
 import org.appjam.smashing.domain.user.entity.QUserSportProfile.Companion.userSportProfile
-import org.appjam.smashing.domain.user.entity.UserSportProfile
 
 class UserSportProfileRepositoryCustomImpl(
     private val queryFactory: JPAQueryFactory,
@@ -16,20 +16,44 @@ class UserSportProfileRepositoryCustomImpl(
         myLp: Int,
         lpThreshold: Int,
         limit: Long
-    ): List<UserSportProfile> =
-        queryFactory
-            .selectFrom(userSportProfile)
+    ): List<OtherUserRecommendationProjection> {
+
+        val projections = queryFactory
+            .select(
+                QOtherUserRecommendationProjection(
+                    user.id,
+                    user.nickname,
+                    userSportProfile.tier.id,
+                    userSportProfile.wins,
+                    userSportProfile.losses,
+                    Expressions.asNumber(0),
+                    user.gender.stringValue()
+                )
+            )
+            .from(userSportProfile)
             .join(
                 userSportProfile.user,
-                user,
-            ).fetchJoin()
-            .where(
-                user.region.eq(region),
-                userSportProfile.sport.id.eq(sportId),
-                user.id.ne(excludeUserId),
-                userSportProfile.lp.between(myLp - lpThreshold, myLp + lpThreshold)
+                user
             )
-            .orderBy(Expressions.numberTemplate(Double::class.java, "function('RAND')").asc())
-            .limit(limit)
-            .fetch()
+
+
+        /*
+    .selectFrom(userSportProfile)
+    .join(
+        userSportProfile.user,
+        user,
+    ).fetchJoin()
+    .where(
+        user.region.eq(region),
+        userSportProfile.sport.id.eq(sportId),
+        user.id.ne(excludeUserId),
+        userSportProfile.lp.between(myLp - lpThreshold, myLp + lpThreshold)
+    )
+    .orderBy(Expressions.numberTemplate(Double::class.java, "function('RAND')").asc())
+    .limit(limit)
+    .fetch()
+
+         */
+    }
+
 }
