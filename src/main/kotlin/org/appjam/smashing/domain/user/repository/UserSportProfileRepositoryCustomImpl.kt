@@ -6,7 +6,7 @@ import org.appjam.smashing.domain.user.entity.QUser.Companion.user
 import org.appjam.smashing.domain.user.entity.QUserSportProfile.Companion.userSportProfile
 import org.appjam.smashing.domain.user.entity.UserSportProfile
 
-class UserSportProfileRepositoryImpl(
+class UserSportProfileRepositoryCustomImpl(
     private val queryFactory: JPAQueryFactory,
 ) : UserSportProfileRepositoryCustom {
     override fun findRandomCandidates(
