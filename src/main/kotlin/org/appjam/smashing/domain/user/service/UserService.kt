@@ -207,14 +207,13 @@ class UserService(
     ): OtherUsersRecommendationResponse {
         val (user, activeProfile) = getMyInfoAndActiveProfile(userId)
 
-        val allRecommendProfiles = userSportProfileRepository.findAllByRegionAndSportOrderByUserId(
+        val recommendedProfiles = userSportProfileRepository.findRandomCandidates(
             region = user.region,
             sportId = activeProfile.sport.id!!,
-            excludeUserId = user.id!!
-        )
-        val recommendedProfiles = selectRandomCandidates(
+            excludeUserId = user.id!!,
             myLp = activeProfile.lp,
-            candidates = allRecommendProfiles,
+            lpThreshold = LP_THRESHOLD,
+            limit = LIMIT_RECOMMEND
         )
 
         val reviewMap = getReviewCountsMap(
@@ -232,21 +231,11 @@ class UserService(
         val user = userRepository.findByIdOrNull(userId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
-        val activeProfile = userSportProfileRepository.findAllByUserId(userId)
-            .find { it.id == user.activeUserSportProfileId }
+        val activeProfile = userSportProfileRepository.findByIdOrNull(user.activeUserSportProfileId!!)
             ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
 
         return user to activeProfile
     }
-
-    private fun selectRandomCandidates(
-        myLp: Int,
-        candidates: List<UserSportProfile>,
-    ): List<UserSportProfile> =
-        candidates
-            .filter { Math.abs(myLp - it.lp) <= MAX_SHUFFLE_LP }
-            .shuffled()
-            .take(MAX_LP_GAP)
 
     private fun getReviewCountsMap(
         sportId: Long,
@@ -287,7 +276,7 @@ class UserService(
         private val NICKNAME_VALID_REGEX = Regex("^[a-zA-Z0-9가-힣]*$")
         private const val MAX_NICKNAME_LENGTH = 10
         val OPEN_CHAT_URL_REGEX = Regex("^https://open\\.kakao\\.com/o/[a-zA-Z0-9]+\$")
-        private const val MAX_SHUFFLE_LP = 200
-        private const val MAX_LP_GAP = 5
+        private const val LP_THRESHOLD = 200
+        private const val LIMIT_RECOMMEND = 5L
     }
 }

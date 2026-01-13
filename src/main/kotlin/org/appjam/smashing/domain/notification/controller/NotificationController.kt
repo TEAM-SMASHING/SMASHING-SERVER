@@ -4,10 +4,12 @@ import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
 import org.appjam.smashing.domain.notification.dto.response.NotificationSummaryResponse
 import org.appjam.smashing.domain.notification.service.NotificationService
+import org.appjam.smashing.global.auth.security.data.CustomUserDetails
 import org.appjam.smashing.global.common.dto.ApiResponse
 import org.appjam.smashing.global.common.dto.CommonCursorRequest
 import org.appjam.smashing.global.common.dto.CursorResponse
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
@@ -31,11 +33,11 @@ class NotificationController(
     )
     @PutMapping("/{notificationId}/read")
     fun readNotification(
-        @RequestHeader("userId") userId: String, // TODO: 인증/인가 적용 시 변경
+        @AuthenticationPrincipal principal: CustomUserDetails,
         @PathVariable notificationId: String,
     ): ResponseEntity<ApiResponse<Unit>> {
         notificationService.markAsRead(
-            userId = userId,
+            userId = principal.username,
             notificationId = notificationId,
         )
 
@@ -59,11 +61,11 @@ class NotificationController(
     )
     @GetMapping("/me")
     fun getMyNotifications(
-        @RequestHeader("userId") userId: String, // TODO: 인증/인가 적용 시 변경
+        @AuthenticationPrincipal principal: CustomUserDetails,
         @Valid request: CommonCursorRequest,
     ): ResponseEntity<ApiResponse<CursorResponse<NotificationSummaryResponse>>> {
         val response = notificationService.getMyNotifications(
-            userId = userId,
+            userId = principal.username,
             request = request,
         )
 
