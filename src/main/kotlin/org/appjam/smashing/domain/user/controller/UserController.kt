@@ -127,4 +127,9 @@ class UserController(
             data = response,
         )
     }
+
+    @GetMapping("")
+    fun getOtherUsersLeaderBoard() {
+
+    }
 }
