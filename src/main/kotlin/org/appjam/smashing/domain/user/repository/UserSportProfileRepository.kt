@@ -96,22 +96,22 @@ interface UserSportProfileRepository : JpaRepository<UserSportProfile, String> {
     ): List<UserSportProfile>
 
     fun existsByUserIdAndSportId(userId: String, sportId: Long): Boolean
-    /*
-        @Query(
-            """
+
+    @Query(
+        """
                 select usp
                 from UserSportProfile usp
                 join fetch usp.sport s
                 join fetch usp.tier
                 where usp.user.id = :userId
             """
-        )
-        fun findAllByUserId(
-            userId: String,
-        ): List<UserSportProfile>
+    )
+    fun findAllByUserId(
+        userId: String,
+    ): List<UserSportProfile>
 
-        @Query(
-            """
+    @Query(
+        """
             select usp
             from UserSportProfile usp
             join fetch usp.user u
@@ -122,13 +122,10 @@ interface UserSportProfileRepository : JpaRepository<UserSportProfile, String> {
               and u.id <> :excludeUserId
             order by u.id asc
         """
-        )
-        fun findAllByRegionAndSport(
-            region: String,
-            sportId: Long,
-            excludeUserId: String
-        ): List<UserSportProfile>
-
-
-     */
+    )
+    fun findAllByRegionAndSport(
+        region: String,
+        sportId: Long,
+        excludeUserId: String
+    ): List<UserSportProfile>
 }

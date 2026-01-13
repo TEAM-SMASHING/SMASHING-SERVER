@@ -204,22 +204,28 @@ class UserService(
     ): OtherUsersRecommendationResponse {
         val user = userRepository.findByIdOrNull(userId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
-        /*
-                val allProfiles = userSportProfileRepository.findAllByUserId(userId)
 
-                val activeProfile = allProfiles.find { it.id == user.activeUserSportProfileId }
-                    ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
+        val allProfiles = userSportProfileRepository.findAllByUserId(userId)
 
-                val allRecommendUser = userSportProfileRepository.findAllByRegionAndSport(
-                    region = user.region,
-                    sportId = activeProfile.sport.id!!,
-                    excludeUserId = user.id!!
-                )
+        val activeProfile = allProfiles.find { it.id == user.activeUserSportProfileId }
+            ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
 
+        val allRecommendProfiles = userSportProfileRepository.findAllByRegionAndSport(
+            region = user.region,
+            sportId = activeProfile.sport.id!!,
+            excludeUserId = user.id!!
+        )
 
-         */
+        val filteredProfiles = allRecommendProfiles.filter { profile ->
+            Math.abs(activeProfile.lp - profile.lp) <= MAX_SHUFFLE_LP
+        }
+
+        val top5CycledProfiles = filteredProfiles
+            .shuffled()
+            .take(MAX_LP_GAP)
+
         return OtherUsersRecommendationResponse.from(
-            users = listOf()
+            recommendedUsers = top5CycledProfiles
         )
     }
 
@@ -227,5 +233,7 @@ class UserService(
         private val NICKNAME_VALID_REGEX = Regex("^[a-zA-Z0-9가-힣]*$")
         private const val MAX_NICKNAME_LENGTH = 10
         val OPEN_CHAT_URL_REGEX = Regex("^https://open\\.kakao\\.com/o/[a-zA-Z0-9]+\$")
+        private const val MAX_SHUFFLE_LP = 200
+        private const val MAX_LP_GAP = 5
     }
 }
