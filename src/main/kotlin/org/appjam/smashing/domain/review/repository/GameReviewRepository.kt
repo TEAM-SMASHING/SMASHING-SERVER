@@ -4,6 +4,11 @@ import org.appjam.smashing.domain.review.entity.GameReview
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 
+interface ReviewCount {
+    val recommendedUserId: String
+    val reviewCount: Long
+}
+
 interface GameReviewRepository : JpaRepository<GameReview, String> {
 
     @Query(
@@ -47,5 +52,5 @@ interface GameReviewRepository : JpaRepository<GameReview, String> {
     fun countReviewsBySportAndReviewees(
         sportId: Long,
         userIds: List<String>
-    ): List<Array<Any>>
+    ): List<ReviewCount>
 }

@@ -244,14 +244,14 @@ class UserService(
         )
 
         // 0번째를 String으로 1번째를 Long으로 형 변환
-        val reviewCountsMap = reviewData.associate { data ->
-            data[0] as String to (data[1] as Long)
+        val reviewMap = reviewData.associate { data ->
+            data.recommendedUserId to data.reviewCount
         }
 
         // 그리고 이를 dto에 넣음
         return OtherUsersRecommendationResponse.from(
             recommendedUsers = top5CycledProfiles,
-            reviewCounts = reviewCountsMap
+            reviewCounts = reviewMap
         )
     }
 
