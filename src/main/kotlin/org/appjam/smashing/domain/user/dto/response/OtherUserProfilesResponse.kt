@@ -36,16 +36,16 @@ data class OtherUserProfilesResponse(
     data class ProfileInfo(
         val profileId: String,
         val sportCode: String,
-        val isActive: Boolean,
+        val isSelected: Boolean,
     ) {
         companion object {
             fun from(
-                isActive: Boolean,
+                isSelected: Boolean,
                 u: UserSportProfile,
             ) = ProfileInfo(
                 profileId = u.id!!,
                 sportCode = u.sport.code,
-                isActive = isActive
+                isSelected = isSelected
             )
 
             fun listForm(
@@ -53,7 +53,7 @@ data class OtherUserProfilesResponse(
                 selectedSportProfileId: String,
             ) = allProfiles.map { userSportProfile ->
                 from(
-                    isActive = userSportProfile.id == selectedSportProfileId,
+                    isSelected = userSportProfile.id == selectedSportProfileId,
                     u = userSportProfile,
                 )
             }
