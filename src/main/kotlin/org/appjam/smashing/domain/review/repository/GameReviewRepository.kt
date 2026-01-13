@@ -33,4 +33,19 @@ interface GameReviewRepository : JpaRepository<GameReview, String> {
     fun findByIdFetchAll(
         reviewId: String,
     ): GameReview?
+
+    @Query
+        (
+        """
+            select r.reviewee.id, count(r.id)
+            from GameReview r
+            where r.game.sport.id = :sportId
+              and r.reviewee.id in :userIds
+            group by r.reviewee.id
+        """
+    )
+    fun countReviewsBySportAndReviewees(
+        sportId: Long,
+        userIds: List<String>
+    ): List<Array<Any>>
 }

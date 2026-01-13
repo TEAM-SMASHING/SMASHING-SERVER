@@ -9,25 +9,30 @@ data class OtherUsersRecommendationResponse(
         val userId: String,
         val nickname: String,
         val tierId: Long,
+        val wins: Int,
+        val losses: Int,
+        val reviews: Int,
     ) {
         companion object {
             fun from(
-                userId: String,
-                nickname: String,
-                tierId: Long,
+                u: UserSportProfile,
+                reviewCount: Int,
             ) = OtherUsers(
-                userId = userId,
-                nickname = nickname,
-                tierId = tierId,
+                userId = u.user.id!!,
+                nickname = u.user.nickname,
+                tierId = u.tier.id!!,
+                wins = u.wins,
+                losses = u.losses,
+                reviews = reviewCount,
             )
 
             fun listForm(
-                recommendedUsers: List<UserSportProfile>
-            ) = recommendedUsers.map { userSportProfile ->
+                recommendedUsers: List<UserSportProfile>,
+                reviewCounts: Map<String, Long>,
+            ) = recommendedUsers.map { profile ->
                 from(
-                    userId = userSportProfile.user.id!!,
-                    nickname = userSportProfile.user.nickname,
-                    tierId = userSportProfile.tier.id!!,
+                    u = profile,
+                    reviewCount = reviewCounts[profile.user.id]?.toInt() ?: 0,
                 )
             }
         }
@@ -36,9 +41,11 @@ data class OtherUsersRecommendationResponse(
     companion object {
         fun from(
             recommendedUsers: List<UserSportProfile>,
+            reviewCounts: Map<String, Long>,
         ) = OtherUsersRecommendationResponse(
             recommendedUsers = OtherUsers.listForm(
-                recommendedUsers = recommendedUsers
+                recommendedUsers = recommendedUsers,
+                reviewCounts = reviewCounts,
             )
         )
     }

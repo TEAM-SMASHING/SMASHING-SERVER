@@ -1,5 +1,6 @@
 package org.appjam.smashing.domain.user.service
 
+import org.appjam.smashing.domain.review.repository.GameReviewRepository
 import org.appjam.smashing.domain.sport.enums.InitTierLp
 import org.appjam.smashing.domain.sport.repository.SportRepository
 import org.appjam.smashing.domain.tier.repository.TierRepository
@@ -23,6 +24,7 @@ class UserService(
     private val userSportProfileRepository: UserSportProfileRepository,
     private val sportRepository: SportRepository,
     private val tierRepository: TierRepository,
+    private val gameReviewRepository: GameReviewRepository,
 ) {
     @Transactional(readOnly = true)
     fun checkNicknameAvailability(
@@ -202,30 +204,54 @@ class UserService(
     fun getOtherUsersRecommendation(
         userId: String,
     ): OtherUsersRecommendationResponse {
+        // 유저 확인
         val user = userRepository.findByIdOrNull(userId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
+        // 유저 아이디의 모든 스포츠 프로필을 가져옴
         val allProfiles = userSportProfileRepository.findAllByUserId(userId)
 
+        // 거기서 유저의 활성화 프로필을 가져옴
         val activeProfile = allProfiles.find { it.id == user.activeUserSportProfileId }
             ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
 
+        // 유저의 활성 지역 & 스포츠 아이디를 기준으로 추천 프로필 색출
         val allRecommendProfiles = userSportProfileRepository.findAllByRegionAndSport(
             region = user.region,
             sportId = activeProfile.sport.id!!,
             excludeUserId = user.id!!
         )
 
+        // +-200 이내의 유저들 필터
         val filteredProfiles = allRecommendProfiles.filter { profile ->
             Math.abs(activeProfile.lp - profile.lp) <= MAX_SHUFFLE_LP
         }
 
+        // 5명 정도 랜덤 뽑기
         val top5CycledProfiles = filteredProfiles
             .shuffled()
             .take(MAX_LP_GAP)
 
+        // 랜덤 뽑은 유저의 아이디를 리스트로 뽑음
+        val recommendedUserIds = top5CycledProfiles.map { profile ->
+            profile.user.id!!
+        }
+
+        // 그 아이디를 기준으로 같은 스포츠의 리뷰를 List형태로 가져옴
+        val reviewData = gameReviewRepository.countReviewsBySportAndReviewees(
+            sportId = activeProfile.sport.id!!,
+            userIds = recommendedUserIds
+        )
+
+        // 0번째를 String으로 1번째를 Long으로 형 변환
+        val reviewCountsMap = reviewData.associate { data ->
+            data[0] as String to (data[1] as Long)
+        }
+
+        // 그리고 이를 dto에 넣음
         return OtherUsersRecommendationResponse.from(
-            recommendedUsers = top5CycledProfiles
+            recommendedUsers = top5CycledProfiles,
+            reviewCounts = reviewCountsMap
         )
     }
 
