@@ -129,5 +129,6 @@ interface UserSportProfileRepository : JpaRepository<UserSportProfile, String> {
             excludeUserId: String
         ): List<UserSportProfile>
 
+
      */
 }
