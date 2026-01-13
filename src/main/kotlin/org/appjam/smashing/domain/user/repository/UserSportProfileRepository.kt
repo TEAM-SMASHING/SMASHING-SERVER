@@ -123,7 +123,26 @@ interface UserSportProfileRepository : JpaRepository<UserSportProfile, String> {
             order by u.id asc
         """
     )
-    fun findAllByRegionAndSport(
+    fun findAllByRegionAndSportOrderByUserId(
+        region: String,
+        sportId: Long,
+        excludeUserId: String
+    ): List<UserSportProfile>
+
+    @Query(
+        """
+            select usp
+            from UserSportProfile usp
+            join fetch usp.user u
+            join fetch usp.sport s
+            join fetch usp.tier t
+            where u.region = :region
+              and s.id = :sportId
+              and u.id <> :excludeUserId
+            order by usp.lp desc
+        """
+    )
+    fun findAllByRegionAndSportOrderByLp(
         region: String,
         sportId: Long,
         excludeUserId: String

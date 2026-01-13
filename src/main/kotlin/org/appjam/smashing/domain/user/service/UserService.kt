@@ -207,7 +207,7 @@ class UserService(
     ): OtherUsersRecommendationResponse {
         val (user, activeProfile) = getMyInfoAndActiveProfile(userId)
 
-        val allRecommendProfiles = userSportProfileRepository.findAllByRegionAndSport(
+        val allRecommendProfiles = userSportProfileRepository.findAllByRegionAndSportOrderByUserId(
             region = user.region,
             sportId = activeProfile.sport.id!!,
             excludeUserId = user.id!!
@@ -266,11 +266,29 @@ class UserService(
         }
     }
 
+    @Transactional(readOnly = true)
+    fun getOtherUsersLeaderBoard(
+        userId: String,
+    ): OtherUsersLeaderBoardResponse {
+        val (user, activeProfile) = getMyInfoAndActiveProfile(userId)
+
+        val leaderBoardProfiles = userSportProfileRepository.findAllByRegionAndSportOrderByLp(
+            region = user.region,
+            sportId = activeProfile.sport.id!!,
+            excludeUserId = user.id!!
+        ).take(MAX_LEADERBOARD)
+
+        return OtherUsersLeaderBoardResponse.from(
+            topUsers = leaderBoardProfiles
+        )
+    }
+
     companion object {
         private val NICKNAME_VALID_REGEX = Regex("^[a-zA-Z0-9가-힣]*$")
         private const val MAX_NICKNAME_LENGTH = 10
         val OPEN_CHAT_URL_REGEX = Regex("^https://open\\.kakao\\.com/o/[a-zA-Z0-9]+\$")
         private const val MAX_SHUFFLE_LP = 200
         private const val MAX_LP_GAP = 5
+        private const val MAX_LEADERBOARD = 30
     }
 }
