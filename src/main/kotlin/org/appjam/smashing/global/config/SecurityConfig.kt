@@ -41,7 +41,7 @@ class SecurityConfig(
 
                 PERMIT_ALL.forEach { authorize(it, permitAll) }
 
-                authorize(anyRequest, permitAll) // TODO: 추후 로그인 기능 구현 시 수정
+                authorize(anyRequest, authenticated)
             }
 
             exceptionHandling {
@@ -68,8 +68,8 @@ class SecurityConfig(
             "/actuator/**",
 
             // API
-            "/api/v1/auth/login/kakao",
-            "/api/v1/auth/signup",
+            "/auth/login/kakao",
+            "/auth/signup",
         )
     }
 }
