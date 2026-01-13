@@ -50,10 +50,10 @@ data class OtherUserProfilesResponse(
 
             fun listForm(
                 allProfiles: List<UserSportProfile>,
-                selectedSportProfileId: String,
+                selectedProfileId: String,
             ) = allProfiles.map { userSportProfile ->
                 from(
-                    isSelected = userSportProfile.id == selectedSportProfileId,
+                    isSelected = userSportProfile.id == selectedProfileId,
                     u = userSportProfile,
                 )
             }
@@ -70,7 +70,7 @@ data class OtherUserProfilesResponse(
             selectedProfile = SelectedProfile.from(selectedProfile),
             allProfiles = ProfileInfo.listForm(
                 allProfiles = allProfiles,
-                selectedSportProfileId = selectedProfile.id!!
+                selectedProfileId = selectedProfile.id!!
             )
         )
     }

@@ -49,10 +49,10 @@ data class UserProfileTierResponse(
 
             fun listForm(
                 allProfiles: List<UserSportProfile>,
-                activeSportProfileId: String,
+                activeProfileId: String,
             ) = allProfiles.map { userSportProfile ->
                 from(
-                    isActive = userSportProfile.id == activeSportProfileId,
+                    isActive = userSportProfile.id == activeProfileId,
                     u = userSportProfile
                 )
             }
@@ -67,9 +67,8 @@ data class UserProfileTierResponse(
             activeProfile = ActiveProfile.from(activeProfile),
             allProfiles = ProfileInfo.listForm(
                 allProfiles = allProfiles,
-                activeSportProfileId = activeProfile.id!!
+                activeProfileId = activeProfile.id!!
             )
-
         )
     }
 }
