@@ -11,4 +11,18 @@ data class OtherUserRecommendationProjection(
     val losses: Int,
     val reviews: Int,
     val gender: String,
-)
+) {
+    companion object {
+        fun create(
+            userId: String,
+            nickname: String,
+            tierId: Long,
+            wins: Int,
+            losses: Int,
+            reviews: Int,
+            gender: String
+        ) = OtherUserRecommendationProjection(
+            userId = us
+        )
+    }
+}
