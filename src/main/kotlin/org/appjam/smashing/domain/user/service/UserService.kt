@@ -9,6 +9,7 @@ import org.appjam.smashing.domain.user.dto.command.AddressUpdateCommand
 import org.appjam.smashing.domain.user.dto.command.OpenChatValidateCommand
 import org.appjam.smashing.domain.user.dto.command.ProfileAddCommand
 import org.appjam.smashing.domain.user.dto.response.*
+import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.appjam.smashing.domain.user.repository.UserRepository
 import org.appjam.smashing.domain.user.repository.UserSportProfileRepository
@@ -204,55 +205,65 @@ class UserService(
     fun getOtherUsersRecommendation(
         userId: String,
     ): OtherUsersRecommendationResponse {
-        // 유저 확인
-        val user = userRepository.findByIdOrNull(userId)
-            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+        val (user, activeProfile) = getMyInfoAndActiveProfile(userId)
 
-        // 유저 아이디의 모든 스포츠 프로필을 가져옴
-        val allProfiles = userSportProfileRepository.findAllByUserId(userId)
-
-        // 거기서 유저의 활성화 프로필을 가져옴
-        val activeProfile = allProfiles.find { it.id == user.activeUserSportProfileId }
-            ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
-
-        // 유저의 활성 지역 & 스포츠 아이디를 기준으로 추천 프로필 색출
         val allRecommendProfiles = userSportProfileRepository.findAllByRegionAndSport(
             region = user.region,
             sportId = activeProfile.sport.id!!,
             excludeUserId = user.id!!
         )
+        val recommendedProfiles = selectRandomCandidates(
+            myLp = activeProfile.lp,
+            candidates = allRecommendProfiles,
+        )
 
-        // +-200 이내의 유저들 필터
-        val filteredProfiles = allRecommendProfiles.filter { profile ->
-            Math.abs(activeProfile.lp - profile.lp) <= MAX_SHUFFLE_LP
-        }
+        val reviewMap = getReviewCountsMap(
+            sportId = activeProfile.sport.id!!,
+            profiles = recommendedProfiles,
+        )
 
-        // 5명 정도 랜덤 뽑기
-        val top5CycledProfiles = filteredProfiles
+        return OtherUsersRecommendationResponse.from(
+            recommendedUsers = recommendedProfiles,
+            reviewCounts = reviewMap
+        )
+    }
+
+    private fun getMyInfoAndActiveProfile(userId: String): Pair<User, UserSportProfile> {
+        val user = userRepository.findByIdOrNull(userId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+
+        val activeProfile = userSportProfileRepository.findAllByUserId(userId)
+            .find { it.id == user.activeUserSportProfileId }
+            ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
+
+        return user to activeProfile
+    }
+
+    private fun selectRandomCandidates(
+        myLp: Int,
+        candidates: List<UserSportProfile>,
+    ): List<UserSportProfile> =
+        candidates
+            .filter { Math.abs(myLp - it.lp) <= MAX_SHUFFLE_LP }
             .shuffled()
             .take(MAX_LP_GAP)
 
-        // 랜덤 뽑은 유저의 아이디를 리스트로 뽑음
-        val recommendedUserIds = top5CycledProfiles.map { profile ->
+    private fun getReviewCountsMap(
+        sportId: Long,
+        profiles: List<UserSportProfile>
+    ): Map<String, Long> {
+        if (profiles.isEmpty()) return emptyMap()
+
+        val recommendedUserIds = profiles.map { profile ->
             profile.user.id!!
         }
 
-        // 그 아이디를 기준으로 같은 스포츠의 리뷰를 List형태로 가져옴
-        val reviewData = gameReviewRepository.countReviewsBySportAndReviewees(
-            sportId = activeProfile.sport.id!!,
-            userIds = recommendedUserIds
-        )
-
-        // 0번째를 String으로 1번째를 Long으로 형 변환
-        val reviewMap = reviewData.associate { data ->
+        return gameReviewRepository.countReviewsBySportAndReviewees(
+            sportId = sportId,
+            userIds = recommendedUserIds,
+        ).associate { data ->
             data.recommendedUserId to data.reviewCount
         }
-
-        // 그리고 이를 dto에 넣음
-        return OtherUsersRecommendationResponse.from(
-            recommendedUsers = top5CycledProfiles,
-            reviewCounts = reviewMap
-        )
     }
 
     companion object {
