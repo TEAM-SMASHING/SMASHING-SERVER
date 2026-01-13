@@ -3,8 +3,10 @@ package org.appjam.smashing.domain.matching.controller
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.appjam.smashing.domain.matching.service.MatchingService
+import org.appjam.smashing.global.auth.security.data.CustomUserDetails
 import org.appjam.smashing.global.common.dto.ApiResponse
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -30,13 +32,11 @@ class MatchingController(
     )
     @PostMapping("/profiles/{receiverProfileId}")
     fun requestMatching(
-        // @AuthenticationPrincipal principal: CustomUserDetails, TODO: 인증/인가 회복시 주석 해제
-        @RequestHeader("userId") requesterUserId: String,
+        @AuthenticationPrincipal principal: CustomUserDetails,
         @PathVariable receiverProfileId: String,
     ): ResponseEntity<ApiResponse<Unit>> {
         matchingService.requestMatching(
-            // requesterUserId = principal.username, TODO: 인증/인가 회복시 주석 해제
-            requesterUserId = requesterUserId,
+            requesterUserId = principal.username,
             receiverProfileId = receiverProfileId,
         )
 
@@ -52,11 +52,11 @@ class MatchingController(
     )
     @PostMapping("/{matchingId}/accept")
     fun acceptMatching(
-        @RequestHeader("userId") requesterUserId: String, // TODO: 인증/인가 회복시 @AuthenticationPrincipal 으로 변경
+        @AuthenticationPrincipal principal: CustomUserDetails,
         @PathVariable matchingId: String,
     ): ResponseEntity<ApiResponse<Unit>> {
         matchingService.acceptMatching(
-            receiverUserId = requesterUserId,
+            receiverUserId = principal.username,
             matchingId = matchingId,
         )
 
@@ -75,11 +75,11 @@ class MatchingController(
     )
     @PostMapping("/{matchingId}/reject")
     fun rejectMatching(
-        @RequestHeader("userId") requesterUserId: String, // TODO: 인증/인가 회복시 @AuthenticationPrincipal 으로 변경
+        @AuthenticationPrincipal principal: CustomUserDetails,
         @PathVariable matchingId: String,
     ): ResponseEntity<ApiResponse<Unit>> {
         matchingService.rejectMatching(
-            receiverUserId = requesterUserId,
+            receiverUserId = principal.username,
             matchingId = matchingId,
         )
 
@@ -98,11 +98,11 @@ class MatchingController(
     )
     @DeleteMapping("/{matchingId}")
     fun cancelMyMatchingRequest(
-        @RequestHeader("userId") requesterUserId: String, // TODO: 인증/인가 회복시 @AuthenticationPrincipal 으로 변경
+        @AuthenticationPrincipal principal: CustomUserDetails,
         @PathVariable matchingId: String,
     ): ResponseEntity<ApiResponse<Unit>> {
         matchingService.cancelMyMatchingRequest(
-            requesterUserId = requesterUserId,
+            requesterUserId = principal.username,
             matchingId = matchingId,
         )
 

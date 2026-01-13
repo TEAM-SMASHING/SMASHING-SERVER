@@ -7,8 +7,10 @@ import org.appjam.smashing.domain.user.dto.request.OpenChatValidateRequest
 import org.appjam.smashing.domain.user.dto.request.ProfileAddRequest
 import org.appjam.smashing.domain.user.dto.response.*
 import org.appjam.smashing.domain.user.service.UserService
+import org.appjam.smashing.global.auth.security.data.CustomUserDetails
 import org.appjam.smashing.global.common.dto.ApiResponse
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -40,9 +42,9 @@ class UserController(
 
     @GetMapping("/me/profiles/tier")
     fun getUserProfileTier(
-        @RequestHeader("userId") userId: String, // TODO: 인증/인가 회복시 @AuthenticationPrincipal 으로 변경
+        @AuthenticationPrincipal principal: CustomUserDetails,
     ): ResponseEntity<ApiResponse<UserProfileTierResponse>> {
-        val response = userService.getUserProfileTier(userId)
+        val response = userService.getUserProfileTier(principal.username)
 
         return ApiResponse.success(
             data = response
@@ -51,11 +53,11 @@ class UserController(
 
     @PostMapping("/me/profiles")
     fun addProfile(
-        @RequestHeader("userId") userId: String, // TODO: 인증/인가 회복시 @AuthenticationPrincipal 으로 변경
+        @AuthenticationPrincipal principal: CustomUserDetails,
         @Valid @RequestBody profileAddRequest: ProfileAddRequest,
     ): ResponseEntity<ApiResponse<Unit>> {
         userService.addProfile(
-            userId = userId,
+            userId = principal.username,
             requestCommand = profileAddRequest.toCommand()
         )
 
@@ -64,10 +66,10 @@ class UserController(
 
     @GetMapping("/me/profiles")
     fun getUserProfiles(
-        @RequestHeader("userId") userId: String, // TODO: 인증/인가 회복시 @AuthenticationPrincipal 으로 변경
+        @AuthenticationPrincipal principal: CustomUserDetails,
     ): ResponseEntity<ApiResponse<UserProfilesResponse>> {
         val response = userService.getUserProfiles(
-            userId = userId,
+            userId = principal.username,
         )
 
         return ApiResponse.success(
@@ -77,7 +79,7 @@ class UserController(
 
     @GetMapping("/{userId}/profiles")
     fun getOtherUserProfiles(
-        @RequestHeader("userId") authId: String, // TODO: 인증/인가 회복시 @AuthenticationPrincipal 으로 변경
+        @AuthenticationPrincipal principal: CustomUserDetails,
         @PathVariable userId: String,
         @RequestParam(required = false) sportCode: String?,
     ): ResponseEntity<ApiResponse<OtherUserProfilesResponse>> {
@@ -93,11 +95,11 @@ class UserController(
 
     @PutMapping("/me/regions")
     fun updateRegion(
-        @RequestHeader("userId") userId: String, // TODO: 인증/인가 회복시 @AuthenticationPrincipal 으로 변경
+        @AuthenticationPrincipal principal: CustomUserDetails,
         @Valid @RequestBody addressUpdateRequest: AddressUpdateRequest,
     ): ResponseEntity<ApiResponse<Unit>> {
         userService.updateRegion(
-            userId = userId,
+            userId = principal.username,
             requestCommand = addressUpdateRequest.toCommand()
         )
 
@@ -106,11 +108,11 @@ class UserController(
 
     @PutMapping("/me/active-profile")
     fun updateActiveProfile(
-        @RequestHeader("userId") userId: String, // TODO: 인증/인가 회복시 @AuthenticationPrincipal 으로 변경
+        @AuthenticationPrincipal principal: CustomUserDetails,
         @Valid @RequestBody activeProfileUpdateRequest: ActiveProfileUpdateRequest,
     ): ResponseEntity<ApiResponse<Unit>> {
         userService.updateActiveProfile(
-            userId = userId,
+            userId = principal.username,
             requestCommand = activeProfileUpdateRequest.toCommand()
         )
 
