@@ -99,11 +99,11 @@ interface UserSportProfileRepository : JpaRepository<UserSportProfile, String> {
 
     @Query(
         """
-                select usp
-                from UserSportProfile usp
-                join fetch usp.sport s
-                join fetch usp.tier
-                where usp.user.id = :userId
+            select usp
+            from UserSportProfile usp
+            join fetch usp.sport s
+            join fetch usp.tier
+            where usp.user.id = :userId
             """
     )
     fun findAllByUserId(
