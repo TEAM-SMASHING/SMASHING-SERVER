@@ -136,12 +136,12 @@ class UserService(
 
         val allProfiles = userSportProfileRepository.findAllByUserIdOrderByName(userId)
 
-        val activeSport = allProfiles.find { it.id == user.activeUserSportProfileId }
+        val activeProfile = allProfiles.find { it.id == user.activeUserSportProfileId }
             ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
 
         return UserProfilesResponse.from(
             nickname = user.nickname,
-            activeProfile = activeSport,
+            activeProfile = activeProfile,
             allProfiles = allProfiles,
         )
     }
