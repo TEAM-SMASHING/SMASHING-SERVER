@@ -4,10 +4,10 @@ import org.appjam.smashing.domain.user.entity.UserSportProfile
 
 data class OtherUserProfilesResponse(
     val nickname: String,
-    val selectedSport: SelectedSport,
-    val sports: List<SportInfo>,
+    val selectedProfile: SelectedProfile,
+    val allProfiles: List<ProfileInfo>,
 ) {
-    data class SelectedSport(
+    data class SelectedProfile(
         val profileId: String,
         val sportCode: String,
         val tierId: Int,
@@ -20,7 +20,7 @@ data class OtherUserProfilesResponse(
         companion object {
             fun from(
                 u: UserSportProfile,
-            ) = SelectedSport(
+            ) = SelectedProfile(
                 profileId = u.id!!,
                 sportCode = u.sport.code,
                 tierId = u.tier.orderNo,
@@ -33,41 +33,44 @@ data class OtherUserProfilesResponse(
         }
     }
 
-    data class SportInfo(
+    data class ProfileInfo(
         val profileId: String,
         val sportCode: String,
+        val isActive: Boolean,
     ) {
         companion object {
             fun from(
+                isActive: Boolean,
                 u: UserSportProfile,
-            ) = SportInfo(
+            ) = ProfileInfo(
                 profileId = u.id!!,
                 sportCode = u.sport.code,
+                isActive = isActive
             )
 
             fun listForm(
                 allProfiles: List<UserSportProfile>,
                 selectedSportProfileId: String,
-            ) = allProfiles
-                .filter { userSportProfile ->
-                    userSportProfile.id != selectedSportProfileId
-                }.map { userSportProfile ->
-                    from(userSportProfile)
-                }
+            ) = allProfiles.map { userSportProfile ->
+                from(
+                    isActive = userSportProfile.id == selectedSportProfileId,
+                    u = userSportProfile,
+                )
+            }
         }
     }
 
     companion object {
         fun from(
             nickname: String,
-            selectedSport: UserSportProfile,
+            selectedProfile: UserSportProfile,
             allProfiles: List<UserSportProfile>,
         ) = OtherUserProfilesResponse(
             nickname = nickname,
-            selectedSport = SelectedSport.from(selectedSport),
-            sports = SportInfo.listForm(
+            selectedProfile = SelectedProfile.from(selectedProfile),
+            allProfiles = ProfileInfo.listForm(
                 allProfiles = allProfiles,
-                selectedSportProfileId = selectedSport.id!!
+                selectedSportProfileId = selectedProfile.id!!
             )
         )
     }
