@@ -7,10 +7,7 @@ import org.appjam.smashing.domain.user.dto.command.ActiveProfileUpdateCommand
 import org.appjam.smashing.domain.user.dto.command.AddressUpdateCommand
 import org.appjam.smashing.domain.user.dto.command.OpenChatValidateCommand
 import org.appjam.smashing.domain.user.dto.command.ProfileAddCommand
-import org.appjam.smashing.domain.user.dto.response.NicknameCheckResponse
-import org.appjam.smashing.domain.user.dto.response.OpenChatValidateResponse
-import org.appjam.smashing.domain.user.dto.response.OtherUserProfilesResponse
-import org.appjam.smashing.domain.user.dto.response.UserProfileTierResponse
+import org.appjam.smashing.domain.user.dto.response.*
 import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.appjam.smashing.domain.user.repository.UserRepository
 import org.appjam.smashing.domain.user.repository.UserSportProfileRepository
@@ -80,32 +77,14 @@ class UserService(
         val user = userRepository.findByIdOrNull(userId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
-        val allProfiles = userSportProfileRepository.findAllByUserId(userId)
+        val allProfiles = userSportProfileRepository.findAllByUserIdOrderByName(userId)
 
         val activeProfile = allProfiles.find { it.id == user.activeUserSportProfileId }
             ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
 
-        val sportsList = allProfiles
-            .filter { it.id != user.activeUserSportProfileId }
-            .map {
-                UserProfileTierResponse.SportInfo.from(
-                    profileId = it.id!!,
-                    sportCode = it.sport.code
-                )
-            }
-
-        return UserProfileTierResponse(
-            activeSport = UserProfileTierResponse.ActiveSport.from(
-                profileId = activeProfile.id!!,
-                sportCode = activeProfile.sport.code,
-                tierId = activeProfile.tier.orderNo,
-                lp = activeProfile.lp,
-                minLp = activeProfile.tier.minLp,
-                maxLp = activeProfile.tier.maxLp,
-                wins = activeProfile.wins,
-                losses = activeProfile.losses
-            ),
-            sports = sportsList
+        return UserProfileTierResponse.from(
+            activeProfile = activeProfile,
+            allProfiles = allProfiles,
         )
     }
 
@@ -149,6 +128,25 @@ class UserService(
     }
 
     @Transactional(readOnly = true)
+    fun getUserProfiles(
+        userId: String,
+    ): UserProfilesResponse {
+        val user = userRepository.findByIdOrNull(userId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+
+        val allProfiles = userSportProfileRepository.findAllByUserIdOrderByName(userId)
+
+        val activeProfile = allProfiles.find { it.id == user.activeUserSportProfileId }
+            ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
+
+        return UserProfilesResponse.from(
+            nickname = user.nickname,
+            activeProfile = activeProfile,
+            allProfiles = allProfiles,
+        )
+    }
+
+    @Transactional(readOnly = true)
     fun getOtherUserProfiles(
         otherUserId: String,
         sportCode: String?,
@@ -156,7 +154,7 @@ class UserService(
         val otherUser = userRepository.findByIdOrNull(otherUserId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
-        val allProfiles = userSportProfileRepository.findAllByUserId(otherUserId)
+        val allProfiles = userSportProfileRepository.findAllByUserIdOrderByName(otherUserId)
 
         val selectedSport = if (sportCode == null) {
             allProfiles.find { it.id == otherUser.activeUserSportProfileId }
@@ -168,7 +166,7 @@ class UserService(
 
         return OtherUserProfilesResponse.from(
             nickname = otherUser.nickname,
-            selectedSport = selectedSport,
+            selectedProfile = selectedSport,
             allProfiles = allProfiles
         )
     }
