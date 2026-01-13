@@ -20,9 +20,15 @@ data class OtherUserRecommendationProjection(
             wins: Int,
             losses: Int,
             reviews: Int,
-            gender: String
+            gender: String,
         ) = OtherUserRecommendationProjection(
-            userId = us
+            userId = userId,
+            nickname = nickname,
+            tierId = tierId,
+            wins = wins,
+            losses = losses,
+            reviews = reviews,
+            gender = gender,
         )
     }
 }

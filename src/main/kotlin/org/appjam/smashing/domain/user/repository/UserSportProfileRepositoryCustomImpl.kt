@@ -19,7 +19,7 @@ class UserSportProfileRepositoryCustomImpl(
         limit: Long
     ): List<OtherUserRecommendationProjection> {
 
-        val projections = queryFactory
+        val projection = queryFactory
             .select(
                 QOtherUserRecommendationProjection(
                     user.id,
@@ -27,15 +27,12 @@ class UserSportProfileRepositoryCustomImpl(
                     userSportProfile.tier.id,
                     userSportProfile.wins,
                     userSportProfile.losses,
-                    Expressions.asNumber(0),
+                    Expressions.asNumber(0).`as`("reviews"), // reviews는 여기서 0으로 초기화
                     user.gender.stringValue()
                 )
             )
             .from(userSportProfile)
-            .join(
-                userSportProfile.user,
-                user
-            )
+            .join(userSportProfile.user, user)
             .where(
                 user.region.eq(region),
                 userSportProfile.sport.id.eq(sportId),
@@ -46,8 +43,6 @@ class UserSportProfileRepositoryCustomImpl(
             .limit(limit)
             .fetch()
 
-        return
-
+        return OtherUserRecommendationProjection.create()
     }
-
 }
