@@ -2,8 +2,10 @@ package org.appjam.smashing.domain.review.controller
 
 import org.appjam.smashing.domain.review.dto.response.ReviewDetailResponse
 import org.appjam.smashing.domain.review.service.GameReviewService
+import org.appjam.smashing.global.auth.security.data.CustomUserDetails
 import org.appjam.smashing.global.common.dto.ApiResponse
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -13,7 +15,7 @@ class GameReviewController(
 ) {
     @GetMapping("/{reviewId}")
     fun getReviewDetail(
-        @RequestHeader("userId") userId: String, // TODO: 인증/인가 회복시 @AuthenticationPrincipal 으로 변경
+        @AuthenticationPrincipal principal: CustomUserDetails,
         @PathVariable("reviewId") reviewId: String,
     ): ResponseEntity<ApiResponse<ReviewDetailResponse>> {
         val response = gameReviewService.getReviewDetail(

@@ -8,8 +8,10 @@ import org.appjam.smashing.domain.game.dto.request.GameResultRejectRequest
 import org.appjam.smashing.domain.game.dto.request.GameResultSubmitRequest
 import org.appjam.smashing.domain.game.dto.response.GameResultSubmissionDetailResponse
 import org.appjam.smashing.domain.game.service.GameService
+import org.appjam.smashing.global.auth.security.data.CustomUserDetails
 import org.appjam.smashing.global.common.dto.ApiResponse
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 
 @Tag(name = "Game")
@@ -33,12 +35,12 @@ class GameController(
     )
     @PostMapping("/{gameId}/submissions")
     fun submitGameResult(
-        @RequestHeader("userId") submitterUserId: String, // TODO: 인증/인가 적용시 변경
+        @AuthenticationPrincipal principal: CustomUserDetails,
         @PathVariable gameId: String,
         @Valid @RequestBody request: GameResultSubmitRequest,
     ): ResponseEntity<ApiResponse<Unit>> {
         gameService.submitResult(
-            submitterUserId = submitterUserId,
+            submitterUserId = principal.username,
             gameId = gameId,
             command = request.toCommand(),
         )
@@ -79,13 +81,13 @@ class GameController(
     )
     @PostMapping("/{gameId}/submissions/{submissionId}/confirm")
     fun confirmGameResult(
-        @RequestHeader("userId") confirmerUserId: String, // TODO: 인증/인가 적용시 변경
+        @AuthenticationPrincipal principal: CustomUserDetails,
         @PathVariable gameId: String,
         @PathVariable submissionId: String,
         @Valid @RequestBody request: GameResultConfirmRequest,
     ): ResponseEntity<ApiResponse<Unit>> {
         gameService.confirmResult(
-            confirmerUserId = confirmerUserId,
+            confirmerUserId = principal.username,
             gameId = gameId,
             submissionId = submissionId,
             command = request.toCommand(),
@@ -103,7 +105,7 @@ class GameController(
     )
     @GetMapping("/{gameId}/submissions/{submissionId}")
     fun getSubmissionDetail(
-        @RequestHeader("userId") userId: String, // TODO: 인증/인가 적용시 변경
+        @AuthenticationPrincipal principal: CustomUserDetails,
         @PathVariable gameId: String,
         @PathVariable submissionId: String,
     ): ResponseEntity<ApiResponse<GameResultSubmissionDetailResponse>> {
@@ -128,13 +130,13 @@ class GameController(
     )
     @PostMapping("/{gameId}/submissions/{submissionId}/reject")
     fun rejectGameResult(
-        @RequestHeader("userId") confirmerUserId: String, // TODO: 인증/인가 적용시 변경
+        @AuthenticationPrincipal principal: CustomUserDetails,
         @PathVariable gameId: String,
         @PathVariable submissionId: String,
         @Valid @RequestBody request: GameResultRejectRequest,
     ): ResponseEntity<ApiResponse<Unit>> {
         gameService.rejectResult(
-            confirmerUserId = confirmerUserId,
+            confirmerUserId = principal.username,
             gameId = gameId,
             submissionId = submissionId,
             command = request.toCommand(),
@@ -157,11 +159,11 @@ class GameController(
     )
     @PutMapping("/{gameId}")
     fun deleteGame(
-        @RequestHeader("userId") userId: String, // TODO: 인증/인가 적용시 변경
+        @AuthenticationPrincipal principal: CustomUserDetails,
         @PathVariable gameId: String,
     ): ResponseEntity<ApiResponse<Unit>> {
         gameService.deleteGame(
-            userId = userId,
+            userId = principal.username,
             gameId = gameId,
         )
 
