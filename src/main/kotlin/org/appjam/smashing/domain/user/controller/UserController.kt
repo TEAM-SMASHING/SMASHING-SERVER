@@ -132,9 +132,9 @@ class UserController(
 
     @GetMapping("/me/regions/leaderboard")
     fun getOtherUsersLeaderBoard(
-        @RequestHeader("userId") userId: String, // TODO: 인증/인가 회복시 @AuthenticationPrincipal 으로 변경
+        @AuthenticationPrincipal principal: CustomUserDetails,
     ): ResponseEntity<ApiResponse<OtherUsersLeaderBoardResponse>> {
-        val response = userService.getOtherUsersLeaderBoard(userId)
+        val response = userService.getOtherUsersLeaderBoard(principal.username)
 
         return ApiResponse.success(
             data = response
