@@ -93,6 +93,7 @@ class AuthService(
         return SignUpResponse(
             accessToken = token.accessToken.token,
             refreshToken = token.refreshToken.token,
+            authId = requestCommand.authId,
         )
     }
 
