@@ -12,6 +12,7 @@ data class OtherUsersRecommendationResponse(
         val wins: Int,
         val losses: Int,
         val reviews: Int,
+        val gender: String,
     ) {
         companion object {
             fun from(
@@ -24,6 +25,7 @@ data class OtherUsersRecommendationResponse(
                 wins = u.wins,
                 losses = u.losses,
                 reviews = reviewCount,
+                gender = u.user.gender.name,
             )
 
             fun listForm(
