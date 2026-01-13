@@ -202,12 +202,22 @@ class UserService(
     fun getOtherUsersRecommendation(
         userId: String,
     ): OtherUsersRecommendationResponse {
-        val user = userRepository.findByIdOrNull(userId) ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
-
-        //  val allRecommendUser = userRepository.existsAllOrderByUserId(user.id!!)
+        val user = userRepository.findByIdOrNull(userId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+        /*
+                val allProfiles = userSportProfileRepository.findAllByUserId(userId)
+
+                val activeProfile = allProfiles.find { it.id == user.activeUserSportProfileId }
+                    ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
+
+                val allRecommendUser = userSportProfileRepository.findAllByRegionAndSport(
+                    region = user.region,
+                    sportId = activeProfile.sport.id!!,
+                    excludeUserId = user.id!!
+                )
 
 
+         */
         return OtherUsersRecommendationResponse.from(
             users = listOf()
         )
