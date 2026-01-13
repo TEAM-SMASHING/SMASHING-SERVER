@@ -4,13 +4,13 @@ import org.appjam.smashing.domain.user.entity.UserSportProfile
 
 data class UserProfilesResponse(
     val nickname: String,
-    val activeSport: ActiveSport,
-    val sports: List<SportInfo>,
+    val activeProfile: ActiveProfile,
+    val allProfiles: List<ProfileInfo>,
 ) {
-    data class ActiveSport(
+    data class ActiveProfile(
         val profileId: String,
         val sportCode: String,
-        val tierId: Int,
+        val tierId: Long,
         val lp: Int,
         val minLp: Int,
         val maxLp: Int,
@@ -20,10 +20,10 @@ data class UserProfilesResponse(
         companion object {
             fun from(
                 u: UserSportProfile,
-            ) = ActiveSport(
+            ) = ActiveProfile(
                 profileId = u.id!!,
                 sportCode = u.sport.code,
-                tierId = u.tier.orderNo,
+                tierId = u.tier.id!!,
                 lp = u.lp,
                 minLp = u.tier.minLp,
                 maxLp = u.tier.maxLp,
@@ -33,41 +33,44 @@ data class UserProfilesResponse(
         }
     }
 
-    data class SportInfo(
+    data class ProfileInfo(
         val profileId: String,
         val sportCode: String,
+        val isActive: Boolean,
     ) {
         companion object {
             fun from(
+                isActive: Boolean,
                 u: UserSportProfile,
-            ) = SportInfo(
+            ) = ProfileInfo(
                 profileId = u.id!!,
                 sportCode = u.sport.code,
+                isActive = isActive,
             )
 
             fun listForm(
                 allProfiles: List<UserSportProfile>,
-                activeSportProfileId: String,
-            ) = allProfiles
-                .filter { userSportProfile ->
-                    userSportProfile.id != activeSportProfileId
-                }.map { userSportProfile ->
-                    from(userSportProfile)
-                }
+                activeProfileId: String,
+            ) = allProfiles.map { userSportProfile ->
+                from(
+                    isActive = userSportProfile.id == activeProfileId,
+                    u = userSportProfile
+                )
+            }
         }
     }
 
     companion object {
         fun from(
             nickname: String,
-            activeSport: UserSportProfile,
+            activeProfile: UserSportProfile,
             allProfiles: List<UserSportProfile>
         ) = UserProfilesResponse(
             nickname = nickname,
-            activeSport = ActiveSport.from(activeSport),
-            sports = SportInfo.listForm(
+            activeProfile = ActiveProfile.from(activeProfile),
+            allProfiles = ProfileInfo.listForm(
                 allProfiles = allProfiles,
-                activeSportProfileId = activeSport.id!!
+                activeProfileId = activeProfile.id!!,
             )
         )
     }
