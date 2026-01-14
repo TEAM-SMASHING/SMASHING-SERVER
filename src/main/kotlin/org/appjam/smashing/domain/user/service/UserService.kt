@@ -3,10 +3,7 @@ package org.appjam.smashing.domain.user.service
 import org.appjam.smashing.domain.sport.enums.InitTierLp
 import org.appjam.smashing.domain.sport.repository.SportRepository
 import org.appjam.smashing.domain.tier.repository.TierRepository
-import org.appjam.smashing.domain.user.dto.command.ActiveProfileUpdateCommand
-import org.appjam.smashing.domain.user.dto.command.AddressUpdateCommand
-import org.appjam.smashing.domain.user.dto.command.OpenChatValidateCommand
-import org.appjam.smashing.domain.user.dto.command.ProfileAddCommand
+import org.appjam.smashing.domain.user.dto.command.*
 import org.appjam.smashing.domain.user.dto.response.*
 import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.entity.UserSportProfile
@@ -239,12 +236,12 @@ class UserService(
     @Transactional(readOnly = true)
     fun getOtherUserSearch(
         userId: String,
-        nickname: String,
+        requestCommand: OtherUserSearchCommand,
     ): OtherUserSearchResponse {
         val (user, activeProfile) = getMyInfoAndActiveProfile(userId)
 
         val otherUsersSearch = userSportProfileRepository.findAllBySportOrderByNickname(
-            nickname = nickname,
+            nickname = requestCommand.nickname,
             sportId = activeProfile.sport.id!!,
             excludeUserId = userId,
         )

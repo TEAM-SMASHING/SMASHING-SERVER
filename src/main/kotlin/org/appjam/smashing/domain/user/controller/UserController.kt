@@ -1,11 +1,7 @@
 package org.appjam.smashing.domain.user.controller
 
 import jakarta.validation.Valid
-import org.appjam.smashing.domain.user.dto.command.OtherUserSearchCommand
-import org.appjam.smashing.domain.user.dto.request.ActiveProfileUpdateRequest
-import org.appjam.smashing.domain.user.dto.request.AddressUpdateRequest
-import org.appjam.smashing.domain.user.dto.request.OpenChatValidateRequest
-import org.appjam.smashing.domain.user.dto.request.ProfileAddRequest
+import org.appjam.smashing.domain.user.dto.request.*
 import org.appjam.smashing.domain.user.dto.response.*
 import org.appjam.smashing.domain.user.service.UserService
 import org.appjam.smashing.global.auth.security.data.CustomUserDetails
@@ -147,11 +143,11 @@ class UserController(
     @GetMapping("/search")
     fun getOtherUserSearch(
         @AuthenticationPrincipal principal: CustomUserDetails,
-        @Valid @RequestParam("nickname") requestCommand: OtherUserSearchCommand,
+        @Valid request: OtherUserSearchRequest,
     ): ResponseEntity<ApiResponse<OtherUserSearchResponse>> {
         val response = userService.getOtherUserSearch(
             userId = principal.username,
-            nickname = requestCommand.nickname,
+            requestCommand = request.toCommand(),
         )
 
         return ApiResponse.success(
