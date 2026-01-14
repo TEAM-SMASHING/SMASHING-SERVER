@@ -74,5 +74,6 @@ class UserSportProfileRepositoryCustomImpl(
                 user.nickname.startsWith(nickname)
             )
             .orderBy(user.nickname.asc())
+            .limit(5)
             .fetch()
 }
