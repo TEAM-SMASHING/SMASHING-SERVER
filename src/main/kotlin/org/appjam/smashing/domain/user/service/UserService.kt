@@ -1,6 +1,5 @@
 package org.appjam.smashing.domain.user.service
 
-import org.appjam.smashing.domain.review.repository.GameReviewRepository
 import org.appjam.smashing.domain.sport.enums.InitTierLp
 import org.appjam.smashing.domain.sport.repository.SportRepository
 import org.appjam.smashing.domain.tier.repository.TierRepository
@@ -25,7 +24,6 @@ class UserService(
     private val userSportProfileRepository: UserSportProfileRepository,
     private val sportRepository: SportRepository,
     private val tierRepository: TierRepository,
-    private val gameReviewRepository: GameReviewRepository,
 ) {
     @Transactional(readOnly = true)
     fun checkNicknameAvailability(
@@ -207,7 +205,7 @@ class UserService(
     ): OtherUsersRecommendationResponse {
         val (user, activeProfile) = getMyInfoAndActiveProfile(userId)
 
-        val recommendedProfiles = userSportProfileRepository.findRandomCandidates(
+        val recommendedProfiles = userSportProfileRepository.findRandomRecommendation(
             region = user.region,
             sportId = activeProfile.sport.id!!,
             excludeUserId = user.id!!,
@@ -216,43 +214,7 @@ class UserService(
             limit = LIMIT_RECOMMEND
         )
 
-        val reviewMap = getReviewCountsMap(
-            sportId = activeProfile.sport.id!!,
-            profiles = recommendedProfiles,
-        )
-
-        return OtherUsersRecommendationResponse.from(
-            recommendedUsers = recommendedProfiles,
-            reviewCounts = reviewMap
-        )
-    }
-
-    private fun getMyInfoAndActiveProfile(userId: String): Pair<User, UserSportProfile> {
-        val user = userRepository.findByIdOrNull(userId)
-            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
-
-        val activeProfile = userSportProfileRepository.findByIdOrNull(user.activeUserSportProfileId!!)
-            ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
-
-        return user to activeProfile
-    }
-
-    private fun getReviewCountsMap(
-        sportId: Long,
-        profiles: List<UserSportProfile>
-    ): Map<String, Long> {
-        if (profiles.isEmpty()) return emptyMap()
-
-        val recommendedUserIds = profiles.map { profile ->
-            profile.user.id!!
-        }
-
-        return gameReviewRepository.countReviewsBySportAndReviewees(
-            sportId = sportId,
-            userIds = recommendedUserIds,
-        ).associate { data ->
-            data.recommendedUserId to data.reviewCount
-        }
+        return OtherUsersRecommendationResponse.from(recommendedProfiles)
     }
 
     @Transactional(readOnly = true)
@@ -270,6 +232,16 @@ class UserService(
         return OtherUsersLeaderBoardResponse.from(
             topUsers = leaderBoardProfiles
         )
+    }
+
+    private fun getMyInfoAndActiveProfile(userId: String): Pair<User, UserSportProfile> {
+        val user = userRepository.findByIdOrNull(userId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+
+        val activeProfile = userSportProfileRepository.findByIdOrNull(user.activeUserSportProfileId!!)
+            ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
+
+        return user to activeProfile
     }
 
     companion object {

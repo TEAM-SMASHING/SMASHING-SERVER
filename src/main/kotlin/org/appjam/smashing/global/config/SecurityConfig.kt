@@ -63,6 +63,9 @@ class SecurityConfig(
             // Swagger UI
             "/swagger-ui/**",
             "/swagger-ui.html",
+            "/v3/api-docs/**",
+            "/v3/api-docs/**",
+            "/v3/api-docs.yaml",
 
             // Actuator
             "/actuator/**",
