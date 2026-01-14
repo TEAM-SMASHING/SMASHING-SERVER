@@ -1,7 +1,5 @@
 package org.appjam.smashing.domain.user.repository
 
-import com.querydsl.core.types.dsl.Expressions
-import com.querydsl.core.types.dsl.NumberTemplate
 import com.querydsl.jpa.JPAExpressions
 import com.querydsl.jpa.impl.JPAQueryFactory
 import org.appjam.smashing.domain.review.entity.QGameReview
@@ -9,6 +7,7 @@ import org.appjam.smashing.domain.user.dto.projection.OtherUserRecommendationPro
 import org.appjam.smashing.domain.user.dto.projection.QOtherUserRecommendationProjection
 import org.appjam.smashing.domain.user.entity.QUser.Companion.user
 import org.appjam.smashing.domain.user.entity.QUserSportProfile.Companion.userSportProfile
+import org.appjam.smashing.global.util.QueryUtils.randomOrder
 
 class UserSportProfileRepositoryCustomImpl(
     private val queryFactory: JPAQueryFactory,
@@ -49,12 +48,8 @@ class UserSportProfileRepositoryCustomImpl(
                 user.id.ne(excludeUserId),
                 userSportProfile.lp.between(myLp - lpThreshold, myLp + lpThreshold)
             )
-            .orderBy(QueryUtils.randomOrder.asc())
+            .orderBy(randomOrder.asc())
             .limit(limit)
             .fetch()
     }
-}
-
-object QueryUtils {
-    val randomOrder: NumberTemplate<Double> = Expressions.numberTemplate(Double::class.java, "function('RAND')")
 }
