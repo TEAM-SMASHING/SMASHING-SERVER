@@ -3,7 +3,6 @@ package org.appjam.smashing.domain.notification.entity
 import io.hypersistence.utils.hibernate.id.Tsid
 import jakarta.persistence.*
 import org.appjam.smashing.domain.common.entity.BaseEntity
-import org.appjam.smashing.domain.game.enums.GameResultRejectReason
 import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.hibernate.annotations.Comment
@@ -43,9 +42,9 @@ class Notification(
     @Comment("수신자 유저-스포츠 프로필 IDX")
     val receiverProfileId: String,
 
-    @Column(length = 13)
-    @Comment("발신자 유저-스포츠 프로필 IDX")
-    val senderProfileId: String? = null,
+    @Column(length = 10)
+    @Comment("발신자 유저 닉네임")
+    val senderNickname: String,
 
     @Column(nullable = false)
     @Comment("수신 스포츠 IDX")
@@ -77,12 +76,12 @@ class Notification(
             template: NotificationTemplate,
             requesterProfile: UserSportProfile,
         ) = Notification(
-                params = """{"requesterNickname":"${requesterProfile.user.nickname}","requesterTierName":"${requesterProfile.tier.name}"}""",
-                isRead = false,
+            params = """{"sportName":"${receiverProfile.sport.name}","requesterNickname":"${requesterProfile.user.nickname}","requesterTierName":"${requesterProfile.tier.name}"}""",
+            isRead = false,
                 linkUrl = "/api/v1/users/me/matchings/received",
                 receiverProfileId = receiverProfile.id!!,
                 receiverSportId = receiverProfile.sport.id!!,
-                senderProfileId = requesterProfile.id!!,
+                senderNickname = requesterProfile.user.nickname,
                 user = receiver,
                 notificationTemplate = template,
             )
@@ -93,11 +92,11 @@ class Notification(
             template: NotificationTemplate,
             acceptorProfile: UserSportProfile,
         ) = Notification(
-                params = """{"acceptorNickname":"${acceptorProfile.user.nickname}","acceptorTierId":${acceptorProfile.tier.id!!}}""",
+                params = """{"sportName":"${receiverProfile.sport.name}","acceptorNickname":"${acceptorProfile.user.nickname}","acceptorTierName":"${acceptorProfile.tier.name}"}""",
                 isRead = false,
                 linkUrl = "/api/v1/users/me/games/pending-results",
                 receiverProfileId = receiverProfile.id!!,
-                senderProfileId = acceptorProfile.id!!,
+                senderNickname = acceptorProfile.user.nickname,
                 receiverSportId = receiverProfile.sport.id!!,
                 user = receiver,
                 notificationTemplate = template,
@@ -107,15 +106,13 @@ class Notification(
             receiver: User,
             receiverProfile: UserSportProfile,
             template: NotificationTemplate,
-            gameId: String,
-            submissionId: String,
             submitterNickname: String,
-            submitterTierId: Long,
         ) = Notification(
-            params = """{"submitterNickname":"$submitterNickname","submitterTierId":$submitterTierId,"gameId":"$gameId","submissionId":"$submissionId"}""",
+            params = """{"sportName":"${receiverProfile.sport.name}","submitterNickname":"$submitterNickname"}""",
             isRead = false,
             linkUrl = "/api/v1/users/me/games/pending-results",
             user = receiver,
+            senderNickname = submitterNickname,
             receiverProfileId = receiverProfile.id!!, // TODO: 발신자 프로필 ID 추가
             receiverSportId = receiverProfile.sport.id!!,
             notificationTemplate = template,
@@ -127,13 +124,12 @@ class Notification(
             template: NotificationTemplate,
             reviewId: String,
             reviewerNickname: String,
-            reviewerTierId: Long,
-            gameId: String,
         ) = Notification(
-            params = """{"reviewerNickname":"$reviewerNickname","reviewerTierId":$reviewerTierId,"reviewId":"$reviewId","gameId":"$gameId"}""",
+            params = """{"reviewerNickname":"$reviewerNickname"}""",
             isRead = false,
             linkUrl = "/api/v1/reviews/$reviewId",
             user = receiver,
+            senderNickname = reviewerNickname,
             receiverProfileId = receiverProfile.id!!, // TODO: 발신자 프로필 ID 추가
             receiverSportId = receiverProfile.sport.id!!,
             notificationTemplate = template,
@@ -143,15 +139,13 @@ class Notification(
             receiver: User,
             receiverProfile: UserSportProfile,
             template: NotificationTemplate,
-            gameId: String,
-            submissionId: String,
             rejectorNickname: String,
-            rejectorTierId: Long,
         ) = Notification(
-            params = """{"rejectorNickname":"$rejectorNickname","rejectorTierId":$rejectorTierId,"gameId":"$gameId","submissionId":"$submissionId","reason":"${GameResultRejectReason.SCORE_MISMATCH.name}"}""",
+            params = """{"sportName":"${receiverProfile.sport.name}","rejectorNickname":"$rejectorNickname"}""",
             isRead = false,
             linkUrl = "/api/v1/users/me/games/pending-results",
             user = receiver,
+            senderNickname = rejectorNickname,
             receiverProfileId = receiverProfile.id!!, // TODO: 발신자 프로필 ID 추가
             receiverSportId = receiverProfile.sport.id!!,
             notificationTemplate = template,
@@ -161,15 +155,13 @@ class Notification(
             receiver: User,
             receiverProfile: UserSportProfile,
             template: NotificationTemplate,
-            gameId: String,
-            submissionId: String,
             rejectorNickname: String,
-            rejectorTierId: Long,
         ) = Notification(
-            params = """{"rejectorNickname":"$rejectorNickname","rejectorTierId":$rejectorTierId,"gameId":"$gameId","submissionId":"$submissionId","reason":"${GameResultRejectReason.WIN_LOSE_REVERSED.name}"}""",
+            params = """{"sportName":"${receiverProfile.sport.name}","rejectorNickname":"$rejectorNickname"}""",
             isRead = false,
             linkUrl = "/api/v1/users/me/games/pending-results",
             user = receiver,
+            senderNickname = rejectorNickname,
             receiverProfileId = receiverProfile.id!!,
             receiverSportId = receiverProfile.sport.id!!, // TODO: 발신자 프로필 ID 추가
             notificationTemplate = template,
