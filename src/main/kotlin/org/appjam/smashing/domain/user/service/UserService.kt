@@ -242,6 +242,7 @@ class UserService(
         val (user, activeProfile) = getMyInfoAndActiveProfile(userId)
 
         val otherUsersSearch = userSportProfileRepository.findAllByRegionAndSportOrderByNickname(
+            nickname = nickname,
             region = user.region,
             sportId = activeProfile.sport.id!!,
             excludeUserId = userId,

@@ -126,11 +126,13 @@ interface UserSportProfileRepository : JpaRepository<UserSportProfile, String>, 
             where u.region = :region 
             and s.id = :sportId
             and u.id <> :excludeUserId
+            and u.nickname like :nickname%
             order by u.nickname
             limit 5
         """
     )
     fun findAllByRegionAndSportOrderByNickname(
+        nickname: String,
         region: String,
         sportId: Long,
         excludeUserId: String,
