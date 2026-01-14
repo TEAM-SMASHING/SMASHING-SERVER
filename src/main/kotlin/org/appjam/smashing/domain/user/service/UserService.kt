@@ -217,6 +217,23 @@ class UserService(
         return OtherUsersRecommendationResponse.from(recommendedProfiles)
     }
 
+    @Transactional(readOnly = true)
+    fun getOtherUsersLeaderBoard(
+        userId: String,
+    ): OtherUsersLeaderBoardResponse {
+        val (user, activeProfile) = getMyInfoAndActiveProfile(userId)
+
+        val leaderBoardProfiles = userSportProfileRepository.findAllByRegionAndSportOrderByLp(
+            region = user.region,
+            sportId = activeProfile.sport.id!!,
+            excludeUserId = user.id!!
+        )
+
+        return OtherUsersLeaderBoardResponse.from(
+            topUsers = leaderBoardProfiles
+        )
+    }
+
     private fun getMyInfoAndActiveProfile(userId: String): Pair<User, UserSportProfile> {
         val user = userRepository.findByIdOrNull(userId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)

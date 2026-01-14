@@ -129,4 +129,15 @@ class UserController(
             data = response,
         )
     }
+
+    @GetMapping("/me/regions/leaderboard")
+    fun getOtherUsersLeaderBoard(
+        @AuthenticationPrincipal principal: CustomUserDetails,
+    ): ResponseEntity<ApiResponse<OtherUsersLeaderBoardResponse>> {
+        val response = userService.getOtherUsersLeaderBoard(principal.username)
+
+        return ApiResponse.success(
+            data = response
+        )
+    }
 }
