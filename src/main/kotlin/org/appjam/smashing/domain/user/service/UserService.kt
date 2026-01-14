@@ -252,6 +252,18 @@ class UserService(
         return OtherUserSearchResponse.from(otherUsersSearch)
     }
 
+    @Transactional(readOnly = true)
+    fun getUserRecentGame(
+        userId: String,
+        request: CommonCursorRequest,
+    ): CursorResponse<UserRecentGameResponse> {
+        val (user, activeProfile) = getMyInfoAndActiveProfile(userId)
+
+        // 스포츠가 같은 사람들 모임
+
+
+    }
+
     private fun getMyInfoAndActiveProfile(userId: String): Pair<User, UserSportProfile> {
         val user = userRepository.findByIdOrNull(userId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
@@ -260,17 +272,6 @@ class UserService(
             ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
 
         return user to activeProfile
-    }
-
-    @Transactional(readOnly = true)
-    fun getUserRecentGame(
-        userId: String,
-        request: CommonCursorRequest,
-    ): CursorResponse<UserRecentGameResponse> {
-        val user = userRepository.findByIdOrNull(userId)
-            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
-
-        // 스포츠가 같은 사람들 모임
     }
 
     companion object {
