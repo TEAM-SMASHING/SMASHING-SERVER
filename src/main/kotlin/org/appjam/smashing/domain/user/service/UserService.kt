@@ -207,7 +207,7 @@ class UserService(
     ): OtherUsersRecommendationResponse {
         val (user, activeProfile) = getMyInfoAndActiveProfile(userId)
 
-        val recommendedProfiles = userSportProfileRepository.findRandomCandidates(
+        val recommendedProfiles = userSportProfileRepository.findRandomRecommendation(
             region = user.region,
             sportId = activeProfile.sport.id!!,
             excludeUserId = user.id!!,
@@ -216,15 +216,7 @@ class UserService(
             limit = LIMIT_RECOMMEND
         )
 
-        val reviewMap = getReviewCountsMap(
-            sportId = activeProfile.sport.id!!,
-            profiles = recommendedProfiles,
-        )
-
-        return OtherUsersRecommendationResponse.from(
-            recommendedUsers = recommendedProfiles,
-            reviewCounts = reviewMap
-        )
+        return OtherUsersRecommendationResponse.from(recommendedProfiles)
     }
 
     private fun getMyInfoAndActiveProfile(userId: String): Pair<User, UserSportProfile> {
@@ -235,24 +227,6 @@ class UserService(
             ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
 
         return user to activeProfile
-    }
-
-    private fun getReviewCountsMap(
-        sportId: Long,
-        profiles: List<UserSportProfile>
-    ): Map<String, Long> {
-        if (profiles.isEmpty()) return emptyMap()
-
-        val recommendedUserIds = profiles.map { profile ->
-            profile.user.id!!
-        }
-
-        return gameReviewRepository.countReviewsBySportAndReviewees(
-            sportId = sportId,
-            userIds = recommendedUserIds,
-        ).associate { data ->
-            data.recommendedUserId to data.reviewCount
-        }
     }
 
     companion object {

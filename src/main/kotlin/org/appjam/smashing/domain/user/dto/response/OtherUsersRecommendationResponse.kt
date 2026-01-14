@@ -1,6 +1,6 @@
 package org.appjam.smashing.domain.user.dto.response
 
-import org.appjam.smashing.domain.user.entity.UserSportProfile
+import org.appjam.smashing.domain.user.dto.projection.OtherUserRecommendationProjection
 
 data class OtherUsersRecommendationResponse(
     val recommendedUsers: List<OtherUsers>,
@@ -16,25 +16,34 @@ data class OtherUsersRecommendationResponse(
     ) {
         companion object {
             fun from(
-                u: UserSportProfile,
-                reviewCount: Int,
+                userId: String,
+                nickname: String,
+                tierId: Long,
+                wins: Int,
+                losses: Int,
+                reviews: Int,
+                gender: String,
             ) = OtherUsers(
-                userId = u.user.id!!,
-                nickname = u.user.nickname,
-                tierId = u.tier.id!!,
-                wins = u.wins,
-                losses = u.losses,
-                reviews = reviewCount,
-                gender = u.user.gender.name,
+                userId = userId,
+                nickname = nickname,
+                tierId = tierId,
+                wins = wins,
+                losses = losses,
+                reviews = reviews,
+                gender = gender,
             )
 
             fun listForm(
-                recommendedUsers: List<UserSportProfile>,
-                reviewCounts: Map<String, Long>,
+                recommendedUsers: List<OtherUserRecommendationProjection>,
             ) = recommendedUsers.map { profile ->
                 from(
-                    u = profile,
-                    reviewCount = reviewCounts[profile.user.id]?.toInt() ?: 0,
+                    userId = profile.userId,
+                    nickname = profile.nickname,
+                    tierId = profile.tierId,
+                    wins = profile.wins,
+                    losses = profile.losses,
+                    reviews = profile.reviews,
+                    gender = profile.gender,
                 )
             }
         }
@@ -42,13 +51,9 @@ data class OtherUsersRecommendationResponse(
 
     companion object {
         fun from(
-            recommendedUsers: List<UserSportProfile>,
-            reviewCounts: Map<String, Long>,
+            recommendedUsers: List<OtherUserRecommendationProjection>,
         ) = OtherUsersRecommendationResponse(
-            recommendedUsers = OtherUsers.listForm(
-                recommendedUsers = recommendedUsers,
-                reviewCounts = reviewCounts,
-            )
+            recommendedUsers = OtherUsers.listForm(recommendedUsers)
         )
     }
 }
