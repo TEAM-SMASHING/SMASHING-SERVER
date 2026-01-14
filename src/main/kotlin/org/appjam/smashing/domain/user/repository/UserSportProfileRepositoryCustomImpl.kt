@@ -4,7 +4,9 @@ import com.querydsl.jpa.JPAExpressions
 import com.querydsl.jpa.impl.JPAQueryFactory
 import org.appjam.smashing.domain.review.entity.QGameReview
 import org.appjam.smashing.domain.user.dto.projection.OtherUserRecommendationProjection
+import org.appjam.smashing.domain.user.dto.projection.OtherUserSearchProjection
 import org.appjam.smashing.domain.user.dto.projection.QOtherUserRecommendationProjection
+import org.appjam.smashing.domain.user.dto.projection.QOtherUserSearchProjection
 import org.appjam.smashing.domain.user.entity.QUser.Companion.user
 import org.appjam.smashing.domain.user.entity.QUserSportProfile.Companion.userSportProfile
 import org.appjam.smashing.global.util.QueryUtils.randomOrder
@@ -52,4 +54,25 @@ class UserSportProfileRepositoryCustomImpl(
             .limit(limit)
             .fetch()
     }
+
+    override fun findAllBySportOrderByNickname(
+        nickname: String,
+        sportId: Long,
+        excludeUserId: String,
+    ): List<OtherUserSearchProjection> =
+        queryFactory
+            .select(
+                QOtherUserSearchProjection(
+                    user.id,
+                    user.nickname
+                )
+            ).from(userSportProfile)
+            .join(userSportProfile.user, user)
+            .where(
+                userSportProfile.sport.id.eq(sportId),
+                user.id.ne(excludeUserId),
+                user.nickname.startsWith(nickname)
+            )
+            .orderBy(user.nickname.asc())
+            .fetch()
 }

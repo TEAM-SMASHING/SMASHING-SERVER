@@ -116,23 +116,4 @@ interface UserSportProfileRepository : JpaRepository<UserSportProfile, String>, 
         sportId: Long,
         excludeUserId: String
     ): List<UserSportProfile>
-
-    @Query(
-        """
-            select usp
-            from UserSportProfile usp
-            join fetch usp.user u
-            join fetch usp.sport s
-            where s.id = :sportId
-            and u.id <> :excludeUserId
-            and u.nickname like :nickname%
-            order by u.nickname
-            limit 5
-        """
-    )
-    fun findAllBySportOrderByNickname(
-        nickname: String,
-        sportId: Long,
-        excludeUserId: String,
-    ): List<UserSportProfile>
 }
