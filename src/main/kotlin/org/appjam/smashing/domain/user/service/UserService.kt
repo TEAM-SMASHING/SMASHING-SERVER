@@ -1,6 +1,5 @@
 package org.appjam.smashing.domain.user.service
 
-import org.appjam.smashing.domain.review.repository.GameReviewRepository
 import org.appjam.smashing.domain.sport.enums.InitTierLp
 import org.appjam.smashing.domain.sport.repository.SportRepository
 import org.appjam.smashing.domain.tier.repository.TierRepository
@@ -25,7 +24,6 @@ class UserService(
     private val userSportProfileRepository: UserSportProfileRepository,
     private val sportRepository: SportRepository,
     private val tierRepository: TierRepository,
-    private val gameReviewRepository: GameReviewRepository,
 ) {
     @Transactional(readOnly = true)
     fun checkNicknameAvailability(
