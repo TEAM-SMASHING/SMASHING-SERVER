@@ -41,7 +41,7 @@ enum class ErrorCode(
 
     // Auth - Kakao Token
     INVALID_KAKAO_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-018", "유효하지 않은 카카오 액세스 토큰입니다."),
-    DUPLICATE_USER(HttpStatus.CONFLICT, "AUTH-019", "이미 존재하는 유저입니다."),
+    DUPLICATE_KAKAO_ID(HttpStatus.CONFLICT, "AUTH-019", "이미 존재하는 유저입니다."),
     DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "AUTH-020", "이미 사용 중인 닉네임입니다."),
 
     // Domain - User / Profile
