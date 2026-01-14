@@ -1,5 +1,6 @@
 package org.appjam.smashing.domain.user.service
 
+import org.appjam.smashing.domain.review.repository.GameReviewRepository
 import org.appjam.smashing.domain.sport.enums.InitTierLp
 import org.appjam.smashing.domain.sport.repository.SportRepository
 import org.appjam.smashing.domain.tier.repository.TierRepository
@@ -16,6 +17,7 @@ import org.appjam.smashing.global.exception.ErrorCode
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.OffsetDateTime
 
 @Service
 class UserService(
@@ -23,6 +25,7 @@ class UserService(
     private val userSportProfileRepository: UserSportProfileRepository,
     private val sportRepository: SportRepository,
     private val tierRepository: TierRepository,
+    private val gameReviewRepository: GameReviewRepository,
 ) {
     @Transactional(readOnly = true)
     fun checkNicknameAvailability(
@@ -252,13 +255,50 @@ class UserService(
     @Transactional(readOnly = true)
     fun getUserRecentGame(
         userId: String,
-        request: CommonCursorRequest,
-    ): CursorResponse<UserRecentGameResponse> {
-        val (user, activeProfile) = getMyInfoAndActiveProfile(userId)
+        request: CommonCursorRequest
+    ): CursorResponse<UserRecentGameResponse.Game> {
+        val (_, activeProfile) = getMyInfoAndActiveProfile(userId)
+        val snapshotAt = request.snapshotAt ?: OffsetDateTime.now()
+        val sportId = activeProfile.sport.id ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
 
-        // 스포츠가 같은 사람들 모임
+        val response = gameReviewRepository.findAllBySportIdOrderByDate(
+            request = request,
+            activeSportId = sportId,
+            userId = userId,
+            snapshotAt = snapshotAt,
+        )
 
+//        val ratingResults = gameReviewRepository.countRatingsByRevieweeAndSport(userId, sportId)
+//        val ratingMap = ratingResults.associate { (it[0] as ReviewRating) to (it[1] as Long).toInt() }
+//        val ratingCounts = UserRecentGameResponse.RatingCounts(
+//            best = ratingMap[ReviewRating.BEST] ?: 0,
+//            good = ratingMap[ReviewRating.GOOD] ?: 0,
+//            bad = ratingMap[ReviewRating.BAD] ?: 0
+//        )
+//
+//        // 3. 태그 통계 조회 및 DTO 변환
+//        val tagResults = gameReviewRepository.countTagsByRevieweeAndSport(userId, sportId)
+//        val tagMap = tagResults.associate { (it[0] as ReviewTag) to (it[1] as Long).toInt() }
+//        val tagCounts = UserRecentGameResponse.TagCounts(
+//            goodManner = tagMap[ReviewTag.GOOD_MANNER] ?: 0,
+//            onTime = tagMap[ReviewTag.ON_TIME] ?: 0,
+//            fairPlay = tagMap[ReviewTag.FAIR_PLAY] ?: 0,
+//            fastResponse = tagMap[ReviewTag.FAST_RESPONSE] ?: 0
+//        )
+//
+        val games = UserRecentGameResponse.Game.listForm(response.results)
 
+        return CursorResponse(
+            snapshotAt = response.snapshotAt,
+            results = games,
+            nextCursor = response.nextCursor,
+            hasNext = response.hasNext,
+        )
+//        return UserRecentGameCursorResponse.of(
+//            page = page,
+////            ratingCounts = ratingCounts,
+////            tagCounts = tagCounts
+//        )
     }
 
     private fun getMyInfoAndActiveProfile(userId: String): Pair<User, UserSportProfile> {
