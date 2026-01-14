@@ -155,4 +155,9 @@ class UserController(
             data = response,
         )
     }
+
+    @GetMapping("")
+    fun getUserRecentGame() {
+        
+    }
 }
