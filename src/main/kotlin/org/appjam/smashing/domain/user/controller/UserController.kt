@@ -141,11 +141,11 @@ class UserController(
     @GetMapping("/search")
     fun getOtherUserSearch(
         @AuthenticationPrincipal principal: CustomUserDetails,
-        @Valid @RequestParam("nickname") requestCommand: OtherUserSearchRequest,
+        @Valid request: OtherUserSearchRequest,
     ): ResponseEntity<ApiResponse<OtherUserSearchResponse>> {
         val response = userService.getOtherUserSearch(
             userId = principal.username,
-            requestCommand = requestCommand.toCommand(),
+            requestCommand = request.toCommand(),
         )
 
         return ApiResponse.success(
