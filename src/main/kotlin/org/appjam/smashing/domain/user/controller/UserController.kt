@@ -141,7 +141,7 @@ class UserController(
         )
     }
 
-    @GetMapping("")
+    @GetMapping("/search")
     fun getOtherUserSearch(
         @AuthenticationPrincipal principal: CustomUserDetails,
         @RequestParam("nickname") nickname: String,
