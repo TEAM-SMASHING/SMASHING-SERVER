@@ -123,17 +123,15 @@ interface UserSportProfileRepository : JpaRepository<UserSportProfile, String>, 
             from UserSportProfile usp
             join fetch usp.user u
             join fetch usp.sport s
-            where u.region = :region 
-            and s.id = :sportId
+            where s.id = :sportId
             and u.id <> :excludeUserId
             and u.nickname like :nickname%
             order by u.nickname
             limit 5
         """
     )
-    fun findAllByRegionAndSportOrderByNickname(
+    fun findAllBySportOrderByNickname(
         nickname: String,
-        region: String,
         sportId: Long,
         excludeUserId: String,
     ): List<UserSportProfile>
