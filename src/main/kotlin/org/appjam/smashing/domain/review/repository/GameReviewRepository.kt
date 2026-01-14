@@ -4,7 +4,7 @@ import org.appjam.smashing.domain.review.entity.GameReview
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 
-interface GameReviewRepository : JpaRepository<GameReview, String> {
+interface GameReviewRepository : JpaRepository<GameReview, String>, GameReviewRepositoryCustom {
 
     @Query(
         """
@@ -33,4 +33,34 @@ interface GameReviewRepository : JpaRepository<GameReview, String> {
     fun findByIdFetchAll(
         reviewId: String,
     ): GameReview?
+
+
+    @Query(
+        """
+            select gr.rating, count(gr)
+            from GameReview gr
+            where gr.reviewee.id = :revieweeId
+            and gr.game.sport.id = :sportId
+            group by gr.rating
+        """
+    )
+    fun countRatingsByRevieweeAndSport(
+        revieweeId: String,
+        sportId: Long
+    ): List<Array<Any>>
+
+    @Query(
+        """
+            select t, count(t)
+            from GameReview gr
+            join gr.tags t
+            where gr.reviewee.id = :revieweeId
+            and gr.game.sport.id = :sportId
+            group by t
+        """
+    )
+    fun countTagsByRevieweeAndSport(
+        revieweeId: String,
+        sportId: Long
+    ): List<Array<Any>>
 }

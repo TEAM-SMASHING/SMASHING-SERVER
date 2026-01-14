@@ -1,5 +1,7 @@
 package org.appjam.smashing.domain.user.service
 
+import org.appjam.smashing.domain.review.enums.ReviewRating
+import org.appjam.smashing.domain.review.enums.ReviewTag
 import org.appjam.smashing.domain.review.repository.GameReviewRepository
 import org.appjam.smashing.domain.sport.enums.InitTierLp
 import org.appjam.smashing.domain.sport.repository.SportRepository
@@ -11,7 +13,6 @@ import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.appjam.smashing.domain.user.repository.UserRepository
 import org.appjam.smashing.domain.user.repository.UserSportProfileRepository
 import org.appjam.smashing.global.common.dto.CommonCursorRequest
-import org.appjam.smashing.global.common.dto.CursorResponse
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
 import org.springframework.data.repository.findByIdOrNull
@@ -256,49 +257,40 @@ class UserService(
     fun getUserRecentGame(
         userId: String,
         request: CommonCursorRequest
-    ): CursorResponse<UserRecentGameResponse.Game> {
+    ): UserRecentGameCursorResponse {
         val (_, activeProfile) = getMyInfoAndActiveProfile(userId)
         val snapshotAt = request.snapshotAt ?: OffsetDateTime.now()
         val sportId = activeProfile.sport.id ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
 
-        val response = gameReviewRepository.findAllBySportIdOrderByDate(
+        val page = gameReviewRepository.findAllBySportIdOrderByDate(
             request = request,
             activeSportId = sportId,
             userId = userId,
             snapshotAt = snapshotAt,
         )
 
-//        val ratingResults = gameReviewRepository.countRatingsByRevieweeAndSport(userId, sportId)
-//        val ratingMap = ratingResults.associate { (it[0] as ReviewRating) to (it[1] as Long).toInt() }
-//        val ratingCounts = UserRecentGameResponse.RatingCounts(
-//            best = ratingMap[ReviewRating.BEST] ?: 0,
-//            good = ratingMap[ReviewRating.GOOD] ?: 0,
-//            bad = ratingMap[ReviewRating.BAD] ?: 0
-//        )
-//
-//        // 3. 태그 통계 조회 및 DTO 변환
-//        val tagResults = gameReviewRepository.countTagsByRevieweeAndSport(userId, sportId)
-//        val tagMap = tagResults.associate { (it[0] as ReviewTag) to (it[1] as Long).toInt() }
-//        val tagCounts = UserRecentGameResponse.TagCounts(
-//            goodManner = tagMap[ReviewTag.GOOD_MANNER] ?: 0,
-//            onTime = tagMap[ReviewTag.ON_TIME] ?: 0,
-//            fairPlay = tagMap[ReviewTag.FAIR_PLAY] ?: 0,
-//            fastResponse = tagMap[ReviewTag.FAST_RESPONSE] ?: 0
-//        )
-//
-        val games = UserRecentGameResponse.Game.listForm(response.results)
-
-        return CursorResponse(
-            snapshotAt = response.snapshotAt,
-            results = games,
-            nextCursor = response.nextCursor,
-            hasNext = response.hasNext,
+        val ratingResults = gameReviewRepository.countRatingsByRevieweeAndSport(userId, sportId)
+        val ratingMap = ratingResults.associate { (it[0] as ReviewRating) to (it[1] as Long).toInt() }
+        val ratingCounts = UserRecentGameResponse.RatingCounts(
+            best = ratingMap[ReviewRating.BEST] ?: 0,
+            good = ratingMap[ReviewRating.GOOD] ?: 0,
+            bad = ratingMap[ReviewRating.BAD] ?: 0
         )
-//        return UserRecentGameCursorResponse.of(
-//            page = page,
-////            ratingCounts = ratingCounts,
-////            tagCounts = tagCounts
-//        )
+
+        val tagResults = gameReviewRepository.countTagsByRevieweeAndSport(userId, sportId)
+        val tagMap = tagResults.associate { (it[0] as ReviewTag) to (it[1] as Long).toInt() }
+        val tagCounts = UserRecentGameResponse.TagCounts(
+            goodManner = tagMap[ReviewTag.GOOD_MANNER] ?: 0,
+            onTime = tagMap[ReviewTag.ON_TIME] ?: 0,
+            fairPlay = tagMap[ReviewTag.FAIR_PLAY] ?: 0,
+            fastResponse = tagMap[ReviewTag.FAST_RESPONSE] ?: 0
+        )
+
+        return UserRecentGameCursorResponse.of(
+            page = page,
+            ratingCounts = ratingCounts,
+            tagCounts = tagCounts
+        )
     }
 
     private fun getMyInfoAndActiveProfile(userId: String): Pair<User, UserSportProfile> {
