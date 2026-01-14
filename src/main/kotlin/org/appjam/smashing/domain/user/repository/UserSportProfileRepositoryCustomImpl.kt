@@ -1,6 +1,7 @@
 package org.appjam.smashing.domain.user.repository
 
 import com.querydsl.core.types.dsl.Expressions
+import com.querydsl.core.types.dsl.NumberTemplate
 import com.querydsl.jpa.JPAExpressions
 import com.querydsl.jpa.impl.JPAQueryFactory
 import org.appjam.smashing.domain.review.entity.QGameReview
@@ -48,8 +49,12 @@ class UserSportProfileRepositoryCustomImpl(
                 user.id.ne(excludeUserId),
                 userSportProfile.lp.between(myLp - lpThreshold, myLp + lpThreshold)
             )
-            .orderBy(Expressions.numberTemplate(Double::class.java, "function('RAND')").asc())
+            .orderBy(QueryUtils.randomOrder.asc())
             .limit(limit)
             .fetch()
     }
+}
+
+object QueryUtils {
+    val randomOrder: NumberTemplate<Double> = Expressions.numberTemplate(Double::class.java, "function('RAND')")
 }
