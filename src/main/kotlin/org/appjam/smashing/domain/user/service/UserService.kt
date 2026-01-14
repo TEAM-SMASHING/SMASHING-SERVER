@@ -241,9 +241,8 @@ class UserService(
     ): OtherUserSearchResponse {
         val (user, activeProfile) = getMyInfoAndActiveProfile(userId)
 
-        val otherUsersSearch = userSportProfileRepository.findAllByRegionAndSportOrderByNickname(
+        val otherUsersSearch = userSportProfileRepository.findAllBySportOrderByNickname(
             nickname = nickname,
-            region = user.region,
             sportId = activeProfile.sport.id!!,
             excludeUserId = userId,
         )
