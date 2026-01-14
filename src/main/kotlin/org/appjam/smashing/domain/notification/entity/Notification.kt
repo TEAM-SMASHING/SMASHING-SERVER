@@ -39,11 +39,15 @@ class Notification(
     @Comment("알림 연결 URL(라우팅 경로)")
     val linkUrl: String,
 
-    @Column(name = "receiver_profile_id", nullable = false, length = 13)
+    @Column(nullable = false, length = 13)
     @Comment("수신자 유저-스포츠 프로필 IDX")
     val receiverProfileId: String,
 
-    @Column(name = "receiver_sport_id", nullable = false)
+    @Column(length = 13)
+    @Comment("발신자 유저-스포츠 프로필 IDX")
+    val senderProfileId: String? = null,
+
+    @Column(nullable = false)
     @Comment("수신 스포츠 IDX")
     val receiverSportId: Long,
 
@@ -78,6 +82,7 @@ class Notification(
                 linkUrl = "/api/v1/users/me/matchings/received",
                 receiverProfileId = receiverProfile.id!!,
                 receiverSportId = receiverProfile.sport.id!!,
+                senderProfileId = requesterProfile.id!!,
                 user = receiver,
                 notificationTemplate = template,
             )
@@ -92,6 +97,7 @@ class Notification(
                 isRead = false,
                 linkUrl = "/api/v1/users/me/games/pending-results",
                 receiverProfileId = receiverProfile.id!!,
+                senderProfileId = acceptorProfile.id!!,
                 receiverSportId = receiverProfile.sport.id!!,
                 user = receiver,
                 notificationTemplate = template,
@@ -110,7 +116,7 @@ class Notification(
             isRead = false,
             linkUrl = "/api/v1/users/me/games/pending-results",
             user = receiver,
-            receiverProfileId = receiverProfile.id!!,
+            receiverProfileId = receiverProfile.id!!, // TODO: 발신자 프로필 ID 추가
             receiverSportId = receiverProfile.sport.id!!,
             notificationTemplate = template,
         )
@@ -128,7 +134,7 @@ class Notification(
             isRead = false,
             linkUrl = "/api/v1/reviews/$reviewId",
             user = receiver,
-            receiverProfileId = receiverProfile.id!!,
+            receiverProfileId = receiverProfile.id!!, // TODO: 발신자 프로필 ID 추가
             receiverSportId = receiverProfile.sport.id!!,
             notificationTemplate = template,
         )
@@ -146,7 +152,7 @@ class Notification(
             isRead = false,
             linkUrl = "/api/v1/users/me/games/pending-results",
             user = receiver,
-            receiverProfileId = receiverProfile.id!!,
+            receiverProfileId = receiverProfile.id!!, // TODO: 발신자 프로필 ID 추가
             receiverSportId = receiverProfile.sport.id!!,
             notificationTemplate = template,
         )
@@ -165,7 +171,7 @@ class Notification(
             linkUrl = "/api/v1/users/me/games/pending-results",
             user = receiver,
             receiverProfileId = receiverProfile.id!!,
-            receiverSportId = receiverProfile.sport.id!!,
+            receiverSportId = receiverProfile.sport.id!!, // TODO: 발신자 프로필 ID 추가
             notificationTemplate = template,
         )
     }
