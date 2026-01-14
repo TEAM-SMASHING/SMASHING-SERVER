@@ -118,4 +118,15 @@ class UserController(
 
         return ApiResponse.success()
     }
+
+    @GetMapping("/regions/recommendation")
+    fun getOtherUsersRecommendation(
+        @AuthenticationPrincipal principal: CustomUserDetails,
+    ): ResponseEntity<ApiResponse<OtherUsersRecommendationResponse>> {
+        val response = userService.getOtherUsersRecommendation(principal.username)
+
+        return ApiResponse.success(
+            data = response,
+        )
+    }
 }

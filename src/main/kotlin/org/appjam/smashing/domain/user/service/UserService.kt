@@ -8,6 +8,7 @@ import org.appjam.smashing.domain.user.dto.command.AddressUpdateCommand
 import org.appjam.smashing.domain.user.dto.command.OpenChatValidateCommand
 import org.appjam.smashing.domain.user.dto.command.ProfileAddCommand
 import org.appjam.smashing.domain.user.dto.response.*
+import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.appjam.smashing.domain.user.repository.UserRepository
 import org.appjam.smashing.domain.user.repository.UserSportProfileRepository
@@ -198,9 +199,39 @@ class UserService(
         user.updateActiveProfile(requestCommand.profileId)
     }
 
+    @Transactional(readOnly = true)
+    fun getOtherUsersRecommendation(
+        userId: String,
+    ): OtherUsersRecommendationResponse {
+        val (user, activeProfile) = getMyInfoAndActiveProfile(userId)
+
+        val recommendedProfiles = userSportProfileRepository.findRandomRecommendation(
+            region = user.region,
+            sportId = activeProfile.sport.id!!,
+            excludeUserId = user.id!!,
+            myLp = activeProfile.lp,
+            lpThreshold = LP_THRESHOLD,
+            limit = LIMIT_RECOMMEND
+        )
+
+        return OtherUsersRecommendationResponse.from(recommendedProfiles)
+    }
+
+    private fun getMyInfoAndActiveProfile(userId: String): Pair<User, UserSportProfile> {
+        val user = userRepository.findByIdOrNull(userId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+
+        val activeProfile = userSportProfileRepository.findByIdOrNull(user.activeUserSportProfileId!!)
+            ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
+
+        return user to activeProfile
+    }
+
     companion object {
         private val NICKNAME_VALID_REGEX = Regex("^[a-zA-Z0-9가-힣]*$")
         private const val MAX_NICKNAME_LENGTH = 10
         val OPEN_CHAT_URL_REGEX = Regex("^https://open\\.kakao\\.com/o/[a-zA-Z0-9]+\$")
+        private const val LP_THRESHOLD = 200
+        private const val LIMIT_RECOMMEND = 5L
     }
 }

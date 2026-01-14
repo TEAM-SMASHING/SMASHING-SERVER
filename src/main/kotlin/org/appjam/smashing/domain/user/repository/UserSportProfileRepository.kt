@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Lock
 import org.springframework.data.jpa.repository.Query
 
-interface UserSportProfileRepository : JpaRepository<UserSportProfile, String> {
+interface UserSportProfileRepository : JpaRepository<UserSportProfile, String>, UserSportProfileRepositoryCustom {
 
     @Query(
         """
