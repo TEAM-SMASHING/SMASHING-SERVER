@@ -13,6 +13,7 @@ data class NotificationSummaryResponse(
     val linkUrl: String,
     val isRead: Boolean,
     val createdAt: OffsetDateTime,
+    val senderNickname: String,
     val receiverProfileId: String,
     val receiverSportId: Long,
 ) {
@@ -34,6 +35,7 @@ data class NotificationSummaryResponse(
             linkUrl = p.linkUrl,
             isRead = p.isRead,
             createdAt = p.createdAt,
+            senderNickname = p.senderNickname,
             receiverProfileId = p.receiverProfileId,
             receiverSportId = p.receiverSportId,
         )
