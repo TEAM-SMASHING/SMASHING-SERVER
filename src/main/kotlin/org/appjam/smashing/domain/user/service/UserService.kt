@@ -270,7 +270,7 @@ class UserService(
         val user = userRepository.findByIdOrNull(userId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
-
+        // 스포츠가 같은 사람들 모임
     }
 
     companion object {
