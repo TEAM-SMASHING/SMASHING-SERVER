@@ -140,4 +140,19 @@ class UserController(
             data = response
         )
     }
+
+    @GetMapping("")
+    fun getOtherUserSearch(
+        @AuthenticationPrincipal principal: CustomUserDetails,
+        @RequestParam("nickname") nickname: String,
+    ): ResponseEntity<ApiResponse<OtherUserSearchResponse>> {
+        val response = userService.getOtherUserSearch(
+            userId = principal.username,
+            nickname = nickname,
+        )
+
+        return ApiResponse.success(
+            data = response,
+        )
+    }
 }
