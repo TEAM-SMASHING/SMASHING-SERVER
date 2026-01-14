@@ -1,6 +1,7 @@
 package org.appjam.smashing.domain.user.repository
 
 import org.appjam.smashing.domain.user.dto.projection.OtherUserRecommendationProjection
+import org.appjam.smashing.domain.user.dto.projection.OtherUserSearchProjection
 
 interface UserSportProfileRepositoryCustom {
     fun findRandomRecommendation(
@@ -11,4 +12,10 @@ interface UserSportProfileRepositoryCustom {
         lpThreshold: Int,
         limit: Long,
     ): List<OtherUserRecommendationProjection>
+
+    fun findAllBySportOrderByNickname(
+        nickname: String,
+        sportId: Long,
+        excludeUserId: String,
+    ): List<OtherUserSearchProjection>
 }

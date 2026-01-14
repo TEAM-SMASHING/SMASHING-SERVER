@@ -1,6 +1,6 @@
 package org.appjam.smashing.domain.user.dto.response
 
-import org.appjam.smashing.domain.user.entity.UserSportProfile
+import org.appjam.smashing.domain.user.dto.projection.OtherUserSearchProjection
 
 data class OtherUserSearchResponse(
     val users: List<SearchUser>,
@@ -19,11 +19,11 @@ data class OtherUserSearchResponse(
             )
 
             fun listForm(
-                users: List<UserSportProfile>
-            ) = users.map { user ->
+                users: List<OtherUserSearchProjection>
+            ) = users.map { otherUser ->
                 from(
-                    userId = user.id!!,
-                    nickname = user.user.nickname,
+                    userId = otherUser.userId,
+                    nickname = otherUser.nickname,
                 )
             }
         }
@@ -31,7 +31,7 @@ data class OtherUserSearchResponse(
 
     companion object {
         fun from(
-            users: List<UserSportProfile>,
+            users: List<OtherUserSearchProjection>,
         ) = OtherUserSearchResponse(
             users = SearchUser.listForm(users)
         )
