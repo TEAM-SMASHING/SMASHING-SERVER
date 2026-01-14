@@ -27,4 +27,10 @@ data class UserRecentGameResponse(
         val confirmedAt: LocalDateTime,
         val content: String?
     )
+
+    companion object {
+//        fun from(
+//
+//        )
+    }
 }
