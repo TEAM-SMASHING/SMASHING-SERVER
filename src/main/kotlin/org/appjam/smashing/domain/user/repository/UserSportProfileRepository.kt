@@ -91,7 +91,7 @@ interface UserSportProfileRepository : JpaRepository<UserSportProfile, String>, 
             order by s.name asc
         """
     )
-    fun findAllByUserIdOrderByName(
+    fun findAllByUserIdOrderBySportName(
         userId: String,
     ): List<UserSportProfile>
 
@@ -115,5 +115,24 @@ interface UserSportProfileRepository : JpaRepository<UserSportProfile, String>, 
         region: String,
         sportId: Long,
         excludeUserId: String
+    ): List<UserSportProfile>
+
+    @Query(
+        """
+            select usp
+            from UserSportProfile usp
+            join fetch usp.user u
+            join fetch usp.sport s
+            where u.region = :region 
+            and s.id = :sportId
+            and u.id <> :excludeUserId
+            order by u.nickname
+            limit 5
+        """
+    )
+    fun findAllByRegionAndSportOrderByNickname(
+        region: String,
+        sportId: Long,
+        excludeUserId: String,
     ): List<UserSportProfile>
 }

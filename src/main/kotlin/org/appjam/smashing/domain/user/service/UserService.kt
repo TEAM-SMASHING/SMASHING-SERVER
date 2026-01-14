@@ -78,7 +78,7 @@ class UserService(
         val user = userRepository.findByIdOrNull(userId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
-        val allProfiles = userSportProfileRepository.findAllByUserIdOrderByName(userId)
+        val allProfiles = userSportProfileRepository.findAllByUserIdOrderBySportName(userId)
 
         val activeProfile = allProfiles.find { it.id == user.activeUserSportProfileId }
             ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
@@ -135,7 +135,7 @@ class UserService(
         val user = userRepository.findByIdOrNull(userId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
-        val allProfiles = userSportProfileRepository.findAllByUserIdOrderByName(userId)
+        val allProfiles = userSportProfileRepository.findAllByUserIdOrderBySportName(userId)
 
         val activeProfile = allProfiles.find { it.id == user.activeUserSportProfileId }
             ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
@@ -155,7 +155,7 @@ class UserService(
         val otherUser = userRepository.findByIdOrNull(otherUserId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
-        val allProfiles = userSportProfileRepository.findAllByUserIdOrderByName(otherUserId)
+        val allProfiles = userSportProfileRepository.findAllByUserIdOrderBySportName(otherUserId)
 
         val selectedSport = if (sportCode == null) {
             allProfiles.find { it.id == otherUser.activeUserSportProfileId }
@@ -234,6 +234,22 @@ class UserService(
         )
     }
 
+    @Transactional(readOnly = true)
+    fun getOtherUserSearch(
+        userId: String,
+        nickname: String,
+    ): OtherUserSearchResponse {
+        val (user, activeProfile) = getMyInfoAndActiveProfile(userId)
+
+        val otherUsersSearch = userSportProfileRepository.findAllByRegionAndSportOrderByNickname(
+            region = user.region,
+            sportId = activeProfile.sport.id!!,
+            excludeUserId = userId,
+        )
+
+        return OtherUserSearchResponse.from(otherUsersSearch)
+    }
+
     private fun getMyInfoAndActiveProfile(userId: String): Pair<User, UserSportProfile> {
         val user = userRepository.findByIdOrNull(userId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
@@ -242,15 +258,6 @@ class UserService(
             ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
 
         return user to activeProfile
-    }
-
-    @Transactional(readOnly = true)
-    fun getOtherUserSearch(
-        userId: String,
-        nickname: String,
-    ): OtherUserSearchResponse {
-        
-
     }
 
     companion object {
