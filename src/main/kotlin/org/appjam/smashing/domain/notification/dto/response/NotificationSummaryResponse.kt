@@ -2,14 +2,14 @@ package org.appjam.smashing.domain.notification.dto.response
 
 import org.appjam.smashing.domain.notification.dto.projection.NotificationSummaryProjection
 import org.appjam.smashing.domain.notification.enums.NotificationType
+import org.appjam.smashing.global.common.components.NotificationContentRenderer
 import java.time.OffsetDateTime
 
 data class NotificationSummaryResponse(
     val notificationId: String,
     val type: NotificationType,
-    val templateTitle: String,
-    val templateContent: String,
-    val params: String,
+    val title: String,
+    val content: String,
     val linkUrl: String,
     val isRead: Boolean,
     val createdAt: OffsetDateTime,
@@ -18,22 +18,29 @@ data class NotificationSummaryResponse(
 ) {
     companion object {
         fun from(
-            p: NotificationSummaryProjection
+            p: NotificationSummaryProjection,
+            renderer: NotificationContentRenderer,
         ) = NotificationSummaryResponse(
-                notificationId = p.notificationId,
-                type = p.type,
-                templateTitle = p.templateTitle,
+            notificationId = p.notificationId,
+            type = p.type,
+            title = renderer.render(
+                templateContent = p.templateTitle,
+                paramsJson = p.params,
+            ),
+            content = renderer.render(
                 templateContent = p.templateContent,
-                params = p.params,
-                linkUrl = p.linkUrl,
-                isRead = p.isRead,
-                createdAt = p.createdAt,
-                receiverProfileId = p.receiverProfileId,
-                receiverSportId = p.receiverSportId,
-            )
+                paramsJson = p.params,
+            ),
+            linkUrl = p.linkUrl,
+            isRead = p.isRead,
+            createdAt = p.createdAt,
+            receiverProfileId = p.receiverProfileId,
+            receiverSportId = p.receiverSportId,
+        )
 
         fun from(
-            list: List<NotificationSummaryProjection>
-        ) = list.map(::from)
+            list: List<NotificationSummaryProjection>,
+            renderer: NotificationContentRenderer,
+        ) = list.map { from(it, renderer) }
     }
 }
