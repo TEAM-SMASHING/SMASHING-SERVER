@@ -41,7 +41,7 @@ class GameReviewRepositoryCustomImpl(
                     gr.reviewer.nickname,
                     gr.createdAt,
                     gr.content,
-                    cursorId = gr.id
+                    gr.id
                 )
             )
             .from(gr)
