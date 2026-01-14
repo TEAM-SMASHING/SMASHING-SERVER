@@ -71,7 +71,7 @@ class AuthService(
 
         val user = userRepository.save(
             User.create(
-                kakaoId = requestCommand.authId,
+                kakaoId = requestCommand.kakaoId,
                 nickname = requestCommand.nickname,
                 gender = requestCommand.gender,
                 openchatUrl = trimmedUrl,
@@ -95,13 +95,13 @@ class AuthService(
         return SignUpResponse(
             accessToken = token.accessToken.token,
             refreshToken = token.refreshToken.token,
-            authId = requestCommand.authId,
+            userId = user.id
         )
     }
 
     private fun validateUser(requestCommand: SignUpRequestCommand) {
-        if (userRepository.existsByKakaoId(requestCommand.authId)) {
-            throw CustomException(ErrorCode.DUPLICATE_USER)
+        if (userRepository.existsByKakaoId(requestCommand.kakaoId)) {
+            throw CustomException(ErrorCode.DUPLICATE_KAKAO_ID)
         }
 
         if (userRepository.existsByNickname(requestCommand.nickname)) {
