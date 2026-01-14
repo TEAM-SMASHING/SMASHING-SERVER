@@ -269,21 +269,9 @@ class UserService(
             snapshotAt = snapshotAt,
         )
 
-        val ratingResults = gameReviewRepository.countRatingsByRevieweeAndSport(userId, sportId)
-        val ratingMap = ratingResults.associate { (it[0] as ReviewRating) to (it[1] as Long).toInt() }
-        val ratingCounts = UserRecentGameResponse.RatingCounts(
-            best = ratingMap[ReviewRating.BEST] ?: 0,
-            good = ratingMap[ReviewRating.GOOD] ?: 0,
-            bad = ratingMap[ReviewRating.BAD] ?: 0
-        )
-
-        val tagResults = gameReviewRepository.countTagsByRevieweeAndSport(userId, sportId)
-        val tagMap = tagResults.associate { (it[0] as ReviewTag) to (it[1] as Long).toInt() }
-        val tagCounts = UserRecentGameResponse.TagCounts(
-            goodManner = tagMap[ReviewTag.GOOD_MANNER] ?: 0,
-            onTime = tagMap[ReviewTag.ON_TIME] ?: 0,
-            fairPlay = tagMap[ReviewTag.FAIR_PLAY] ?: 0,
-            fastResponse = tagMap[ReviewTag.FAST_RESPONSE] ?: 0
+        val (ratingCounts, tagCounts) = getCounts(
+            userId = userId,
+            sportId = sportId,
         )
 
         return UserRecentGameCursorResponse.of(
@@ -301,6 +289,37 @@ class UserService(
             ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
 
         return user to activeProfile
+    }
+
+    private fun getCounts(userId: String, sportId: Long): Pair<UserRecentGameResponse.RatingCounts, UserRecentGameResponse.TagCounts> {
+        val ratingResults = gameReviewRepository.countRatingsByRevieweeAndSport(
+            revieweeId = userId,
+            activeSportId = sportId,
+        )
+        val ratingMap = ratingResults.associate { data ->
+            (data[0] as ReviewRating) to (data[1] as Long).toInt()
+        }
+        val ratingCounts = UserRecentGameResponse.RatingCounts.from(
+            best = ratingMap[ReviewRating.BEST] ?: 0,
+            good = ratingMap[ReviewRating.GOOD] ?: 0,
+            bad = ratingMap[ReviewRating.BAD] ?: 0
+        )
+
+        val tagResults = gameReviewRepository.countTagsByRevieweeAndSport(
+            revieweeId = userId,
+            activeSportId = sportId,
+        )
+        val tagMap = tagResults.associate { data ->
+            (data[0] as ReviewTag) to (data[1] as Long).toInt()
+        }
+        val tagCounts = UserRecentGameResponse.TagCounts.from(
+            goodManner = tagMap[ReviewTag.GOOD_MANNER] ?: 0,
+            onTime = tagMap[ReviewTag.ON_TIME] ?: 0,
+            fairPlay = tagMap[ReviewTag.FAIR_PLAY] ?: 0,
+            fastResponse = tagMap[ReviewTag.FAST_RESPONSE] ?: 0
+        )
+
+        return ratingCounts to tagCounts
     }
 
     companion object {
