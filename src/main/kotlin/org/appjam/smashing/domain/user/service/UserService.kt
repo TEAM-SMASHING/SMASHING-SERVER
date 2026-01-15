@@ -13,6 +13,7 @@ import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.appjam.smashing.domain.user.repository.UserRepository
 import org.appjam.smashing.domain.user.repository.UserSportProfileRepository
 import org.appjam.smashing.global.common.dto.CommonCursorRequest
+import org.appjam.smashing.global.common.dto.RecentGameCursorResponse
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
 import org.springframework.data.repository.findByIdOrNull
@@ -160,7 +161,7 @@ class UserService(
 
         val allProfiles = userSportProfileRepository.findAllByUserIdOrderBySportName(otherUserId)
 
-        val selectedSport = if (sportCode == null) {
+        val selectedProfile = if (sportCode == null) {
             allProfiles.find { it.id == otherUser.activeUserSportProfileId }
                 ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
         } else {
@@ -170,7 +171,7 @@ class UserService(
 
         return OtherUserProfilesResponse.from(
             nickname = otherUser.nickname,
-            selectedProfile = selectedSport,
+            selectedProfile = selectedProfile,
             allProfiles = allProfiles
         )
     }
@@ -257,14 +258,14 @@ class UserService(
     fun getUserRecentGame(
         userId: String,
         request: CommonCursorRequest
-    ): UserRecentGameCursorResponse {
+    ): RecentGameCursorResponse {
         val (_, activeProfile) = getMyInfoAndActiveProfile(userId)
         val snapshotAt = request.snapshotAt ?: OffsetDateTime.now()
         val sportId = activeProfile.sport.id ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
 
         val page = gameReviewRepository.findAllBySportIdOrderByDate(
             request = request,
-            activeSportId = sportId,
+            sportId = sportId,
             userId = userId,
             snapshotAt = snapshotAt,
         )
@@ -274,7 +275,7 @@ class UserService(
             sportId = sportId,
         )
 
-        return UserRecentGameCursorResponse.of(
+        return RecentGameCursorResponse.of(
             page = page,
             ratingCounts = ratingCounts,
             tagCounts = tagCounts
@@ -291,10 +292,55 @@ class UserService(
         return user to activeProfile
     }
 
-    private fun getCounts(userId: String, sportId: Long): Pair<UserRecentGameResponse.RatingCounts, UserRecentGameResponse.TagCounts> {
+    @Transactional(readOnly = true)
+    fun getOtherUserRecentGame(
+        userId: String,
+        otherUserId: String,
+        sportCode: String?,
+        request: CommonCursorRequest,
+    ): RecentGameCursorResponse {
+        val otherUser = userRepository.findByIdOrNull(otherUserId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+
+        val allProfiles = userSportProfileRepository.findAllByUserIdOrderBySportName(otherUserId)
+
+        val selectedProfile = if (sportCode == null) {
+            allProfiles.find { it.id == otherUser.activeUserSportProfileId }
+                ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
+        } else {
+            allProfiles.find { it.sport.code == sportCode }
+                ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+        }
+        val sportId = selectedProfile.sport.id ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
+
+        val snapshotAt = request.snapshotAt ?: OffsetDateTime.now()
+
+        val page = gameReviewRepository.findAllBySportIdOrderByDate(
+            request = request,
+            sportId = sportId,
+            userId = userId,
+            snapshotAt = snapshotAt
+        )
+
+        val (ratingCounts, tagCounts) = getCounts(
+            userId = userId,
+            sportId = sportId,
+        )
+
+        return RecentGameCursorResponse.of(
+            page = page,
+            ratingCounts = ratingCounts,
+            tagCounts = tagCounts
+        )
+    }
+
+    private fun getCounts(
+        userId: String,
+        sportId: Long,
+    ): Pair<UserRecentGameResponse.RatingCounts, UserRecentGameResponse.TagCounts> {
         val ratingResults = gameReviewRepository.countRatingsByRevieweeAndSport(
             revieweeId = userId,
-            activeSportId = sportId,
+            sportId = sportId,
         )
         val ratingMap = ratingResults.associate { data ->
             (data[0] as ReviewRating) to (data[1] as Long).toInt()
@@ -307,7 +353,7 @@ class UserService(
 
         val tagResults = gameReviewRepository.countTagsByRevieweeAndSport(
             revieweeId = userId,
-            activeSportId = sportId,
+            sportId = sportId,
         )
         val tagMap = tagResults.associate { data ->
             (data[0] as ReviewTag) to (data[1] as Long).toInt()
