@@ -318,12 +318,12 @@ class UserService(
         val page = gameReviewRepository.findAllBySportIdOrderByDate(
             request = request,
             sportId = sportId,
-            userId = userId,
+            userId = otherUserId,
             snapshotAt = snapshotAt
         )
 
         val (ratingCounts, tagCounts) = getCounts(
-            userId = userId,
+            userId = otherUserId,
             sportId = sportId,
         )
 
