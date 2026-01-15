@@ -363,23 +363,21 @@ class UserService(
     @Transactional(readOnly = true)
     fun getOtherUserRegion(
         userId: String,
-        sportCode: String?,
-        gender: String?,
-        tierId: Long?,
-        request: CommonCursorRequest,
+        requestCommand: OtherUserRegionCommand,
+        requestCursor: CommonCursorRequest,
     ): CursorResponse<OtherUserRegionResponse> {
         val (user, activeProfile) = getMyInfoAndActiveProfile(userId)
         val sportId = activeProfile.sport.id ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
 
-        val snapshotAt = request.snapshotAt ?: TimeUtils.nowOffsetDateTime()
+        val snapshotAt = requestCursor.snapshotAt ?: TimeUtils.nowOffsetDateTime()
 
         val response = userSportProfileRepository.findAllBySportAndRegion(
             userId = userId,
             sportId = sportId,
             region = user.region,
-            request = request,
-            gender = gender,
-            tierId = tierId,
+            request = requestCursor,
+            gender = requestCommand.gender?.name,
+            tier = requestCommand.tier?.name,
             snapshotAt = snapshotAt,
         )
 

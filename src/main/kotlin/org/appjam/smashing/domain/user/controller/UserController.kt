@@ -193,17 +193,13 @@ class UserController(
     @GetMapping("/me/regions/users")
     fun getOtherUserRegion(
         @AuthenticationPrincipal principal: CustomUserDetails,
-        @RequestParam(required = false) sportCode: String?,
-        @RequestParam(required = false) gender: String?,
-        @RequestParam(required = false) tierId: Long?,
-        @Valid request: CommonCursorRequest,
+        @Valid requestDto: OtherUserRegionRequest,
+        @Valid requestCursor: CommonCursorRequest,
     ): ResponseEntity<ApiResponse<CursorResponse<OtherUserRegionResponse>>> {
         val response = userService.getOtherUserRegion(
             userId = principal.username,
-            sportCode = sportCode,
-            gender = gender,
-            tierId = tierId,
-            request = request,
+            requestCommand = requestDto.toCommand(),
+            requestCursor = requestCursor,
         )
 
         return ApiResponse.success(
