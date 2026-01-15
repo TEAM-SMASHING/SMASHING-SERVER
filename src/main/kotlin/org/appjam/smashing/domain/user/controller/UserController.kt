@@ -188,4 +188,12 @@ class UserController(
             data = response,
         )
     }
+
+    @GetMapping("/me/regions/users")
+    fun getOtherUserRegion(
+        @AuthenticationPrincipal principal: CustomUserDetails,
+
+        ) {
+
+    }
 }
