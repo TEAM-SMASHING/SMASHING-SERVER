@@ -89,7 +89,7 @@ class UserSportProfileRepositoryCustomImpl(
         region: String,
         request: CommonCursorRequest,
         gender: String?,
-        tierId: Long?,
+        tier: String?,
         snapshotAt: OffsetDateTime,
     ): CursorPageResponse<OtherUserRegionProjection> {
         val size = request.size.coerceIn(1, 20).toInt()
@@ -107,8 +107,8 @@ class UserSportProfileRepositoryCustomImpl(
             .and(user.id.ne(userId))
             .and(user.createdAt.loe(snapshotLocal))
 
-        gender?.let { where.and(user.gender.stringValue().eq(it)) }
-        tierId?.let { where.and(userSportProfile.tier.id.eq(it)) }
+        gender?.let { where.and(user.gender.stringValue().eq(gender)) }
+        tier?.let { where.and(userSportProfile.tier.name.startsWith(tier)) }
 
         if (cursor != null) {
             where.and(user.id.lt(cursor.id))

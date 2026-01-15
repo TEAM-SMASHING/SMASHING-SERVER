@@ -29,7 +29,7 @@ interface UserSportProfileRepositoryCustom {
         region: String,
         request: CommonCursorRequest,
         gender: String?,
-        tierId: Long?,
+        tier: String?,
         snapshotAt: OffsetDateTime,
     ): CursorPageResponse<OtherUserRegionProjection>
 }
