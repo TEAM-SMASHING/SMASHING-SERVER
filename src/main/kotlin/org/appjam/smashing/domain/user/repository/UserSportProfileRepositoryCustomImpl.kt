@@ -122,7 +122,7 @@ class UserSportProfileRepositoryCustomImpl(
                 gameReview.game.sport.id.eq(sportId)
             )
 
-        val reviewCountOrderExpr = Expressions.numberTemplate(
+        val reviewCountOrderExpression = Expressions.numberTemplate(
             Int::class.java,
             "({0})",
             reviewCountExpression
@@ -145,7 +145,7 @@ class UserSportProfileRepositoryCustomImpl(
             .join(userSportProfile.user, user)
             .where(where)
             .orderBy(
-                reviewCountOrderExpr.desc(),
+                reviewCountOrderExpression.desc(),
                 totalGamesExpression.desc(),
                 user.nickname.asc(),
             )
