@@ -7,6 +7,7 @@ import org.appjam.smashing.domain.user.service.UserService
 import org.appjam.smashing.global.auth.security.data.CustomUserDetails
 import org.appjam.smashing.global.common.dto.ApiResponse
 import org.appjam.smashing.global.common.dto.CommonCursorRequest
+import org.appjam.smashing.global.common.dto.CursorResponse
 import org.appjam.smashing.global.common.dto.RecentGameCursorResponse
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -192,8 +193,21 @@ class UserController(
     @GetMapping("/me/regions/users")
     fun getOtherUserRegion(
         @AuthenticationPrincipal principal: CustomUserDetails,
+        @RequestParam(required = false) sportCode: String?,
+        @RequestParam(required = false) gender: String?,
+        @RequestParam(required = false) tierId: Long?,
+        @Valid request: CommonCursorRequest, // todo check request param valid
+    ): ResponseEntity<ApiResponse<CursorResponse<OtherUserRegionResponse>>> {
+        val response = userService.getOtherUserRegion(
+            userId = principal.username,
+            sportCode = sportCode,
+            gender = gender,
+            tierId = tierId,
+            request = request,
+        )
 
-        ) {
-
+        return ApiResponse.success(
+            data = response,
+        )
     }
 }
