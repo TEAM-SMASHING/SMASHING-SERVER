@@ -7,6 +7,7 @@ import org.appjam.smashing.domain.user.service.UserService
 import org.appjam.smashing.global.auth.security.data.CustomUserDetails
 import org.appjam.smashing.global.common.dto.ApiResponse
 import org.appjam.smashing.global.common.dto.CommonCursorRequest
+import org.appjam.smashing.global.common.dto.RecentGameCursorResponse
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
@@ -158,9 +159,26 @@ class UserController(
     fun getUserRecentGame(
         @AuthenticationPrincipal principal: CustomUserDetails,
         @Valid request: CommonCursorRequest,
-    ): ResponseEntity<ApiResponse<UserRecentGameCursorResponse>> {
+    ): ResponseEntity<ApiResponse<RecentGameCursorResponse>> {
         val response = userService.getUserRecentGame(
             userId = principal.username,
+            request = request,
+        )
+
+        return ApiResponse.success(
+            data = response,
+        )
+    }
+
+    @GetMapping("{userId}/games/recent")
+    fun getOtherUserRecentGame(
+        @AuthenticationPrincipal principal: CustomUserDetails,
+        @PathVariable userId: String,
+        @Valid request: CommonCursorRequest,
+    ): ResponseEntity<ApiResponse<RecentGameCursorResponse>> {
+        val response = userService.getOtherUserRecentGame(
+            userId = principal.username,
+            otherUserId = userId,
             request = request,
         )
 
