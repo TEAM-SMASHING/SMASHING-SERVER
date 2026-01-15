@@ -13,9 +13,11 @@ import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.appjam.smashing.domain.user.repository.UserRepository
 import org.appjam.smashing.domain.user.repository.UserSportProfileRepository
 import org.appjam.smashing.global.common.dto.CommonCursorRequest
+import org.appjam.smashing.global.common.dto.CursorResponse
 import org.appjam.smashing.global.common.dto.RecentGameCursorResponse
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
+import org.appjam.smashing.global.util.TimeUtils
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -282,16 +284,6 @@ class UserService(
         )
     }
 
-    private fun getMyInfoAndActiveProfile(userId: String): Pair<User, UserSportProfile> {
-        val user = userRepository.findByIdOrNull(userId)
-            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
-
-        val activeProfile = userSportProfileRepository.findByIdOrNull(user.activeUserSportProfileId!!)
-            ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
-
-        return user to activeProfile
-    }
-
     @Transactional(readOnly = true)
     fun getOtherUserRecentGame(
         userId: String,
@@ -366,6 +358,47 @@ class UserService(
         )
 
         return ratingCounts to tagCounts
+    }
+
+    @Transactional(readOnly = true)
+    fun getOtherUserRegion(
+        userId: String,
+        sportCode: String?,
+        gender: String?,
+        tierId: Long?,
+        request: CommonCursorRequest,
+    ): CursorResponse<OtherUserRegionResponse> {
+        val (user, activeProfile) = getMyInfoAndActiveProfile(userId)
+        val sportId = activeProfile.sport.id ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
+
+        val snapshotAt = request.snapshotAt ?: TimeUtils.nowOffsetDateTime()
+
+        val response = userSportProfileRepository.findAllBySportAndRegion(
+            userId = userId,
+            sportId = sportId,
+            region = user.region,
+            request = request,
+            gender = gender,
+            tierId = tierId,
+            snapshotAt = snapshotAt,
+        )
+
+        return CursorResponse(
+            snapshotAt = response.snapshotAt,
+            results = OtherUserRegionResponse.listForm(response.results),
+            nextCursor = response.nextCursor,
+            hasNext = response.hasNext,
+        )
+    }
+
+    private fun getMyInfoAndActiveProfile(userId: String): Pair<User, UserSportProfile> {
+        val user = userRepository.findByIdOrNull(userId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+
+        val activeProfile = userSportProfileRepository.findByIdOrNull(user.activeUserSportProfileId!!)
+            ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
+
+        return user to activeProfile
     }
 
     companion object {
