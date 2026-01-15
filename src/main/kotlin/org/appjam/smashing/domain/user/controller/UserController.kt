@@ -170,7 +170,7 @@ class UserController(
         )
     }
 
-    @GetMapping("{userId}/games/recent")
+    @GetMapping("/{userId}/games/recent")
     fun getOtherUserRecentGame(
         @AuthenticationPrincipal principal: CustomUserDetails,
         @PathVariable userId: String,
