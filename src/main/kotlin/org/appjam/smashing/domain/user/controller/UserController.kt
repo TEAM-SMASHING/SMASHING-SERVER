@@ -196,7 +196,7 @@ class UserController(
         @RequestParam(required = false) sportCode: String?,
         @RequestParam(required = false) gender: String?,
         @RequestParam(required = false) tierId: Long?,
-        @Valid request: CommonCursorRequest, // todo check request param valid
+        @Valid request: CommonCursorRequest,
     ): ResponseEntity<ApiResponse<CursorResponse<OtherUserRegionResponse>>> {
         val response = userService.getOtherUserRegion(
             userId = principal.username,
