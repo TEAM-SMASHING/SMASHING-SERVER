@@ -138,7 +138,6 @@ class UserSportProfileRepositoryCustomImpl(
                     userSportProfile.wins,
                     userSportProfile.losses,
                     reviewCountExpression,
-                    user.id
                 )
             )
             .from(userSportProfile)

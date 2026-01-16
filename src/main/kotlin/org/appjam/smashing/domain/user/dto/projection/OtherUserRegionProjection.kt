@@ -12,5 +12,7 @@ data class OtherUserRegionProjection(
     val wins: Int,
     val losses: Int,
     val reviews: Int,
-    override val cursorId: String = userId,
-) : CursorKey
+) : CursorKey {
+    override val cursorId: String
+        get() = userId
+}
