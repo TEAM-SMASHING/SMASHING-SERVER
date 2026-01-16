@@ -174,7 +174,7 @@ class UserController(
     fun getOtherUserRecentGame(
         @AuthenticationPrincipal principal: CustomUserDetails,
         @PathVariable userId: String,
-        @RequestParam(required = false) sportCode: String?,
+        @RequestParam sportCode: String?,
         @Valid request: CommonCursorRequest,
     ): ResponseEntity<ApiResponse<CursorResponse<UserRecentGameResult, UserRecentGameMeta>>> {
         val response = userService.getOtherUserRecentGame(
