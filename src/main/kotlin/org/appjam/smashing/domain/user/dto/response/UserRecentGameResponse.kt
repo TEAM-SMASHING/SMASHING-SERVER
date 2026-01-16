@@ -24,3 +24,4 @@ data class UserRecentGameResponse(
         ): List<UserRecentGameResponse> = projections.map { from(it) }
     }
 }
+
