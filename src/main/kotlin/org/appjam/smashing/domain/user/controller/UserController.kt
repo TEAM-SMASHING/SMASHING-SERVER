@@ -204,7 +204,7 @@ class UserController(
     fun getOtherUserRecentReviewSummary(
         @AuthenticationPrincipal principal: CustomUserDetails,
         @PathVariable userId: String,
-        @RequestParam sportCode: String,
+        @RequestParam sportCode: String?,
     ): ResponseEntity<ApiResponse<UserRecentReviewSummaryResponse>> {
         val response = userService.getOtherUserRecentReviewSummary(
             userId = principal.username,

@@ -336,7 +336,7 @@ class UserService(
     fun getOtherUserRecentReviewSummary(
         userId: String,
         otherUserId: String,
-        sportCode: String,
+        sportCode: String?,
     ): UserRecentReviewSummaryResponse {
         val otherUser = userRepository.findByIdOrNull(otherUserId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
