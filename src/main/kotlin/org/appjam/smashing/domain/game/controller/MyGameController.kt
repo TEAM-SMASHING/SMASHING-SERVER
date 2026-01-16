@@ -5,13 +5,12 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.appjam.smashing.domain.game.dto.response.PendingResultAcceptedGameSummaryResponse
 import org.appjam.smashing.domain.game.service.GameService
-import org.appjam.smashing.global.auth.security.data.CustomUserDetails
 import org.appjam.smashing.global.common.dto.ApiResponse
 import org.appjam.smashing.global.common.dto.CommonCursorRequest
 import org.appjam.smashing.global.common.dto.CursorResponse
 import org.springframework.http.ResponseEntity
-import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -33,8 +32,13 @@ class MyGameController(
             - 기준 스포츠:
               - 로그인 유저의 활성 프로필(activeUserSportProfileId)의 sport
 
-            - 정렬:
-              - gameId(TSID) DESC
+            - 정렬 : order 파라미터 기반 정렬
+              - LATEST / latest / Latest 등 대소문자 무관
+              - OLDEST / oldest / Oldest 등 대소문자 무관
+              - 기본값(default) : order 미지정 또는 잘못된 값 → LATEST 적용
+              - 정렬 기준 :
+                - LATEST : gameId (TSID) DESC
+                - OLDEST : gameId (TSID) ASC
 
             - 페이징:
               - snapshotAt 이전 데이터만 조회(스냅샷 고정)
@@ -47,11 +51,11 @@ class MyGameController(
     )
     @GetMapping("/pending-results")
     fun getPendingResultAcceptedGames(
-        @AuthenticationPrincipal principal: CustomUserDetails,
+        @RequestHeader principal: String,
         @Valid request: CommonCursorRequest,
     ): ResponseEntity<ApiResponse<CursorResponse<PendingResultAcceptedGameSummaryResponse>>> {
         val response = gameService.getPendingResultAcceptedGames(
-            userId = principal.username,
+            userId = principal,
             request = request,
         )
 
