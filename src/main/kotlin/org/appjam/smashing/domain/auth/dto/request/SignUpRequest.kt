@@ -18,8 +18,8 @@ data class SignUpRequest(
     val openChatUrl: String?,
     @field:NotBlank(message = "sportCode를 입력해주세요.")
     val sportCode: String?,
-    @field:NotBlank(message = "tier를 입력해주세요.")
-    val tier: String?,
+    @field:NotBlank(message = "experienceRange를 입력해주세요.")
+    val experienceRange: String?,
     @field:NotBlank(message = "region을 입력해주세요.")
     val region: String?,
 ) {
@@ -29,7 +29,7 @@ data class SignUpRequest(
         gender = ofIgnoreCase<Gender>(gender!!),
         openChatUrl = openChatUrl!!,
         sportCode = sportCode!!,
-        tier = tier!!,
+        experienceRange = experienceRange!!,
         region = region!!,
     )
 }

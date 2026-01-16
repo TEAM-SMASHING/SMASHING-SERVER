@@ -5,7 +5,7 @@ import org.appjam.smashing.domain.auth.dto.command.SignUpRequestCommand
 import org.appjam.smashing.domain.auth.dto.response.SignInResponse
 import org.appjam.smashing.domain.auth.dto.response.SignUpResponse
 import org.appjam.smashing.domain.auth.social.SocialAuthServiceManager
-import org.appjam.smashing.domain.sport.enums.InitTierLp
+import org.appjam.smashing.domain.sport.enums.ExperienceRange
 import org.appjam.smashing.domain.sport.repository.SportRepository
 import org.appjam.smashing.domain.tier.repository.TierRepository
 import org.appjam.smashing.domain.user.entity.User
@@ -58,12 +58,16 @@ class AuthService(
         val sport = sportRepository.findByCode(requestCommand.sportCode)
             ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
 
-        val tierName = requestCommand.tier
-        val initTier = runCatching { InitTierLp.valueOf(tierName) }.getOrNull()
-            ?: throw CustomException(ErrorCode.INVALID_INITIAL_TIER)
+        val initLp = ExperienceRange.valueOf(requestCommand.experienceRange).initLp
+
+        val initTier = tierRepository.findBySportIdAndLpInRange(
+            sportId = sport.id!!,
+            lp = initLp,
+        ) ?: throw CustomException(ErrorCode.INVALID_INITIAL_TIER)
+
         val tier = tierRepository.findBySportIdAndName(
             sportId = sport.id!!,
-            name = tierName
+            name = initTier.name,
         ) ?: throw CustomException(ErrorCode.INVALID_TIER_SETTING)
 
         val trimmedUrl = requestCommand.openChatUrl.trim()
@@ -81,7 +85,7 @@ class AuthService(
 
         val profile = userSportProfileRepository.save(
             UserSportProfile.create(
-                lp = initTier.initLp,
+                lp = initLp,
                 user = user,
                 sport = sport,
                 tier = tier,

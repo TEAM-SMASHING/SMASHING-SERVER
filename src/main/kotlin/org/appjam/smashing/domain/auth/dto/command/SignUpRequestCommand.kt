@@ -8,6 +8,6 @@ data class SignUpRequestCommand(
     val gender: Gender,
     val openChatUrl: String,
     val sportCode: String,
-    val tier: String,
+    val experienceRange: String,
     val region: String,
 )

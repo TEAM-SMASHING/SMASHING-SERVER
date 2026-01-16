@@ -1,7 +1,6 @@
 package org.appjam.smashing.domain.user.service
 
 import org.appjam.smashing.domain.review.repository.GameReviewRepository
-import org.appjam.smashing.domain.sport.enums.InitTierLp
 import org.appjam.smashing.domain.sport.repository.SportRepository
 import org.appjam.smashing.domain.tier.repository.TierRepository
 import org.appjam.smashing.domain.user.dto.command.*
