@@ -159,7 +159,7 @@ class UserService(
 
         val allProfiles = userSportProfileRepository.findAllByUserIdOrderBySportName(otherUserId)
 
-        val selectedSport = if (sportCode == null) {
+        val selectedProfile = if (sportCode == null) {
             allProfiles.find { it.id == otherUser.activeUserSportProfileId }
                 ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
         } else {
@@ -169,7 +169,7 @@ class UserService(
 
         return OtherUserProfilesResponse.from(
             nickname = otherUser.nickname,
-            selectedProfile = selectedSport,
+            selectedProfile = selectedProfile,
             allProfiles = allProfiles
         )
     }
@@ -263,7 +263,7 @@ class UserService(
 
         val response = gameReviewRepository.findAllBySportIdOrderByDate(
             request = request,
-            activeSportId = sportId,
+            sportId = sportId,
             userId = userId,
             snapshotAt = snapshotAt,
         )
@@ -285,6 +285,51 @@ class UserService(
 
         return user to activeProfile
     }
+
+    @Transactional(readOnly = true)
+    fun getOtherUserRecentGame(
+        userId: String,
+        otherUserId: String,
+        sportCode: String?,
+        request: CommonCursorRequest,
+    ): CursorResponse<UserRecentGameResponse> {
+        val otherUser = userRepository.findByIdOrNull(otherUserId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+
+        val selectedProfile = resolveProfile(
+            user = otherUser,
+            sportCode = sportCode,
+        )
+
+        val sportId = selectedProfile.sport.id!!
+
+        val snapshotAt = request.snapshotAt ?: OffsetDateTime.now()
+
+        val response = gameReviewRepository.findAllBySportIdOrderByDate(
+            request = request,
+            sportId = sportId,
+            userId = otherUserId,
+            snapshotAt = snapshotAt
+        )
+
+        return CursorResponse(
+            snapshotAt = snapshotAt,
+            results = UserRecentGameResponse.listForm(response.results),
+            nextCursor = response.nextCursor,
+            hasNext = response.hasNext
+        )
+    }
+
+    private fun resolveProfile(user: User, sportCode: String?) =
+        if (sportCode == null) {
+            val activeProfileId = user.activeUserSportProfileId
+                ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
+            userSportProfileRepository.findByIdOrNull(activeProfileId)
+                ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
+        } else {
+            userSportProfileRepository.findByUserIdAndSportCode(user.id!!, sportCode)
+                ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+        }
 
     companion object {
         private val NICKNAME_VALID_REGEX = Regex("^[a-zA-Z0-9가-힣]*$")

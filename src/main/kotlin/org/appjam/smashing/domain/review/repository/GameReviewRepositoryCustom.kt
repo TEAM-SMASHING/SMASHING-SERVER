@@ -18,7 +18,7 @@ interface GameReviewRepositoryCustom {
      */
     fun findAllBySportIdOrderByDate(
         request: CommonCursorRequest,
-        activeSportId: Long,
+        sportId: Long,
         userId: String,
         snapshotAt: OffsetDateTime
     ): CursorPageResponse<UserRecentGameProjection>

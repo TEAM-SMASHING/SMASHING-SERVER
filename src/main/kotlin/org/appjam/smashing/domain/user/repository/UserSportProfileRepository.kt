@@ -116,4 +116,9 @@ interface UserSportProfileRepository : JpaRepository<UserSportProfile, String>, 
         sportId: Long,
         excludeUserId: String
     ): List<UserSportProfile>
+
+    fun findByUserIdAndSportCode(
+        userId: String,
+        sportCode: String
+    ): UserSportProfile?
 }

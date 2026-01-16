@@ -16,7 +16,7 @@ class GameReviewRepositoryCustomImpl(
 ) : GameReviewRepositoryCustom {
     override fun findAllBySportIdOrderByDate(
         request: CommonCursorRequest,
-        activeSportId: Long,
+        sportId: Long,
         userId: String,
         snapshotAt: OffsetDateTime
     ): CursorPageResponse<UserRecentGameProjection> {
@@ -26,7 +26,7 @@ class GameReviewRepositoryCustomImpl(
 
         val where = BooleanBuilder()
             .and(gr.reviewee.id.eq(userId))
-            .and(gr.game.sport.id.eq(activeSportId))
+            .and(gr.game.sport.id.eq(sportId))
             .and(gr.createdAt.loe(snapshotAt.toLocalDateTime()))
 
         if (cursor != null) {
