@@ -1,10 +1,6 @@
 package org.appjam.smashing.domain.sport.entity
 
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.GenerationType
-import jakarta.persistence.Id
+import jakarta.persistence.*
 import org.hibernate.annotations.Comment
 
 @Entity
@@ -15,7 +11,7 @@ class Sport(
     @Comment("스포츠 IDX")
     val id: Long? = null,
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, length = 50, unique = true)
     @Comment("스포츠 코드")
     val code: String,
 
