@@ -159,7 +159,7 @@ class UserController(
     fun getUserRecentGame(
         @AuthenticationPrincipal principal: CustomUserDetails,
         @Valid request: CommonCursorRequest,
-    ): ResponseEntity<ApiResponse<CursorResponse<UserRecentGameResult, UserRecentGameMeta>>> {
+    ): ResponseEntity<ApiResponse<CursorResponse<UserRecentGameResult>>> {
         val response = userService.getUserRecentGame(
             userId = principal.username,
             request = request,
@@ -176,7 +176,7 @@ class UserController(
         @PathVariable userId: String,
         @RequestParam sportCode: String?,
         @Valid request: CommonCursorRequest,
-    ): ResponseEntity<ApiResponse<CursorResponse<UserRecentGameResult, UserRecentGameMeta>>> {
+    ): ResponseEntity<ApiResponse<CursorResponse<UserRecentGameResult>>> {
         val response = userService.getOtherUserRecentGame(
             userId = principal.username,
             otherUserId = userId,
@@ -194,7 +194,7 @@ class UserController(
         @AuthenticationPrincipal principal: CustomUserDetails,
         @Valid requestDto: OtherUserRegionRequest,
         @Valid requestCursor: CommonCursorRequest,
-    ): ResponseEntity<ApiResponse<CursorResponse<OtherUserRegionResponse, Unit>>> {
+    ): ResponseEntity<ApiResponse<CursorResponse<OtherUserRegionResponse>>> {
         val response = userService.getOtherUserRegion(
             userId = principal.username,
             requestCommand = requestDto.toCommand(),

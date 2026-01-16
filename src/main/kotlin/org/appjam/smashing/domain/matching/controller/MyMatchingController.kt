@@ -43,7 +43,7 @@ class MyMatchingController(
     fun getReceivedMatchings(
         @AuthenticationPrincipal principal: CustomUserDetails,
         @Valid request: CommonCursorRequest,
-    ): ResponseEntity<ApiResponse<CursorResponse<ReceivedMatchingSummaryResponse, Unit>>> {
+    ): ResponseEntity<ApiResponse<CursorResponse<ReceivedMatchingSummaryResponse>>> {
         val response = matchingService.getReceivedMatchings(
             userId = principal.username,
             request = request,
@@ -74,7 +74,7 @@ class MyMatchingController(
     fun getSentMatchings(
         @AuthenticationPrincipal principal: CustomUserDetails,
         @Valid request: CommonCursorRequest,
-    ): ResponseEntity<ApiResponse<CursorResponse<SentMatchingSummaryResponse, Unit>>> {
+    ): ResponseEntity<ApiResponse<CursorResponse<SentMatchingSummaryResponse>>> {
         val response = matchingService.getSentMatchings(
             userId = principal.username,
             request = request,

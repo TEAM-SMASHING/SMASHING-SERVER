@@ -49,7 +49,7 @@ class MyGameController(
     fun getPendingResultAcceptedGames(
         @AuthenticationPrincipal principal: CustomUserDetails,
         @Valid request: CommonCursorRequest,
-    ): ResponseEntity<ApiResponse<CursorResponse<PendingResultAcceptedGameSummaryResponse, Unit>>> {
+    ): ResponseEntity<ApiResponse<CursorResponse<PendingResultAcceptedGameSummaryResponse>>> {
         val response = gameService.getPendingResultAcceptedGames(
             userId = principal.username,
             request = request,

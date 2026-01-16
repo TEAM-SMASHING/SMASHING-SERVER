@@ -236,7 +236,7 @@ class MatchingService(
     fun getReceivedMatchings(
         userId: String,
         request: CommonCursorRequest,
-    ): CursorResponse<ReceivedMatchingSummaryResponse, Unit> {
+    ): CursorResponse<ReceivedMatchingSummaryResponse> {
 
         val user = userRepository.findByIdOrNull(userId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
@@ -271,7 +271,7 @@ class MatchingService(
     fun getSentMatchings(
         userId: String,
         request: CommonCursorRequest,
-    ): CursorResponse<SentMatchingSummaryResponse, Unit> {
+    ): CursorResponse<SentMatchingSummaryResponse> {
 
         val user = userRepository.findByIdOrNull(userId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)

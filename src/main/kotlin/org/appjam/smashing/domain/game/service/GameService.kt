@@ -380,7 +380,7 @@ class GameService(
     fun getPendingResultAcceptedGames(
         userId: String,
         request: CommonCursorRequest,
-    ): CursorResponse<PendingResultAcceptedGameSummaryResponse, Unit> {
+    ): CursorResponse<PendingResultAcceptedGameSummaryResponse> {
         val user = userRepository.findByIdOrNull(userId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
@@ -628,10 +628,7 @@ class GameService(
         val notification = notificationService.createMatchingResultSubmitted(
             receiver = receiver,
             receiverProfile = receiverProfile,
-            gameId = game.id!!,
-            submissionId = submission.id!!,
             submitterNickname = submitter.nickname,
-            submitterTierId = submitterTierId,
         )
 
         val notificationCreatedAt = notification.createdAt
@@ -681,8 +678,6 @@ class GameService(
             receiverProfile = receiverProfile,
             reviewId = savedReview.id!!,
             reviewerNickname = reviewer.nickname,
-            reviewerTierId = reviewerTierId,
-            gameId = game.id!!,
         )
 
         val notificationCreatedAt = notification.createdAt
@@ -732,8 +727,6 @@ class GameService(
             receiverProfile = receiverProfile,
             reviewId = savedReview.id!!,
             reviewerNickname = reviewer.nickname,
-            reviewerTierId = reviewerTierId,
-            gameId = game.id!!,
         )
 
         val notificationCreatedAt = notification.createdAt
@@ -794,10 +787,7 @@ class GameService(
             receiver = receiver,
             receiverProfile = receiverProfile,
             notificationType = notificationType,
-            gameId = gameId,
-            submissionId = submissionId,
             rejectorNickname = rejector.nickname,
-            rejectorTierId = rejectorTierId,
         )
 
         val notificationCreatedAt = notification.createdAt

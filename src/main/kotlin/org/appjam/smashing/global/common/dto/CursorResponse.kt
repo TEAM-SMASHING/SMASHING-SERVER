@@ -3,27 +3,12 @@ package org.appjam.smashing.global.common.dto
 import org.appjam.smashing.global.util.CursorCodec
 import java.time.OffsetDateTime
 
-data class CursorResponse<T, M>(
+data class CursorResponse<T>(
     val snapshotAt: OffsetDateTime,
-    val meta: M? = null,
     val results: List<T>,
     val nextCursor: String?,
     val hasNext: Boolean,
-) {
-    companion object {
-        fun <T, M> from(
-            page: CursorPageResponse<*>,
-            results: List<T>,
-            meta: M? = null
-        ) = CursorResponse(
-            snapshotAt = page.snapshotAt,
-            meta = meta,
-            results = results,
-            nextCursor = page.nextCursor,
-            hasNext = page.hasNext,
-        )
-    }
-}
+)
 
 data class CursorPageResponse<T : CursorKey>(
     val snapshotAt: OffsetDateTime,
