@@ -338,7 +338,7 @@ class UserService(
             sportId = sportId,
             region = user.region,
             request = requestCursor,
-            gender = requestCommand.gender?.name,
+            gender = requestCommand.gender,
             tier = requestCommand.tier?.name,
             snapshotAt = snapshotAt,
         )
