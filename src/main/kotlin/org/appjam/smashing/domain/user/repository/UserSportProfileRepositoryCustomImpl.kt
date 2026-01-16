@@ -116,7 +116,7 @@ class UserSportProfileRepositoryCustomImpl(
         }
 
         val reviewCountExpression = JPAExpressions
-            .select(gameReview.count().castToNum(Int::class.java))
+            .select(gameReview.count())
             .from(gameReview)
             .where(
                 gameReview.reviewee.id.eq(user.id),
