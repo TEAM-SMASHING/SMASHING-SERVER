@@ -9,7 +9,7 @@ data class OtherUserRegionResponse(
     val tierId: Long,
     val wins: Int,
     val losses: Int,
-    val reviews: Int,
+    val reviews: Long,
 ) {
     companion object {
         fun from(

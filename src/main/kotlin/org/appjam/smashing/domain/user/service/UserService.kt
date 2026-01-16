@@ -379,7 +379,7 @@ class UserService(
             sportId = sportId,
         )
         val ratingMap = ratingResults.associate { data ->
-            data.reviewRating to data.counts.toInt()
+            data.reviewRating to data.counts
         }
         val ratingCounts = UserRecentReviewSummaryResponse.RatingCounts.from(
             best = ratingMap[ReviewRating.BEST] ?: 0,
@@ -392,7 +392,7 @@ class UserService(
             sportId = sportId,
         )
         val tagMap = tagResults.associate { data ->
-            data.reviewTag to data.counts.toInt()
+            data.reviewTag to data.counts
         }
         val tagCounts = UserRecentReviewSummaryResponse.TagCounts.from(
             goodManner = tagMap[ReviewTag.GOOD_MANNER] ?: 0,
