@@ -1,5 +1,7 @@
 package org.appjam.smashing.domain.user.service
 
+import org.appjam.smashing.domain.review.enums.ReviewRating
+import org.appjam.smashing.domain.review.enums.ReviewTag
 import org.appjam.smashing.domain.review.repository.GameReviewRepository
 import org.appjam.smashing.domain.sport.enums.InitTierLp
 import org.appjam.smashing.domain.sport.repository.SportRepository
@@ -278,6 +280,25 @@ class UserService(
     }
 
     @Transactional(readOnly = true)
+    fun getUserRecentReviewSummary(
+        userId: String,
+    ): UserRecentReviewSummaryResponse {
+        val (_, activeProfile) = getMyInfoAndActiveProfile(userId)
+
+        val sportId = activeProfile.sport.id!!
+
+        val (ratingCounts, tagCounts) = getCounts(
+            userId = userId,
+            sportId = sportId,
+        )
+
+        return UserRecentReviewSummaryResponse.from(
+            ratingCounts = ratingCounts,
+            tagCounts = tagCounts,
+        )
+    }
+
+    @Transactional(readOnly = true)
     fun getOtherUserRecentReview(
         userId: String,
         otherUserId: String,
@@ -361,11 +382,41 @@ class UserService(
         return user to activeProfile
     }
 
-    @Transactional(readOnly = true)
-    fun getUserRecentReviewSummary(
+    private fun getCounts(
         userId: String,
-    ): UserRecentReviewSummaryResponse {
-        TODO()
+        sportId: Long,
+    ): CountsResult {
+        val ratingResults = gameReviewRepository.countRatingsByRevieweeAndSport(
+            revieweeId = userId,
+            activeSportId = sportId,
+        )
+        val ratingMap = ratingResults.associate { data ->
+            data.reviewRating to data.counts?.toInt()
+        }
+        val ratingCounts = UserRecentReviewSummaryResponse.RatingCounts.from(
+            best = ratingMap[ReviewRating.BEST] ?: 0,
+            good = ratingMap[ReviewRating.GOOD] ?: 0,
+            bad = ratingMap[ReviewRating.BAD] ?: 0
+        )
+
+        val tagResults = gameReviewRepository.countTagsByRevieweeAndSport(
+            revieweeId = userId,
+            activeSportId = sportId,
+        )
+        val tagMap = tagResults.associate { data ->
+            data.reviewTag to data.counts?.toInt()
+        }
+        val tagCounts = UserRecentReviewSummaryResponse.TagCounts.from(
+            goodManner = tagMap[ReviewTag.GOOD_MANNER] ?: 0,
+            onTime = tagMap[ReviewTag.ON_TIME] ?: 0,
+            fairPlay = tagMap[ReviewTag.FAIR_PLAY] ?: 0,
+            fastResponse = tagMap[ReviewTag.FAST_RESPONSE] ?: 0
+        )
+
+        return CountsResult(
+            ratingCounts = ratingCounts,
+            tagCounts = tagCounts,
+        )
     }
 
     companion object {
@@ -376,3 +427,8 @@ class UserService(
         private const val LIMIT_RECOMMEND = 5L
     }
 }
+
+data class CountsResult(
+    val ratingCounts: UserRecentReviewSummaryResponse.RatingCounts,
+    val tagCounts: UserRecentReviewSummaryResponse.TagCounts,
+)

@@ -13,11 +13,11 @@ data class UserRecentReviewSummaryResponse(
             fun from(
                 best: Int,
                 good: Int,
-                bad: Int
+                bad: Int,
             ) = RatingCounts(
                 best = best,
                 good = good,
-                bad = bad
+                bad = bad,
             )
         }
     }
@@ -33,7 +33,7 @@ data class UserRecentReviewSummaryResponse(
                 goodManner: Int,
                 onTime: Int,
                 fairPlay: Int,
-                fastResponse: Int
+                fastResponse: Int,
             ) = TagCounts(
                 goodManner = goodManner,
                 onTime = onTime,
@@ -41,5 +41,24 @@ data class UserRecentReviewSummaryResponse(
                 fastResponse = fastResponse,
             )
         }
+    }
+
+    companion object {
+        fun from(
+            ratingCounts: RatingCounts,
+            tagCounts: TagCounts,
+        ) = UserRecentReviewSummaryResponse(
+            ratingCounts = RatingCounts.from(
+                best = ratingCounts.best,
+                good = ratingCounts.good,
+                bad = ratingCounts.bad,
+            ),
+            tagCounts = TagCounts.from(
+                goodManner = tagCounts.goodManner,
+                onTime = tagCounts.onTime,
+                fairPlay = tagCounts.fairPlay,
+                fastResponse = tagCounts.fastResponse,
+            ),
+        )
     }
 }
