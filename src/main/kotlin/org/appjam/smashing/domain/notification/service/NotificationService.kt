@@ -7,6 +7,7 @@ import org.appjam.smashing.domain.notification.repository.NotificationRepository
 import org.appjam.smashing.domain.notification.repository.NotificationTemplateRepository
 import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.entity.UserSportProfile
+import org.appjam.smashing.global.common.components.NotificationContentRenderer
 import org.appjam.smashing.global.common.dto.CommonCursorRequest
 import org.appjam.smashing.global.common.dto.CursorResponse
 import org.appjam.smashing.global.exception.CustomException
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 class NotificationService(
+    private val notificationContentRenderer: NotificationContentRenderer,
     private val notificationRepository: NotificationRepository,
     private val notificationTemplateRepository: NotificationTemplateRepository,
 ) {
@@ -60,10 +62,7 @@ class NotificationService(
     fun createMatchingResultSubmitted(
         receiver: User,
         receiverProfile: UserSportProfile,
-        gameId: String,
-        submissionId: String,
         submitterNickname: String,
-        submitterTierId: Long,
     ): Notification {
         val template = notificationTemplateRepository.findByType(NotificationType.MATCHING_RESULT_SUBMITTED)
             ?: throw CustomException(ErrorCode.NOTIFICATION_TEMPLATE_NOT_FOUND)
@@ -73,10 +72,7 @@ class NotificationService(
                 receiver = receiver,
                 receiverProfile = receiverProfile,
                 template = template,
-                gameId = gameId,
-                submissionId = submissionId,
                 submitterNickname = submitterNickname,
-                submitterTierId = submitterTierId,
             )
         )
     }
@@ -86,8 +82,6 @@ class NotificationService(
         receiverProfile: UserSportProfile,
         reviewId: String,
         reviewerNickname: String,
-        reviewerTierId: Long,
-        gameId: String,
     ): Notification {
         val template = notificationTemplateRepository.findByType(NotificationType.REVIEW_RECEIVED)
             ?: throw CustomException(ErrorCode.NOTIFICATION_TEMPLATE_NOT_FOUND)
@@ -99,8 +93,6 @@ class NotificationService(
                 template = template,
                 reviewId = reviewId,
                 reviewerNickname = reviewerNickname,
-                reviewerTierId = reviewerTierId,
-                gameId = gameId,
             )
         )
     }
@@ -109,10 +101,7 @@ class NotificationService(
         receiver: User,
         receiverProfile: UserSportProfile,
         notificationType: NotificationType,
-        gameId: String,
-        submissionId: String,
         rejectorNickname: String,
-        rejectorTierId: Long,
     ): Notification {
         val template = notificationTemplateRepository.findByType(notificationType)
             ?: throw CustomException(ErrorCode.NOTIFICATION_TEMPLATE_NOT_FOUND)
@@ -123,10 +112,7 @@ class NotificationService(
                     receiver = receiver,
                     receiverProfile = receiverProfile,
                     template = template,
-                    gameId = gameId,
-                    submissionId = submissionId,
                     rejectorNickname = rejectorNickname,
-                    rejectorTierId = rejectorTierId,
                 )
 
             NotificationType.RESULT_REJECTED_WIN_LOSE_REVERSED ->
@@ -134,10 +120,7 @@ class NotificationService(
                     receiver = receiver,
                     receiverProfile = receiverProfile,
                     template = template,
-                    gameId = gameId,
-                    submissionId = submissionId,
                     rejectorNickname = rejectorNickname,
-                    rejectorTierId = rejectorTierId,
                 )
 
             else -> throw CustomException(ErrorCode.NOTIFICATION_RESULT_REJECTED_TYPE_MISMATCH)
@@ -181,7 +164,7 @@ class NotificationService(
         // 응답 반환
         return CursorResponse(
             snapshotAt = page.snapshotAt,
-            results = NotificationSummaryResponse.from(page.results),
+            results = NotificationSummaryResponse.from(page.results, notificationContentRenderer),
             nextCursor = page.nextCursor,
             hasNext = page.hasNext,
         )

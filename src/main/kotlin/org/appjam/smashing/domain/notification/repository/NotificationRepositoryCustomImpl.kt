@@ -44,8 +44,10 @@ class NotificationRepositoryCustomImpl(
                     notification.linkUrl,
                     notification.isRead,
                     notification.createdAt,
+                    notification.senderNickname,
                     notification.receiverProfileId,
                     notification.receiverSportId,
+
                 )
             )
             .from(notification)
