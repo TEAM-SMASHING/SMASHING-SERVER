@@ -1,10 +1,11 @@
 package org.appjam.smashing.domain.user.dto.response
 
 import org.appjam.smashing.domain.user.entity.UserSportProfile
+import org.appjam.smashing.domain.user.enums.Gender
 
 data class UserProfilesResponse(
     val nickname: String,
-    val gender: String,
+    val gender: Gender,
     val activeProfile: ActiveProfile,
     val allProfiles: List<ProfileInfo>,
 ) {
@@ -64,7 +65,7 @@ data class UserProfilesResponse(
     companion object {
         fun from(
             nickname: String,
-            gender: String,
+            gender: Gender,
             activeProfile: UserSportProfile,
             allProfiles: List<UserSportProfile>
         ) = UserProfilesResponse(

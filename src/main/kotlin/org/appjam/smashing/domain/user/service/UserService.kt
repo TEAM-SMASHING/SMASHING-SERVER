@@ -147,7 +147,7 @@ class UserService(
 
         return UserProfilesResponse.from(
             nickname = user.nickname,
-            gender = user.gender.name,
+            gender = user.gender,
             activeProfile = activeProfile,
             allProfiles = allProfiles,
         )
@@ -173,7 +173,7 @@ class UserService(
 
         return OtherUserProfilesResponse.from(
             nickname = otherUser.nickname,
-            gender = otherUser.gender.name,
+            gender = otherUser.gender,
             selectedProfile = selectedProfile,
             allProfiles = allProfiles
         )
