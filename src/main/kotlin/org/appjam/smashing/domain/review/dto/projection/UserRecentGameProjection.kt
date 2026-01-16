@@ -7,7 +7,6 @@ import java.time.LocalDateTime
 @QueryProjection
 data class UserRecentGameProjection(
     val gameReviewId: String,
-    val reviewId: String,
     val opponentNickname: String,
     val createdAt: LocalDateTime,
     val content: String?,
