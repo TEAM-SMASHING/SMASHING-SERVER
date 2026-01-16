@@ -246,7 +246,7 @@ class UserService(
         userId: String,
         requestCommand: OtherUserSearchCommand,
     ): OtherUserSearchResponse {
-        val (user, activeProfile) = getMyInfoAndActiveProfile(userId)
+        val (_, activeProfile) = getMyInfoAndActiveProfile(userId)
 
         val otherUsersSearch = userSportProfileRepository.findAllBySportOrderByNickname(
             nickname = requestCommand.nickname,
@@ -381,7 +381,7 @@ class UserService(
             sportId = sportId,
         )
         val ratingMap = ratingResults.associate { data ->
-            data.reviewRating to data.counts?.toInt()
+            data.reviewRating to data.counts.toInt()
         }
         val ratingCounts = UserRecentReviewSummaryResponse.RatingCounts.from(
             best = ratingMap[ReviewRating.BEST] ?: 0,
@@ -394,7 +394,7 @@ class UserService(
             sportId = sportId,
         )
         val tagMap = tagResults.associate { data ->
-            data.reviewTag to data.counts?.toInt()
+            data.reviewTag to data.counts.toInt()
         }
         val tagCounts = UserRecentReviewSummaryResponse.TagCounts.from(
             goodManner = tagMap[ReviewTag.GOOD_MANNER] ?: 0,
@@ -416,7 +416,7 @@ class UserService(
         requestCursor: CommonCursorRequest,
     ): CursorResponse<OtherUserRegionResponse> {
         val (user, activeProfile) = getMyInfoAndActiveProfile(userId)
-        val sportId = activeProfile.sport.id ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
+        val sportId = activeProfile.sport.id!!
 
         val snapshotAt = requestCursor.snapshotAt ?: TimeUtils.nowOffsetDateTime()
 
@@ -425,7 +425,7 @@ class UserService(
             sportId = sportId,
             region = user.region,
             request = requestCursor,
-            gender = requestCommand.gender?.name,
+            gender = requestCommand.gender,
             tier = requestCommand.tier?.name,
             snapshotAt = snapshotAt,
         )
@@ -438,14 +438,17 @@ class UserService(
         )
     }
 
-    private fun getMyInfoAndActiveProfile(userId: String): Pair<User, UserSportProfile> {
+    private fun getMyInfoAndActiveProfile(userId: String): UserWithActiveProfile {
         val user = userRepository.findByIdOrNull(userId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
         val activeProfile = userSportProfileRepository.findByIdOrNull(user.activeUserSportProfileId!!)
             ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
 
-        return user to activeProfile
+        return UserWithActiveProfile(
+            user = user,
+            activeProfile = activeProfile,
+        )
     }
 
     companion object {
@@ -456,8 +459,3 @@ class UserService(
         private const val LIMIT_RECOMMEND = 5L
     }
 }
-
-data class CountsResult(
-    val ratingCounts: UserRecentReviewSummaryResponse.RatingCounts,
-    val tagCounts: UserRecentReviewSummaryResponse.TagCounts,
-)

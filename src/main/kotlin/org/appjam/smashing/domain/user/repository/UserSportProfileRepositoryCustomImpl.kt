@@ -9,6 +9,7 @@ import org.appjam.smashing.domain.review.entity.QGameReview.Companion.gameReview
 import org.appjam.smashing.domain.user.dto.projection.*
 import org.appjam.smashing.domain.user.entity.QUser.Companion.user
 import org.appjam.smashing.domain.user.entity.QUserSportProfile.Companion.userSportProfile
+import org.appjam.smashing.domain.user.enums.Gender
 import org.appjam.smashing.global.common.dto.CommonCursorRequest
 import org.appjam.smashing.global.common.dto.CursorPageResponse
 import org.appjam.smashing.global.util.CursorCodec
@@ -88,11 +89,11 @@ class UserSportProfileRepositoryCustomImpl(
         sportId: Long,
         region: String,
         request: CommonCursorRequest,
-        gender: String?,
+        gender: Gender?,
         tier: String?,
         snapshotAt: OffsetDateTime,
     ): CursorPageResponse<OtherUserRegionProjection> {
-        val size = request.size.coerceIn(1, 20).toInt()
+        val size = request.size.coerceIn(1, 50).toInt()
         val cursor = cursorCodec.decode(request.cursor)
 
         val snapshotLocal = snapshotAt
@@ -107,8 +108,8 @@ class UserSportProfileRepositoryCustomImpl(
             .and(user.id.ne(userId))
             .and(user.createdAt.loe(snapshotLocal))
 
-        gender?.let { where.and(user.gender.stringValue().eq(gender)) }
-        tier?.let { where.and(userSportProfile.tier.name.startsWith(tier)) }
+        gender?.let { where.and(user.gender.eq(gender)) }
+        tier?.let { where.and(userSportProfile.tier.name.startsWithIgnoreCase(tier)) }
 
         if (cursor != null) {
             where.and(user.id.lt(cursor.id))
@@ -138,7 +139,6 @@ class UserSportProfileRepositoryCustomImpl(
                     userSportProfile.wins,
                     userSportProfile.losses,
                     reviewCountExpression,
-                    user.id
                 )
             )
             .from(userSportProfile)
