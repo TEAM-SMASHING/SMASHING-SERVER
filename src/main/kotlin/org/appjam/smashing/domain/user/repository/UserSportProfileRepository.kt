@@ -91,7 +91,7 @@ interface UserSportProfileRepository : JpaRepository<UserSportProfile, String>, 
             order by s.name asc
         """
     )
-    fun findAllByUserIdOrderByName(
+    fun findAllByUserIdOrderBySportName(
         userId: String,
     ): List<UserSportProfile>
 

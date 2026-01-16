@@ -3,10 +3,7 @@ package org.appjam.smashing.domain.user.service
 import org.appjam.smashing.domain.sport.enums.InitTierLp
 import org.appjam.smashing.domain.sport.repository.SportRepository
 import org.appjam.smashing.domain.tier.repository.TierRepository
-import org.appjam.smashing.domain.user.dto.command.ActiveProfileUpdateCommand
-import org.appjam.smashing.domain.user.dto.command.AddressUpdateCommand
-import org.appjam.smashing.domain.user.dto.command.OpenChatValidateCommand
-import org.appjam.smashing.domain.user.dto.command.ProfileAddCommand
+import org.appjam.smashing.domain.user.dto.command.*
 import org.appjam.smashing.domain.user.dto.response.*
 import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.entity.UserSportProfile
@@ -78,7 +75,7 @@ class UserService(
         val user = userRepository.findByIdOrNull(userId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
-        val allProfiles = userSportProfileRepository.findAllByUserIdOrderByName(userId)
+        val allProfiles = userSportProfileRepository.findAllByUserIdOrderBySportName(userId)
 
         val activeProfile = allProfiles.find { it.id == user.activeUserSportProfileId }
             ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
@@ -135,7 +132,7 @@ class UserService(
         val user = userRepository.findByIdOrNull(userId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
-        val allProfiles = userSportProfileRepository.findAllByUserIdOrderByName(userId)
+        val allProfiles = userSportProfileRepository.findAllByUserIdOrderBySportName(userId)
 
         val activeProfile = allProfiles.find { it.id == user.activeUserSportProfileId }
             ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
@@ -155,7 +152,7 @@ class UserService(
         val otherUser = userRepository.findByIdOrNull(otherUserId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
-        val allProfiles = userSportProfileRepository.findAllByUserIdOrderByName(otherUserId)
+        val allProfiles = userSportProfileRepository.findAllByUserIdOrderBySportName(otherUserId)
 
         val selectedSport = if (sportCode == null) {
             allProfiles.find { it.id == otherUser.activeUserSportProfileId }
@@ -232,6 +229,22 @@ class UserService(
         return OtherUsersLeaderBoardResponse.from(
             topUsers = leaderBoardProfiles
         )
+    }
+
+    @Transactional(readOnly = true)
+    fun getOtherUserSearch(
+        userId: String,
+        requestCommand: OtherUserSearchCommand,
+    ): OtherUserSearchResponse {
+        val (user, activeProfile) = getMyInfoAndActiveProfile(userId)
+
+        val otherUsersSearch = userSportProfileRepository.findAllBySportOrderByNickname(
+            nickname = requestCommand.nickname,
+            sportId = activeProfile.sport.id!!,
+            excludeUserId = userId,
+        )
+
+        return OtherUserSearchResponse.from(otherUsersSearch)
     }
 
     private fun getMyInfoAndActiveProfile(userId: String): Pair<User, UserSportProfile> {
