@@ -41,7 +41,7 @@ class SecurityConfig(
 
                 PERMIT_ALL.forEach { authorize(it, permitAll) }
 
-                authorize(anyRequest, permitAll)
+                authorize(anyRequest, authenticated)
             }
 
             exceptionHandling {
