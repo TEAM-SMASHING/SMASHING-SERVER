@@ -430,13 +430,3 @@ class UserService(
         private const val LIMIT_RECOMMEND = 5L
     }
 }
-
-data class UserWithActiveProfile(
-    val user: User,
-    val activeProfile: UserSportProfile,
-)
-
-data class CountsResult(
-    val ratingCounts: UserRecentReviewSummaryResponse.RatingCounts,
-    val tagCounts: UserRecentReviewSummaryResponse.TagCounts,
-)
