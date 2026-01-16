@@ -36,12 +36,12 @@ class GameController(
     )
     @PostMapping("/{gameId}/submissions")
     fun submitGameResult(
-        @RequestHeader principal: String,
+        @AuthenticationPrincipal principal: CustomUserDetails,
         @PathVariable gameId: String,
         @Valid @RequestBody request: GameResultSubmitRequest,
     ): ResponseEntity<ApiResponse<GameResultSubmitResponse>> {
         val response = gameService.submitResult(
-            submitterUserId = principal,
+            submitterUserId = principal.username,
             gameId = gameId,
             command = request.toCommand(),
         )
