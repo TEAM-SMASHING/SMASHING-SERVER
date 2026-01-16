@@ -7,13 +7,13 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 
 interface ReviewRatingCount {
-    val reviewRating: ReviewRating
-    val counts: Long
+    val reviewRating: ReviewRating?
+    val counts: Long?
 }
 
 interface ReviewTagCount {
-    val reviewTag: ReviewTag
-    val counts: Long
+    val reviewTag: ReviewTag?
+    val counts: Long?
 }
 
 interface GameReviewRepository : JpaRepository<GameReview, String>, GameReviewRepositoryCustom {

@@ -7,6 +7,7 @@ import org.appjam.smashing.domain.user.service.UserService
 import org.appjam.smashing.global.auth.security.data.CustomUserDetails
 import org.appjam.smashing.global.common.dto.ApiResponse
 import org.appjam.smashing.global.common.dto.CommonCursorRequest
+import org.appjam.smashing.global.common.dto.CursorResponse
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
@@ -158,7 +159,7 @@ class UserController(
     fun getUserRecentGame(
         @AuthenticationPrincipal principal: CustomUserDetails,
         @Valid request: CommonCursorRequest,
-    ): ResponseEntity<ApiResponse<UserRecentGameCursorResponse>> {
+    ): ResponseEntity<ApiResponse<CursorResponse<UserRecentGameResult, UserRecentGameMeta>>> {
         val response = userService.getUserRecentGame(
             userId = principal.username,
             request = request,
