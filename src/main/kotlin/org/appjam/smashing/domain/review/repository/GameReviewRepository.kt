@@ -1,8 +1,20 @@
 package org.appjam.smashing.domain.review.repository
 
 import org.appjam.smashing.domain.review.entity.GameReview
+import org.appjam.smashing.domain.review.enums.ReviewRating
+import org.appjam.smashing.domain.review.enums.ReviewTag
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
+
+interface ReviewRatingCount {
+    val reviewRating: ReviewRating?
+    val counts: Long?
+}
+
+interface ReviewTagCount {
+    val reviewTag: ReviewTag?
+    val counts: Long?
+}
 
 interface GameReviewRepository : JpaRepository<GameReview, String>, GameReviewRepositoryCustom {
 
@@ -34,20 +46,19 @@ interface GameReviewRepository : JpaRepository<GameReview, String>, GameReviewRe
         reviewId: String,
     ): GameReview?
 
-
     @Query(
         """
             select gr.rating, count(gr)
             from GameReview gr
             where gr.reviewee.id = :revieweeId
-            and gr.game.sport.id = :sportId
+            and gr.game.sport.id = :activeSportId
             group by gr.rating
         """
     )
     fun countRatingsByRevieweeAndSport(
         revieweeId: String,
-        sportId: Long
-    ): List<Array<Any>>
+        activeSportId: Long
+    ): List<ReviewRatingCount>
 
     @Query(
         """
@@ -55,12 +66,12 @@ interface GameReviewRepository : JpaRepository<GameReview, String>, GameReviewRe
             from GameReview gr
             join gr.tags t
             where gr.reviewee.id = :revieweeId
-            and gr.game.sport.id = :sportId
+            and gr.game.sport.id = :activeSportId
             group by t
         """
     )
     fun countTagsByRevieweeAndSport(
         revieweeId: String,
-        sportId: Long
-    ): List<Array<Any>>
+        activeSportId: Long
+    ): List<ReviewTagCount>
 }

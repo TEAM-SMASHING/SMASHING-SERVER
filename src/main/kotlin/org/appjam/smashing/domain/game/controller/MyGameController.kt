@@ -12,7 +12,6 @@ import org.appjam.smashing.global.common.dto.CursorResponse
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -50,7 +49,7 @@ class MyGameController(
     fun getPendingResultAcceptedGames(
         @AuthenticationPrincipal principal: CustomUserDetails,
         @Valid request: CommonCursorRequest,
-    ): ResponseEntity<ApiResponse<CursorResponse<PendingResultAcceptedGameSummaryResponse>>> {
+    ): ResponseEntity<ApiResponse<CursorResponse<PendingResultAcceptedGameSummaryResponse, Unit>>> {
         val response = gameService.getPendingResultAcceptedGames(
             userId = principal.username,
             request = request,

@@ -3,10 +3,9 @@ package org.appjam.smashing.domain.user.dto.response
 import org.appjam.smashing.domain.review.dto.projection.UserRecentGameProjection
 import java.time.LocalDateTime
 
-data class UserRecentGameResponse(
+data class UserRecentGameMeta(
     val ratingCounts: RatingCounts,
-    val tagCounts: TagCounts,
-    val results: List<Game>,
+    val tagCounts: TagCounts
 ) {
     data class RatingCounts(
         val best: Int,
@@ -47,40 +46,28 @@ data class UserRecentGameResponse(
             )
         }
     }
+}
 
-    data class Game(
-        val gameId: String,
-        val reviewId: String,
-        val opponentNickname: String,
-        val confirmedAt: LocalDateTime,
-        val content: String?,
-    ) {
-        companion object {
-            fun from(
-                p: UserRecentGameProjection
-            ) = Game(
-                gameId = p.gameId,
-                reviewId = p.reviewId,
-                opponentNickname = p.opponentNickname,
-                confirmedAt = p.confirmedAt,
-                content = p.content
-            )
-
-            fun listForm(
-                projections: List<UserRecentGameProjection>
-            ): List<Game> = projections.map { from(it) }
-        }
-    }
-
+data class UserRecentGameResult(
+    val gameId: String,
+    val reviewId: String,
+    val opponentNickname: String,
+    val confirmedAt: LocalDateTime,
+    val content: String?,
+) {
     companion object {
         fun from(
-            ratingCounts: RatingCounts,
-            tagCounts: TagCounts,
-            projections: List<UserRecentGameProjection>
-        ) = UserRecentGameResponse(
-            ratingCounts = ratingCounts,
-            tagCounts = tagCounts,
-            results = Game.listForm(projections)
+            p: UserRecentGameProjection
+        ) = UserRecentGameResult(
+            gameId = p.gameId,
+            reviewId = p.reviewId,
+            opponentNickname = p.opponentNickname,
+            confirmedAt = p.confirmedAt,
+            content = p.content
         )
+
+        fun listForm(
+            projections: List<UserRecentGameProjection>
+        ): List<UserRecentGameResult> = projections.map { from(it) }
     }
 }
