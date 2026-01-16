@@ -291,13 +291,16 @@ class UserService(
         return user to activeProfile
     }
 
-    private fun getCounts(userId: String, sportId: Long): Pair<UserRecentGameResponse.RatingCounts, UserRecentGameResponse.TagCounts> {
+    private fun getCounts(
+        userId: String,
+        sportId: Long,
+    ): Pair<UserRecentGameResponse.RatingCounts, UserRecentGameResponse.TagCounts> {
         val ratingResults = gameReviewRepository.countRatingsByRevieweeAndSport(
             revieweeId = userId,
             activeSportId = sportId,
         )
         val ratingMap = ratingResults.associate { data ->
-            (data[0] as ReviewRating) to (data[1] as Long).toInt()
+            data.reviewRating to data.counts.toInt()
         }
         val ratingCounts = UserRecentGameResponse.RatingCounts.from(
             best = ratingMap[ReviewRating.BEST] ?: 0,
@@ -310,7 +313,7 @@ class UserService(
             activeSportId = sportId,
         )
         val tagMap = tagResults.associate { data ->
-            (data[0] as ReviewTag) to (data[1] as Long).toInt()
+            data.reviewTag to data.counts.toInt()
         }
         val tagCounts = UserRecentGameResponse.TagCounts.from(
             goodManner = tagMap[ReviewTag.GOOD_MANNER] ?: 0,
