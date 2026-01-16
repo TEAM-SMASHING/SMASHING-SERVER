@@ -51,13 +51,13 @@ interface GameReviewRepository : JpaRepository<GameReview, String>, GameReviewRe
             select gr.rating, count(gr)
             from GameReview gr
             where gr.reviewee.id = :revieweeId
-            and gr.game.sport.id = :activeSportId
+            and gr.game.sport.id = :sportId
             group by gr.rating
         """
     )
     fun countRatingsByRevieweeAndSport(
         revieweeId: String,
-        activeSportId: Long
+        sportId: Long
     ): List<ReviewRatingCount>
 
     @Query(
@@ -66,12 +66,12 @@ interface GameReviewRepository : JpaRepository<GameReview, String>, GameReviewRe
             from GameReview gr
             join gr.tags t
             where gr.reviewee.id = :revieweeId
-            and gr.game.sport.id = :activeSportId
+            and gr.game.sport.id = :sportId
             group by t
         """
     )
     fun countTagsByRevieweeAndSport(
         revieweeId: String,
-        activeSportId: Long
+        sportId: Long
     ): List<ReviewTagCount>
 }

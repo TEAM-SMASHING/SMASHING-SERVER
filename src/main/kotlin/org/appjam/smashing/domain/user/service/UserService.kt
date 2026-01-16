@@ -332,6 +332,33 @@ class UserService(
         )
     }
 
+    @Transactional(readOnly = true)
+    fun getOtherUserRecentReviewSummary(
+        userId: String,
+        otherUserId: String,
+        sportCode: String,
+    ): UserRecentReviewSummaryResponse {
+        val otherUser = userRepository.findByIdOrNull(otherUserId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+
+        val selectedProfile = resolveProfile(
+            user = otherUser,
+            sportCode = sportCode,
+        )
+
+        val sportId = selectedProfile.sport.id!!
+
+        val (ratingCounts, tagCounts) = getCounts(
+            userId = userId,
+            sportId = sportId,
+        )
+
+        return UserRecentReviewSummaryResponse.from(
+            ratingCounts = ratingCounts,
+            tagCounts = tagCounts,
+        )
+    }
+
     private fun resolveProfile(user: User, sportCode: String?): UserSportProfile =
         if (sportCode == null) {
             val activeProfileId = user.activeUserSportProfileId
@@ -343,21 +370,13 @@ class UserService(
                 ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
         }
 
-    @Transactional(readOnly = true)
-    fun getOtherUserRecentReviewSummary(
-        userId: String,
-        otherUserId: String,
-    ): UserRecentReviewSummaryResponse {
-        TODO()
-    }
-
     private fun getCounts(
         userId: String,
         sportId: Long,
     ): CountsResult {
         val ratingResults = gameReviewRepository.countRatingsByRevieweeAndSport(
             revieweeId = userId,
-            activeSportId = sportId,
+            sportId = sportId,
         )
         val ratingMap = ratingResults.associate { data ->
             data.reviewRating to data.counts?.toInt()
@@ -370,7 +389,7 @@ class UserService(
 
         val tagResults = gameReviewRepository.countTagsByRevieweeAndSport(
             revieweeId = userId,
-            activeSportId = sportId,
+            sportId = sportId,
         )
         val tagMap = tagResults.associate { data ->
             data.reviewTag to data.counts?.toInt()
