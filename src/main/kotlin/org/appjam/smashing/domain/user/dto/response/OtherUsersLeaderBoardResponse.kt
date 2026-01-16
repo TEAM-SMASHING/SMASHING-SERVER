@@ -4,6 +4,7 @@ import org.appjam.smashing.domain.user.entity.UserSportProfile
 
 data class OtherUsersLeaderBoardResponse(
     val topUsers: List<OtherUsers>,
+    val user: UserInfo,
 ) {
     data class OtherUsers(
         val rank: Int,
@@ -35,10 +36,36 @@ data class OtherUsersLeaderBoardResponse(
         }
     }
 
+    data class UserInfo(
+        val nickname: String,
+        val tierId: Long,
+        val lp: Int,
+    ) {
+        companion object {
+            fun from(
+                nickname: String,
+                tierId: Long,
+                lp: Int,
+            ) = UserInfo(
+                nickname = nickname,
+                tierId = tierId,
+                lp = lp,
+            )
+        }
+    }
+
     companion object {
         fun from(
-            topUsers: List<UserSportProfile>
+            topUsers: List<UserSportProfile>,
+            nickname: String,
+            tierId: Long,
+            lp: Int,
         ) = OtherUsersLeaderBoardResponse(
+            user = UserInfo.from(
+                nickname = nickname,
+                tierId = tierId,
+                lp = lp,
+            ),
             topUsers = OtherUsers.listForm(topUsers),
         )
     }

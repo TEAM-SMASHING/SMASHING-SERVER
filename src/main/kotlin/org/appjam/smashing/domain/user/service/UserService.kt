@@ -234,7 +234,10 @@ class UserService(
         )
 
         return OtherUsersLeaderBoardResponse.from(
-            topUsers = leaderBoardProfiles
+            topUsers = leaderBoardProfiles,
+            nickname = user.nickname,
+            tierId = activeProfile.tier.id!!,
+            lp = activeProfile.lp,
         )
     }
 
