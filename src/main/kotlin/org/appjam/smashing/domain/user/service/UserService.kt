@@ -1,22 +1,23 @@
 package org.appjam.smashing.domain.user.service
 
+import org.appjam.smashing.domain.review.repository.GameReviewRepository
 import org.appjam.smashing.domain.sport.enums.InitTierLp
 import org.appjam.smashing.domain.sport.repository.SportRepository
 import org.appjam.smashing.domain.tier.repository.TierRepository
-import org.appjam.smashing.domain.user.dto.command.ActiveProfileUpdateCommand
-import org.appjam.smashing.domain.user.dto.command.AddressUpdateCommand
-import org.appjam.smashing.domain.user.dto.command.OpenChatValidateCommand
-import org.appjam.smashing.domain.user.dto.command.ProfileAddCommand
+import org.appjam.smashing.domain.user.dto.command.*
 import org.appjam.smashing.domain.user.dto.response.*
 import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.appjam.smashing.domain.user.repository.UserRepository
 import org.appjam.smashing.domain.user.repository.UserSportProfileRepository
+import org.appjam.smashing.global.common.dto.CommonCursorRequest
+import org.appjam.smashing.global.common.dto.CursorResponse
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.OffsetDateTime
 
 @Service
 class UserService(
@@ -24,6 +25,7 @@ class UserService(
     private val userSportProfileRepository: UserSportProfileRepository,
     private val sportRepository: SportRepository,
     private val tierRepository: TierRepository,
+    private val gameReviewRepository: GameReviewRepository,
 ) {
     @Transactional(readOnly = true)
     fun checkNicknameAvailability(
@@ -78,7 +80,7 @@ class UserService(
         val user = userRepository.findByIdOrNull(userId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
-        val allProfiles = userSportProfileRepository.findAllByUserIdOrderByName(userId)
+        val allProfiles = userSportProfileRepository.findAllByUserIdOrderBySportName(userId)
 
         val activeProfile = allProfiles.find { it.id == user.activeUserSportProfileId }
             ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
@@ -135,7 +137,7 @@ class UserService(
         val user = userRepository.findByIdOrNull(userId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
-        val allProfiles = userSportProfileRepository.findAllByUserIdOrderByName(userId)
+        val allProfiles = userSportProfileRepository.findAllByUserIdOrderBySportName(userId)
 
         val activeProfile = allProfiles.find { it.id == user.activeUserSportProfileId }
             ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
@@ -155,7 +157,7 @@ class UserService(
         val otherUser = userRepository.findByIdOrNull(otherUserId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
-        val allProfiles = userSportProfileRepository.findAllByUserIdOrderByName(otherUserId)
+        val allProfiles = userSportProfileRepository.findAllByUserIdOrderBySportName(otherUserId)
 
         val selectedSport = if (sportCode == null) {
             allProfiles.find { it.id == otherUser.activeUserSportProfileId }
@@ -231,6 +233,46 @@ class UserService(
 
         return OtherUsersLeaderBoardResponse.from(
             topUsers = leaderBoardProfiles
+        )
+    }
+
+    @Transactional(readOnly = true)
+    fun getOtherUserSearch(
+        userId: String,
+        requestCommand: OtherUserSearchCommand,
+    ): OtherUserSearchResponse {
+        val (user, activeProfile) = getMyInfoAndActiveProfile(userId)
+
+        val otherUsersSearch = userSportProfileRepository.findAllBySportOrderByNickname(
+            nickname = requestCommand.nickname,
+            sportId = activeProfile.sport.id!!,
+            excludeUserId = userId,
+        )
+
+        return OtherUserSearchResponse.from(otherUsersSearch)
+    }
+
+    @Transactional(readOnly = true)
+    fun getUserRecentGame(
+        userId: String,
+        request: CommonCursorRequest
+    ): CursorResponse<UserRecentGameResponse> {
+        val (_, activeProfile) = getMyInfoAndActiveProfile(userId)
+        val snapshotAt = request.snapshotAt ?: OffsetDateTime.now()
+        val sportId = activeProfile.sport.id ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
+
+        val response = gameReviewRepository.findAllBySportIdOrderByDate(
+            request = request,
+            activeSportId = sportId,
+            userId = userId,
+            snapshotAt = snapshotAt,
+        )
+
+        return CursorResponse(
+            snapshotAt = response.snapshotAt,
+            results = UserRecentGameResponse.listForm(response.results),
+            nextCursor = response.nextCursor,
+            hasNext = response.hasNext,
         )
     }
 
