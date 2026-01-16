@@ -36,7 +36,6 @@ class GameReviewRepositoryCustomImpl(
         val projections = queryFactory
             .select(
                 QUserRecentGameProjection(
-                    gr.game.id,
                     gr.id,
                     gr.reviewer.nickname,
                     gr.createdAt,

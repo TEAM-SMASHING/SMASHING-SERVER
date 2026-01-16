@@ -5,7 +5,6 @@ import java.time.LocalDateTime
 
 data class UserRecentGameResponse(
     val gameReviewId: String,
-    val reviewId: String,
     val opponentNickname: String,
     val createdAt: LocalDateTime,
     val content: String?,
@@ -15,7 +14,6 @@ data class UserRecentGameResponse(
             p: UserRecentGameProjection
         ) = UserRecentGameResponse(
             gameReviewId = p.gameReviewId,
-            reviewId = p.reviewId,
             opponentNickname = p.opponentNickname,
             createdAt = p.createdAt,
             content = p.content
