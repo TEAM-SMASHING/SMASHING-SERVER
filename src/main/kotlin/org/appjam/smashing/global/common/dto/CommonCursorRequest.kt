@@ -6,7 +6,7 @@ import java.time.OffsetDateTime
 data class CommonCursorRequest(
     @field:Positive(message = "페이지 사이즈는 양수입니다.")
     val size: Long = DEFAULT_SIZE,
-    val order: String? = null,
+    val order: String? = "LATEST",
     val cursor: String? = null,
     val snapshotAt: OffsetDateTime? = null,
 ) {
