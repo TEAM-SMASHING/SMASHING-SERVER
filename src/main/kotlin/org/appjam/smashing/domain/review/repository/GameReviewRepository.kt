@@ -48,7 +48,8 @@ interface GameReviewRepository : JpaRepository<GameReview, String>, GameReviewRe
 
     @Query(
         """
-            select gr.rating, count(gr)
+            select gr.rating as reviewRating, 
+            count(gr.id) as counts
             from GameReview gr
             where gr.reviewee.id = :revieweeId
             and gr.game.sport.id = :activeSportId
@@ -62,7 +63,8 @@ interface GameReviewRepository : JpaRepository<GameReview, String>, GameReviewRe
 
     @Query(
         """
-            select t, count(t)
+            select t as reviewTag, 
+            count(t) as counts
             from GameReview gr
             join gr.tags t
             where gr.reviewee.id = :revieweeId
