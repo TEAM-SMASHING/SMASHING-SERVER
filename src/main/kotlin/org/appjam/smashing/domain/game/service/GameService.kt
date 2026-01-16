@@ -5,6 +5,7 @@ import org.appjam.smashing.domain.game.dto.command.GameResultRejectCommand
 import org.appjam.smashing.domain.game.dto.command.GameResultSubmitCommand
 import org.appjam.smashing.domain.game.dto.response.GameResultSubmissionDetailResponse
 import org.appjam.smashing.domain.game.dto.response.GameResultSubmitLockResponse
+import org.appjam.smashing.domain.game.dto.response.GameResultSubmitResponse
 import org.appjam.smashing.domain.game.dto.response.PendingResultAcceptedGameSummaryResponse
 import org.appjam.smashing.domain.game.entity.Game
 import org.appjam.smashing.domain.game.entity.GameResultSubmission
@@ -57,7 +58,7 @@ class GameService(
         submitterUserId: String,
         gameId: String,
         command: GameResultSubmitCommand,
-    ) {
+    ): GameResultSubmitResponse {
         // 게임 조회(잠금)
         val game = gameRepository.findByIdFetchAllForUpdate(gameId)
             ?: throw CustomException(ErrorCode.GAME_NOT_FOUND)
@@ -144,7 +145,7 @@ class GameService(
         )
 
         // 후기 저장 + 후기 제출 알림 + SSE 발행
-        if (attemptNo == 1) {
+        val reviewId = if (attemptNo == 1) {
             notifyReviewReceived(
                 game = game,
                 reviewer = submitter,
@@ -153,7 +154,11 @@ class GameService(
                 review = command.review!!,
                 reviewerTierId = submitterProfile.tier.id!!,
             )
+        } else {
+            null
         }
+
+        return GameResultSubmitResponse.from(reviewId)
     }
 
     @Transactional
@@ -663,7 +668,7 @@ class GameService(
         receiverProfile: UserSportProfile,
         review: GameResultSubmitCommand.ReviewCommand,
         reviewerTierId: Long,
-    ) {
+    ): String {
         val savedReview = gameReviewService.createReview(
             gameId = game.id!!,
             reviewer = reviewer,
@@ -703,6 +708,8 @@ class GameService(
                 )
             )
         )
+
+        return savedReview.id!!
     }
 
     private fun notifyReviewReceivedOnConfirm(
