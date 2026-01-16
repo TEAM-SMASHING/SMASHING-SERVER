@@ -311,7 +311,7 @@ class UserService(
         )
     }
 
-    private fun resolveProfile(user: User, sportCode: String?): UserSportProfile =
+    private fun resolveProfile(user: User, sportCode: String?) =
         if (sportCode == null) {
             val activeProfileId = user.activeUserSportProfileId
                 ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
