@@ -7,6 +7,7 @@ import org.appjam.smashing.domain.game.dto.request.GameResultConfirmRequest
 import org.appjam.smashing.domain.game.dto.request.GameResultRejectRequest
 import org.appjam.smashing.domain.game.dto.request.GameResultSubmitRequest
 import org.appjam.smashing.domain.game.dto.response.GameResultSubmissionDetailResponse
+import org.appjam.smashing.domain.game.dto.response.GameResultSubmitResponse
 import org.appjam.smashing.domain.game.service.GameService
 import org.appjam.smashing.global.auth.security.data.CustomUserDetails
 import org.appjam.smashing.global.common.dto.ApiResponse
@@ -35,17 +36,17 @@ class GameController(
     )
     @PostMapping("/{gameId}/submissions")
     fun submitGameResult(
-        @AuthenticationPrincipal principal: CustomUserDetails,
+        @RequestHeader principal: String,
         @PathVariable gameId: String,
         @Valid @RequestBody request: GameResultSubmitRequest,
-    ): ResponseEntity<ApiResponse<Unit>> {
-        gameService.submitResult(
-            submitterUserId = principal.username,
+    ): ResponseEntity<ApiResponse<GameResultSubmitResponse>> {
+        val response = gameService.submitResult(
+            submitterUserId = principal,
             gameId = gameId,
             command = request.toCommand(),
         )
 
-        return ApiResponse.success()
+        return ApiResponse.success(response)
     }
 
     @Operation(
