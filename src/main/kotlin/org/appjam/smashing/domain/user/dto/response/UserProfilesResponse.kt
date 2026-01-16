@@ -4,6 +4,7 @@ import org.appjam.smashing.domain.user.entity.UserSportProfile
 
 data class UserProfilesResponse(
     val nickname: String,
+    val gender: String,
     val activeProfile: ActiveProfile,
     val allProfiles: List<ProfileInfo>,
 ) {
@@ -63,10 +64,12 @@ data class UserProfilesResponse(
     companion object {
         fun from(
             nickname: String,
+            gender: String,
             activeProfile: UserSportProfile,
             allProfiles: List<UserSportProfile>
         ) = UserProfilesResponse(
             nickname = nickname,
+            gender = gender,
             activeProfile = ActiveProfile.from(activeProfile),
             allProfiles = ProfileInfo.listForm(
                 allProfiles = allProfiles,
