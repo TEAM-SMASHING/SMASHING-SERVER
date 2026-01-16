@@ -200,6 +200,22 @@ class UserController(
         )
     }
 
+    @GetMapping("/{userId}/reviews/summary")
+    fun getOtherUserRecentReviewSummary(
+        @AuthenticationPrincipal principal: CustomUserDetails,
+        @PathVariable userId: String,
+    ): ResponseEntity<ApiResponse<UserRecentReviewSummaryResponse>> {
+        val response = userService.getOtherUserRecentReviewSummary(
+            userId = principal.username,
+            otherUserId = userId,
+        )
+
+        return ApiResponse.success(
+            data = response,
+        )
+    }
+
+
     @GetMapping("/me/regions/users")
     fun getOtherUserRegion(
         @AuthenticationPrincipal principal: CustomUserDetails,
