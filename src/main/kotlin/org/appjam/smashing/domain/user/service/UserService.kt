@@ -329,7 +329,7 @@ class UserService(
         requestCursor: CommonCursorRequest,
     ): CursorResponse<OtherUserRegionResponse> {
         val (user, activeProfile) = getMyInfoAndActiveProfile(userId)
-        val sportId = activeProfile.sport.id ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
+        val sportId = activeProfile.sport.id!!
 
         val snapshotAt = requestCursor.snapshotAt ?: TimeUtils.nowOffsetDateTime()
 
