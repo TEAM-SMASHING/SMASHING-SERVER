@@ -173,8 +173,12 @@ class UserController(
     @GetMapping("/me/reviews/summary")
     fun getUserRecentReviewSummary(
         @AuthenticationPrincipal principal: CustomUserDetails,
-    ) {
+    ): ResponseEntity<ApiResponse<UserRecentReviewSummaryResponse>> {
+        val response = userService.getUserRecentReviewSummary(principal.username)
 
+        return ApiResponse.success(
+            data = response,
+        )
     }
 
     @GetMapping("/{userId}/reviews/recent")
