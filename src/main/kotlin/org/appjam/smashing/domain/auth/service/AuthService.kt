@@ -59,7 +59,6 @@ class AuthService(
             ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
 
         val initLp = ExperienceRange.valueOf(requestCommand.experienceRange).initLp
-
         val initTier = tierRepository.findBySportIdAndLpInRange(
             sportId = sport.id!!,
             lp = initLp,
