@@ -20,6 +20,7 @@ data class SignUpRequest(
     @field:NotBlank(message = "sportCode를 입력해주세요.")
     val sportCode: String?,
     @field:NotBlank(message = "experienceRange를 입력해주세요.")
+    @field:ValidEnum(message = "잘못된 experienceRange 값입니다.", enumClass = ExperienceRange::class)
     val experienceRange: String?,
     @field:NotBlank(message = "region을 입력해주세요.")
     val region: String?,
