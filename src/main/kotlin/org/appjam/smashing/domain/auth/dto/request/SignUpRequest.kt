@@ -2,6 +2,7 @@ package org.appjam.smashing.domain.auth.dto.request
 
 import jakarta.validation.constraints.NotBlank
 import org.appjam.smashing.domain.auth.dto.command.SignUpRequestCommand
+import org.appjam.smashing.domain.sport.enums.ExperienceRange
 import org.appjam.smashing.domain.user.enums.Gender
 import org.appjam.smashing.global.common.validator.annotation.ValidEnum
 import org.appjam.smashing.global.extensions.ofIgnoreCase
@@ -29,7 +30,7 @@ data class SignUpRequest(
         gender = ofIgnoreCase<Gender>(gender!!),
         openChatUrl = openChatUrl!!,
         sportCode = sportCode!!,
-        experienceRange = experienceRange!!,
+        experienceRange = ofIgnoreCase<ExperienceRange>(experienceRange!!),
         region = region!!,
     )
 }

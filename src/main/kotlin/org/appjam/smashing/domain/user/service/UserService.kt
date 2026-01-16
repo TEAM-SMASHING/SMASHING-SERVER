@@ -1,7 +1,6 @@
 package org.appjam.smashing.domain.user.service
 
 import org.appjam.smashing.domain.review.repository.GameReviewRepository
-import org.appjam.smashing.domain.sport.enums.ExperienceRange
 import org.appjam.smashing.domain.sport.repository.SportRepository
 import org.appjam.smashing.domain.tier.repository.TierRepository
 import org.appjam.smashing.domain.user.dto.command.*
@@ -103,8 +102,8 @@ class UserService(
             ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
 
         validateAlreadyRegisteredSport(user.id!!, sport.id!!)
-        
-        val initLp = ExperienceRange.valueOf(requestCommand.experienceRange).initLp
+
+        val initLp = requestCommand.experienceRange.initLp
         val initTier = tierRepository.findBySportIdAndLpInRange(
             sportId = sport.id!!,
             lp = initLp,

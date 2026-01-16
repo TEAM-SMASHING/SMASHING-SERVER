@@ -1,7 +1,9 @@
 package org.appjam.smashing.domain.user.dto.request
 
 import jakarta.validation.constraints.NotBlank
+import org.appjam.smashing.domain.sport.enums.ExperienceRange
 import org.appjam.smashing.domain.user.dto.command.ProfileAddCommand
+import org.appjam.smashing.global.extensions.ofIgnoreCase
 
 data class ProfileAddRequest(
     @field:NotBlank(message = "sportCode를 입력해주세요.")
@@ -11,6 +13,6 @@ data class ProfileAddRequest(
 ) {
     fun toCommand() = ProfileAddCommand(
         sportCode = sportCode!!,
-        experienceRange = experienceRange!!,
+        experienceRange = ofIgnoreCase<ExperienceRange>(experienceRange!!),
     )
 }
