@@ -1,20 +1,10 @@
 package org.appjam.smashing.domain.review.repository
 
+import org.appjam.smashing.domain.review.dto.response.ReviewRatingCount
+import org.appjam.smashing.domain.review.dto.response.ReviewTagCount
 import org.appjam.smashing.domain.review.entity.GameReview
-import org.appjam.smashing.domain.review.enums.ReviewRating
-import org.appjam.smashing.domain.review.enums.ReviewTag
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
-
-interface ReviewRatingCount {
-    val reviewRating: ReviewRating?
-    val counts: Long?
-}
-
-interface ReviewTagCount {
-    val reviewTag: ReviewTag?
-    val counts: Long?
-}
 
 interface GameReviewRepository : JpaRepository<GameReview, String>, GameReviewRepositoryCustom {
 
