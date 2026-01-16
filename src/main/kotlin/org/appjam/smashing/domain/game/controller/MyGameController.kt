@@ -5,10 +5,12 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.appjam.smashing.domain.game.dto.response.PendingResultAcceptedGameSummaryResponse
 import org.appjam.smashing.domain.game.service.GameService
+import org.appjam.smashing.global.auth.security.data.CustomUserDetails
 import org.appjam.smashing.global.common.dto.ApiResponse
 import org.appjam.smashing.global.common.dto.CommonCursorRequest
 import org.appjam.smashing.global.common.dto.CursorResponse
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
@@ -51,11 +53,11 @@ class MyGameController(
     )
     @GetMapping("/pending-results")
     fun getPendingResultAcceptedGames(
-        @RequestHeader principal: String,
+        @AuthenticationPrincipal principal: CustomUserDetails,
         @Valid request: CommonCursorRequest,
     ): ResponseEntity<ApiResponse<CursorResponse<PendingResultAcceptedGameSummaryResponse>>> {
         val response = gameService.getPendingResultAcceptedGames(
-            userId = principal,
+            userId = principal.username,
             request = request,
         )
 
