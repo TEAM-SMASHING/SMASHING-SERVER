@@ -170,6 +170,13 @@ class UserController(
         )
     }
 
+    @GetMapping("/me/reviews/summary")
+    fun getUserRecentReviewSummary(
+        @AuthenticationPrincipal principal: CustomUserDetails,
+    ) {
+
+    }
+
     @GetMapping("/{userId}/reviews/recent")
     fun getOtherUserRecentReview(
         @AuthenticationPrincipal principal: CustomUserDetails,
