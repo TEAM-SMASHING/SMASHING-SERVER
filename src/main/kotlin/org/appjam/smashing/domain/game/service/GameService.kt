@@ -83,16 +83,24 @@ class GameService(
             sportId = game.sport.id!!,
         ) ?: throw CustomException(ErrorCode.MATCHING_RECEIVER_PROFILE_NOT_FOUND)
 
-        // 유저당 제출 2회 제한
-        if (submissionRepository.countByGame_IdAndSubmitter_Id(gameId, submitterUserId) >= 2L) {
-            throw CustomException(ErrorCode.GAME_RESULT_SUBMISSION_LIMIT_EXCEEDED)
-        }
-
         // 게임 결과 제출 시간 제약
         validateSubmitWindow(game)
 
-        // attemptNo = 해당 게임 제출 순번 계산
-        val attemptNo = (submissionRepository.countByGame_Id(gameId) + 1).toInt()
+        val totalSubmissionCount = submissionRepository.countByGame_Id(gameId)
+        val submitterSubmissionCount = submissionRepository.countByGame_IdAndSubmitter_Id(gameId, submitterUserId)
+
+        // 재제출 제약 (이전 제출자만 가능)
+        if (totalSubmissionCount >= 1L && submitterSubmissionCount == 0L) {
+            throw CustomException(ErrorCode.GAME_RESULT_RESUBMIT_ONLY_PREVIOUS_SUBMITTER)
+        }
+
+        // 유저당 제출 2회 제한
+        if (submitterSubmissionCount >= 2L) {
+            throw CustomException(ErrorCode.GAME_RESULT_SUBMISSION_LIMIT_EXCEEDED)
+        }
+
+        // attemptNo 계산
+        val attemptNo = (totalSubmissionCount + 1).toInt()
 
         // 리뷰 검증 (첫 제출 시 필수, 재제출 시 불가)
         validateReviewRule(attemptNo, command.review)
