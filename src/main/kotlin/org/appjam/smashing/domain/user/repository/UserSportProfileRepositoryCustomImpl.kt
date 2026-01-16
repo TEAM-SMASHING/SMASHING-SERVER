@@ -92,7 +92,7 @@ class UserSportProfileRepositoryCustomImpl(
         tier: String?,
         snapshotAt: OffsetDateTime,
     ): CursorPageResponse<OtherUserRegionProjection> {
-        val size = request.size.coerceIn(1, 20).toInt()
+        val size = request.size.coerceIn(1, 50).toInt()
         val cursor = cursorCodec.decode(request.cursor)
 
         val snapshotLocal = snapshotAt
