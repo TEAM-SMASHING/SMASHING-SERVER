@@ -167,7 +167,7 @@ class NotificationService(
     fun getMyNotifications(
         userId: String,
         request: CommonCursorRequest,
-    ): CursorResponse<NotificationSummaryResponse, Unit> {
+    ): CursorResponse<NotificationSummaryResponse> {
         // 스냅샷 시각 설정
         val snapshotAt = request.snapshotAt ?: TimeUtils.nowOffsetDateTime()
 

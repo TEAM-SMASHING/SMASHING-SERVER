@@ -58,7 +58,7 @@ class NotificationController(
     fun getMyNotifications(
         @AuthenticationPrincipal principal: CustomUserDetails,
         @Valid request: CommonCursorRequest,
-    ): ResponseEntity<ApiResponse<CursorResponse<NotificationSummaryResponse, Unit>>> {
+    ): ResponseEntity<ApiResponse<CursorResponse<NotificationSummaryResponse>>> {
         val response = notificationService.getMyNotifications(
             userId = principal.username,
             request = request,
