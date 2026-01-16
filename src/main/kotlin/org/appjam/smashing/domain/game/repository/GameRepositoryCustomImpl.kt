@@ -15,6 +15,7 @@ import org.appjam.smashing.domain.user.entity.QUserSportProfile
 import org.appjam.smashing.global.common.dto.CommonCursorRequest
 import org.appjam.smashing.global.common.dto.CursorPageResponse
 import org.appjam.smashing.global.util.CursorCodec
+import org.appjam.smashing.global.util.CursorQueryUtils
 import org.appjam.smashing.global.util.TimeUtils
 import java.time.OffsetDateTime
 
@@ -32,6 +33,7 @@ class GameRepositoryCustomImpl(
 
         val size = request.size.coerceIn(1, 50).toInt()
         val cursor = cursorCodec.decode(request.cursor)
+        val orderType = CursorQueryUtils.resolveOrderType(request.order)
 
         val snapshotLocal = snapshotAt
             .atZoneSameInstant(TimeUtils.DEFAULT_ZONE_ID)
@@ -77,9 +79,11 @@ class GameRepositoryCustomImpl(
                 )
             )
 
-        if (cursor != null) {
-            where.and(game.id.lt(cursor.id))
-        }
+        CursorQueryUtils.cursorWhere(
+            path = game.id,
+            orderType = orderType,
+            cursorValue = cursor?.id,
+        )?.let(where::and)
 
         val projections = queryFactory
             .select(
@@ -113,7 +117,7 @@ class GameRepositoryCustomImpl(
             .join(receiverProfile.tier, receiverTier)
 
             .where(where)
-            .orderBy(game.id.desc())
+            .orderBy(CursorQueryUtils.orderBy(game.id, orderType))
             .limit((size + 1).toLong())
             .fetch()
 
