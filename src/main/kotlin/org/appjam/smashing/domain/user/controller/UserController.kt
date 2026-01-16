@@ -192,12 +192,12 @@ class UserController(
     @GetMapping("/me/regions/users")
     fun getOtherUserRegion(
         @AuthenticationPrincipal principal: CustomUserDetails,
-        @Valid requestDto: OtherUserRegionRequest,
+        @Valid regionRequest: OtherUserRegionRequest,
         @Valid requestCursor: CommonCursorRequest,
     ): ResponseEntity<ApiResponse<CursorResponse<OtherUserRegionResponse>>> {
         val response = userService.getOtherUserRegion(
             userId = principal.username,
-            requestCommand = requestDto.toCommand(),
+            requestCommand = regionRequest.toCommand(),
             requestCursor = requestCursor,
         )
 
