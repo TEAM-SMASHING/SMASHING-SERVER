@@ -1,7 +1,5 @@
 package org.appjam.smashing.domain.user.service
 
-import org.appjam.smashing.domain.review.enums.ReviewRating
-import org.appjam.smashing.domain.review.enums.ReviewTag
 import org.appjam.smashing.domain.review.repository.GameReviewRepository
 import org.appjam.smashing.domain.sport.enums.InitTierLp
 import org.appjam.smashing.domain.sport.repository.SportRepository
@@ -258,31 +256,23 @@ class UserService(
     fun getUserRecentGame(
         userId: String,
         request: CommonCursorRequest
-    ): CursorResponse<UserRecentGameResult, UserRecentGameMeta> {
+    ): CursorResponse<UserRecentGameResult> {
         val (_, activeProfile) = getMyInfoAndActiveProfile(userId)
         val snapshotAt = request.snapshotAt ?: OffsetDateTime.now()
         val sportId = activeProfile.sport.id ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
 
-        val page = gameReviewRepository.findAllBySportIdOrderByDate(
+        val response = gameReviewRepository.findAllBySportIdOrderByDate(
             request = request,
             sportId = sportId,
             userId = userId,
             snapshotAt = snapshotAt,
         )
 
-        val (ratingCounts, tagCounts) = getCounts(
-            userId = userId,
-            sportId = sportId,
-        )
-        val countsMeta = UserRecentGameMeta(
-            ratingCounts = ratingCounts,
-            tagCounts = tagCounts
-        )
-
-        return CursorResponse.from(
-            page = page,
-            meta = countsMeta,
-            results = UserRecentGameResult.listForm(page.results),
+        return CursorResponse(
+            snapshotAt = response.snapshotAt,
+            results = UserRecentGameResult.listForm(response.results),
+            nextCursor = response.nextCursor,
+            hasNext = response.hasNext,
         )
     }
 
@@ -302,7 +292,7 @@ class UserService(
         otherUserId: String,
         sportCode: String?,
         request: CommonCursorRequest,
-    ): CursorResponse<UserRecentGameResult, UserRecentGameMeta> {
+    ): CursorResponse<UserRecentGameResult> {
         val otherUser = userRepository.findByIdOrNull(otherUserId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
@@ -315,26 +305,18 @@ class UserService(
 
         val snapshotAt = request.snapshotAt ?: OffsetDateTime.now()
 
-        val page = gameReviewRepository.findAllBySportIdOrderByDate(
+        val response = gameReviewRepository.findAllBySportIdOrderByDate(
             request = request,
             sportId = sportId,
             userId = otherUserId,
             snapshotAt = snapshotAt
         )
 
-        val (ratingCounts, tagCounts) = getCounts(
-            userId = otherUserId,
-            sportId = sportId,
-        )
-        val countsMeta = UserRecentGameMeta(
-            ratingCounts = ratingCounts,
-            tagCounts = tagCounts
-        )
-
-        return CursorResponse.from(
-            page = page,
-            meta = countsMeta,
-            results = UserRecentGameResult.listForm(page.results),
+        return CursorResponse(
+            snapshotAt = snapshotAt,
+            results = UserRecentGameResult.listForm(response.results),
+            nextCursor = response.nextCursor,
+            hasNext = response.hasNext
         )
     }
 
@@ -349,43 +331,6 @@ class UserService(
                 ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
         }
 
-    private fun getCounts(
-        userId: String,
-        sportId: Long,
-    ): CountsResult {
-        val ratingResults = gameReviewRepository.countRatingsByRevieweeAndSport(
-            revieweeId = userId,
-            activeSportId = sportId,
-        )
-        val ratingMap = ratingResults.associate { data ->
-            data.reviewRating to data.counts?.toInt()
-        }
-        val ratingCounts = UserRecentGameMeta.RatingCounts.from(
-            best = ratingMap[ReviewRating.BEST] ?: 0,
-            good = ratingMap[ReviewRating.GOOD] ?: 0,
-            bad = ratingMap[ReviewRating.BAD] ?: 0
-        )
-
-        val tagResults = gameReviewRepository.countTagsByRevieweeAndSport(
-            revieweeId = userId,
-            activeSportId = sportId,
-        )
-        val tagMap = tagResults.associate { data ->
-            data.reviewTag to data.counts?.toInt()
-        }
-        val tagCounts = UserRecentGameMeta.TagCounts.from(
-            goodManner = tagMap[ReviewTag.GOOD_MANNER] ?: 0,
-            onTime = tagMap[ReviewTag.ON_TIME] ?: 0,
-            fairPlay = tagMap[ReviewTag.FAIR_PLAY] ?: 0,
-            fastResponse = tagMap[ReviewTag.FAST_RESPONSE] ?: 0
-        )
-
-        return CountsResult(
-            ratingCounts = ratingCounts,
-            tagCounts = tagCounts,
-        )
-    }
-
     companion object {
         private val NICKNAME_VALID_REGEX = Regex("^[a-zA-Z0-9가-힣]*$")
         private const val MAX_NICKNAME_LENGTH = 10
@@ -394,8 +339,3 @@ class UserService(
         private const val LIMIT_RECOMMEND = 5L
     }
 }
-
-data class CountsResult(
-    val ratingCounts: UserRecentGameMeta.RatingCounts,
-    val tagCounts: UserRecentGameMeta.TagCounts
-)

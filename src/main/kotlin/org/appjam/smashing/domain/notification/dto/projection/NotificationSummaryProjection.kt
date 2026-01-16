@@ -17,6 +17,7 @@ data class NotificationSummaryProjection(
     val linkUrl: String,
     val isRead: Boolean,
     val createdAtLdt: LocalDateTime,
+    val senderNickname: String,
     val receiverProfileId: String,
     val receiverSportId: Long,
 ) : CursorKey {
