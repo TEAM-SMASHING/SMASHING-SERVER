@@ -5,15 +5,15 @@ data class UserRecentReviewSummaryResponse(
     val tagCounts: TagCounts
 ) {
     data class RatingCounts(
-        val best: Int,
-        val good: Int,
-        val bad: Int,
+        val best: Long,
+        val good: Long,
+        val bad: Long,
     ) {
         companion object {
             fun from(
-                best: Int,
-                good: Int,
-                bad: Int,
+                best: Long,
+                good: Long,
+                bad: Long,
             ) = RatingCounts(
                 best = best,
                 good = good,
@@ -23,17 +23,17 @@ data class UserRecentReviewSummaryResponse(
     }
 
     data class TagCounts(
-        val goodManner: Int,
-        val onTime: Int,
-        val fairPlay: Int,
-        val fastResponse: Int,
+        val goodManner: Long,
+        val onTime: Long,
+        val fairPlay: Long,
+        val fastResponse: Long,
     ) {
         companion object {
             fun from(
-                goodManner: Int,
-                onTime: Int,
-                fairPlay: Int,
-                fastResponse: Int,
+                goodManner: Long,
+                onTime: Long,
+                fairPlay: Long,
+                fastResponse: Long,
             ) = TagCounts(
                 goodManner = goodManner,
                 onTime = onTime,
