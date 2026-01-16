@@ -299,7 +299,7 @@ class UserService(
     private fun getCounts(
         userId: String,
         sportId: Long,
-    ): Pair<UserRecentGameMeta.RatingCounts, UserRecentGameMeta.TagCounts> {
+    ): CountsResult {
         val ratingResults = gameReviewRepository.countRatingsByRevieweeAndSport(
             revieweeId = userId,
             activeSportId = sportId,
@@ -327,8 +327,12 @@ class UserService(
             fastResponse = tagMap[ReviewTag.FAST_RESPONSE] ?: 0
         )
 
-        return ratingCounts to tagCounts
+        return CountsResult(
+            ratingCounts = ratingCounts,
+            tagCounts = tagCounts,
+        )
     }
+
 
     companion object {
         private val NICKNAME_VALID_REGEX = Regex("^[a-zA-Z0-9가-힣]*$")
@@ -338,3 +342,8 @@ class UserService(
         private const val LIMIT_RECOMMEND = 5L
     }
 }
+
+data class CountsResult(
+    val ratingCounts: UserRecentGameMeta.RatingCounts,
+    val tagCounts: UserRecentGameMeta.TagCounts
+)
