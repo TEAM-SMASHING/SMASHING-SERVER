@@ -124,7 +124,7 @@ class UserSportProfileRepositoryCustomImpl(
             )
 
         val reviewCountOrderExpression = Expressions.numberTemplate(
-            Int::class.java,
+            Long::class.java,
             "({0})",
             reviewCountExpression
         )
