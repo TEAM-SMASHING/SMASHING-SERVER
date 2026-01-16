@@ -6,12 +6,12 @@ import java.time.LocalDateTime
 
 @QueryProjection
 data class UserRecentGameProjection(
-    val gameId: String,
+    val gameReviewId: String,
     val reviewId: String,
     val opponentNickname: String,
-    val confirmedAt: LocalDateTime,
+    val createdAt: LocalDateTime,
     val content: String?,
 ) : CursorKey {
     override val cursorId: String
-        get() = gameId
+        get() = gameReviewId
 }

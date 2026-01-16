@@ -155,11 +155,11 @@ class UserController(
         )
     }
 
-    @GetMapping("/me/games/recent")
+    @GetMapping("/me/reviews/recent")
     fun getUserRecentGame(
         @AuthenticationPrincipal principal: CustomUserDetails,
         @Valid request: CommonCursorRequest,
-    ): ResponseEntity<ApiResponse<CursorResponse<UserRecentGameResult>>> {
+    ): ResponseEntity<ApiResponse<CursorResponse<UserRecentGameResponse>>> {
         val response = userService.getUserRecentGame(
             userId = principal.username,
             request = request,
