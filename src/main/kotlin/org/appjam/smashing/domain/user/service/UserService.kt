@@ -302,7 +302,7 @@ class UserService(
         otherUserId: String,
         sportCode: String?,
         request: CommonCursorRequest,
-    ): RecentGameCursorResponse {
+    ): CursorResponse<UserRecentGameResult, UserRecentGameMeta> {
         val otherUser = userRepository.findByIdOrNull(otherUserId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
@@ -330,11 +330,15 @@ class UserService(
             userId = otherUserId,
             sportId = sportId,
         )
-
-        return RecentGameCursorResponse.of(
-            page = page,
+        val countsMeta = UserRecentGameMeta(
             ratingCounts = ratingCounts,
             tagCounts = tagCounts
+        )
+
+        return CursorResponse.from(
+            page = page,
+            meta = countsMeta,
+            results = UserRecentGameResult.listForm(page.results),
         )
     }
 
