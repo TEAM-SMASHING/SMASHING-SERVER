@@ -257,7 +257,7 @@ class UserService(
     fun getUserRecentGame(
         userId: String,
         request: CommonCursorRequest
-    ): CursorResponse<UserRecentGameResult> {
+    ): CursorResponse<UserRecentGameResponse> {
         val (_, activeProfile) = getMyInfoAndActiveProfile(userId)
         val snapshotAt = request.snapshotAt ?: OffsetDateTime.now()
         val sportId = activeProfile.sport.id ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
@@ -271,7 +271,7 @@ class UserService(
 
         return CursorResponse(
             snapshotAt = response.snapshotAt,
-            results = UserRecentGameResult.listForm(response.results),
+            results = UserRecentGameResponse.listForm(response.results),
             nextCursor = response.nextCursor,
             hasNext = response.hasNext,
         )
@@ -283,7 +283,7 @@ class UserService(
         otherUserId: String,
         sportCode: String?,
         request: CommonCursorRequest,
-    ): CursorResponse<UserRecentGameResult> {
+    ): CursorResponse<UserRecentGameResponse> {
         val otherUser = userRepository.findByIdOrNull(otherUserId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
@@ -305,7 +305,7 @@ class UserService(
 
         return CursorResponse(
             snapshotAt = snapshotAt,
-            results = UserRecentGameResult.listForm(response.results),
+            results = UserRecentGameResponse.listForm(response.results),
             nextCursor = response.nextCursor,
             hasNext = response.hasNext
         )

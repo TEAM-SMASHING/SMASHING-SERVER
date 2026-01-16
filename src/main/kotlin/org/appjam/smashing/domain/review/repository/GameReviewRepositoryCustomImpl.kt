@@ -20,7 +20,7 @@ class GameReviewRepositoryCustomImpl(
         userId: String,
         snapshotAt: OffsetDateTime
     ): CursorPageResponse<UserRecentGameProjection> {
-        val size = request.size.coerceIn(1, 20).toInt()
+        val size = request.size.coerceIn(1, 50).toInt()
         val cursor = cursorCodec.decode(request.cursor)
         val gr = QGameReview.gameReview
 
@@ -36,7 +36,6 @@ class GameReviewRepositoryCustomImpl(
         val projections = queryFactory
             .select(
                 QUserRecentGameProjection(
-                    gr.game.id,
                     gr.id,
                     gr.reviewer.nickname,
                     gr.createdAt,
