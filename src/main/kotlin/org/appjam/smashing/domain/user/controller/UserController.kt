@@ -8,7 +8,6 @@ import org.appjam.smashing.global.auth.security.data.CustomUserDetails
 import org.appjam.smashing.global.common.dto.ApiResponse
 import org.appjam.smashing.global.common.dto.CommonCursorRequest
 import org.appjam.smashing.global.common.dto.CursorResponse
-import org.appjam.smashing.global.common.dto.RecentGameCursorResponse
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
@@ -160,7 +159,7 @@ class UserController(
     fun getUserRecentGame(
         @AuthenticationPrincipal principal: CustomUserDetails,
         @Valid request: CommonCursorRequest,
-    ): ResponseEntity<ApiResponse<RecentGameCursorResponse>> {
+    ): ResponseEntity<ApiResponse<CursorResponse<UserRecentGameResult, UserRecentGameMeta>>> {
         val response = userService.getUserRecentGame(
             userId = principal.username,
             request = request,
@@ -175,9 +174,9 @@ class UserController(
     fun getOtherUserRecentGame(
         @AuthenticationPrincipal principal: CustomUserDetails,
         @PathVariable userId: String,
-        @RequestParam(required = false) sportCode: String?,
+        @RequestParam sportCode: String?,
         @Valid request: CommonCursorRequest,
-    ): ResponseEntity<ApiResponse<RecentGameCursorResponse>> {
+    ): ResponseEntity<ApiResponse<CursorResponse<UserRecentGameResult, UserRecentGameMeta>>> {
         val response = userService.getOtherUserRecentGame(
             userId = principal.username,
             otherUserId = userId,
@@ -195,7 +194,7 @@ class UserController(
         @AuthenticationPrincipal principal: CustomUserDetails,
         @Valid requestDto: OtherUserRegionRequest,
         @Valid requestCursor: CommonCursorRequest,
-    ): ResponseEntity<ApiResponse<CursorResponse<OtherUserRegionResponse>>> {
+    ): ResponseEntity<ApiResponse<CursorResponse<OtherUserRegionResponse, Unit>>> {
         val response = userService.getOtherUserRegion(
             userId = principal.username,
             requestCommand = requestDto.toCommand(),

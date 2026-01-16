@@ -41,7 +41,6 @@ class GameReviewRepositoryCustomImpl(
                     gr.reviewer.nickname,
                     gr.createdAt,
                     gr.content,
-                    gr.id
                 )
             )
             .from(gr)

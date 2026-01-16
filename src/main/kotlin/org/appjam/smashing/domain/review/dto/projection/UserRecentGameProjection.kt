@@ -11,5 +11,7 @@ data class UserRecentGameProjection(
     val opponentNickname: String,
     val confirmedAt: LocalDateTime,
     val content: String?,
-    override val cursorId: String = gameId
-) : CursorKey
+) : CursorKey {
+    override val cursorId: String
+        get() = gameId
+}

@@ -3,9 +3,9 @@ package org.appjam.smashing.domain.matching.controller
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
-import org.appjam.smashing.domain.matching.service.MatchingService
 import org.appjam.smashing.domain.matching.dto.response.ReceivedMatchingSummaryResponse
 import org.appjam.smashing.domain.matching.dto.response.SentMatchingSummaryResponse
+import org.appjam.smashing.domain.matching.service.MatchingService
 import org.appjam.smashing.global.auth.security.data.CustomUserDetails
 import org.appjam.smashing.global.common.dto.ApiResponse
 import org.appjam.smashing.global.common.dto.CommonCursorRequest
@@ -13,7 +13,6 @@ import org.appjam.smashing.global.common.dto.CursorResponse
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -44,7 +43,7 @@ class MyMatchingController(
     fun getReceivedMatchings(
         @AuthenticationPrincipal principal: CustomUserDetails,
         @Valid request: CommonCursorRequest,
-    ): ResponseEntity<ApiResponse<CursorResponse<ReceivedMatchingSummaryResponse>>> {
+    ): ResponseEntity<ApiResponse<CursorResponse<ReceivedMatchingSummaryResponse, Unit>>> {
         val response = matchingService.getReceivedMatchings(
             userId = principal.username,
             request = request,
@@ -75,7 +74,7 @@ class MyMatchingController(
     fun getSentMatchings(
         @AuthenticationPrincipal principal: CustomUserDetails,
         @Valid request: CommonCursorRequest,
-    ): ResponseEntity<ApiResponse<CursorResponse<SentMatchingSummaryResponse>>> {
+    ): ResponseEntity<ApiResponse<CursorResponse<SentMatchingSummaryResponse, Unit>>> {
         val response = matchingService.getSentMatchings(
             userId = principal.username,
             request = request,
