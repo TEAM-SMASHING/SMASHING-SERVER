@@ -1,5 +1,6 @@
 package org.appjam.smashing.domain.user.service
 
+import org.appjam.smashing.domain.review.repository.GameReviewRepository
 import org.appjam.smashing.domain.sport.enums.InitTierLp
 import org.appjam.smashing.domain.sport.repository.SportRepository
 import org.appjam.smashing.domain.tier.repository.TierRepository
@@ -9,11 +10,14 @@ import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.appjam.smashing.domain.user.repository.UserRepository
 import org.appjam.smashing.domain.user.repository.UserSportProfileRepository
+import org.appjam.smashing.global.common.dto.CommonCursorRequest
+import org.appjam.smashing.global.common.dto.CursorResponse
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.OffsetDateTime
 
 @Service
 class UserService(
@@ -21,6 +25,7 @@ class UserService(
     private val userSportProfileRepository: UserSportProfileRepository,
     private val sportRepository: SportRepository,
     private val tierRepository: TierRepository,
+    private val gameReviewRepository: GameReviewRepository,
 ) {
     @Transactional(readOnly = true)
     fun checkNicknameAvailability(
@@ -245,6 +250,30 @@ class UserService(
         )
 
         return OtherUserSearchResponse.from(otherUsersSearch)
+    }
+
+    @Transactional(readOnly = true)
+    fun getUserRecentGame(
+        userId: String,
+        request: CommonCursorRequest
+    ): CursorResponse<UserRecentGameResponse> {
+        val (_, activeProfile) = getMyInfoAndActiveProfile(userId)
+        val snapshotAt = request.snapshotAt ?: OffsetDateTime.now()
+        val sportId = activeProfile.sport.id ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
+
+        val response = gameReviewRepository.findAllBySportIdOrderByDate(
+            request = request,
+            activeSportId = sportId,
+            userId = userId,
+            snapshotAt = snapshotAt,
+        )
+
+        return CursorResponse(
+            snapshotAt = response.snapshotAt,
+            results = UserRecentGameResponse.listForm(response.results),
+            nextCursor = response.nextCursor,
+            hasNext = response.hasNext,
+        )
     }
 
     private fun getMyInfoAndActiveProfile(userId: String): Pair<User, UserSportProfile> {

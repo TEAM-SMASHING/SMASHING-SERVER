@@ -4,7 +4,7 @@ import org.appjam.smashing.domain.review.entity.GameReview
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 
-interface GameReviewRepository : JpaRepository<GameReview, String> {
+interface GameReviewRepository : JpaRepository<GameReview, String>, GameReviewRepositoryCustom {
 
     @Query(
         """

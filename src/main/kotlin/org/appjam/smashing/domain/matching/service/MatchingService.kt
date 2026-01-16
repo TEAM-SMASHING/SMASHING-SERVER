@@ -2,6 +2,8 @@ package org.appjam.smashing.domain.matching.service
 
 import org.appjam.smashing.domain.game.entity.Game
 import org.appjam.smashing.domain.game.repository.GameRepository
+import org.appjam.smashing.domain.matching.dto.response.ReceivedMatchingSummaryResponse
+import org.appjam.smashing.domain.matching.dto.response.SentMatchingSummaryResponse
 import org.appjam.smashing.domain.matching.entity.Matching
 import org.appjam.smashing.domain.matching.enums.MatchingStatus
 import org.appjam.smashing.domain.matching.repository.MatchingRepository
@@ -15,8 +17,6 @@ import org.appjam.smashing.domain.outbox.dto.MatchingUpdatedPayload
 import org.appjam.smashing.domain.outbox.enums.MatchingUpdateStatus
 import org.appjam.smashing.domain.outbox.enums.SseEventType
 import org.appjam.smashing.domain.review.repository.GameReviewRepository
-import org.appjam.smashing.domain.matching.dto.response.ReceivedMatchingSummaryResponse
-import org.appjam.smashing.domain.matching.dto.response.SentMatchingSummaryResponse
 import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.appjam.smashing.domain.user.repository.UserRepository
@@ -306,10 +306,10 @@ class MatchingService(
         ?: throw CustomException(ErrorCode.MATCHING_RECEIVER_PROFILE_NOT_FOUND)
 
     private fun findRequesterUser(requesterUserId: String): User = userRepository.findByIdOrNull(requesterUserId)
-            ?: throw CustomException(ErrorCode.MATCHING_REQUESTER_NOT_FOUND)
+        ?: throw CustomException(ErrorCode.MATCHING_REQUESTER_NOT_FOUND)
 
     private fun findRequesterProfileBySport(requesterUserId: String, sportId: Long): UserSportProfile = userSportProfileRepository.findByUserIdAndSportIdFetch(requesterUserId, sportId)
-            ?: throw CustomException(ErrorCode.MATCHING_REQUESTER_NOT_FOUND)
+        ?: throw CustomException(ErrorCode.MATCHING_REQUESTER_NOT_FOUND)
 
     private fun validateNotSelf(requesterUserId: String, receiverUserId: String) {
         if (requesterUserId == receiverUserId) {
@@ -405,9 +405,9 @@ class MatchingService(
         requesterUserId: String,
         sportId: Long,
     ): Long = gameReviewRepository.countByRevieweeAndSport(
-            revieweeUserId = requesterUserId,
-            sportId = sportId,
-        )
+        revieweeUserId = requesterUserId,
+        sportId = sportId,
+    )
 
     private fun publishMatchingReceived(
         receiverUserId: String,
@@ -526,7 +526,7 @@ class MatchingService(
         userId: String,
         sportId: Long
     ): UserSportProfile = userSportProfileRepository.findByUserIdAndSportIdFetch(userId, sportId)
-            ?: throw CustomException(ErrorCode.MATCHING_RECEIVER_USER_NOT_FOUND)
+        ?: throw CustomException(ErrorCode.MATCHING_RECEIVER_USER_NOT_FOUND)
 
     private fun publishMatchingAcceptNotificationCreated(
         requesterUserId: String,
