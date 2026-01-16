@@ -351,14 +351,17 @@ class UserService(
         )
     }
 
-    private fun getMyInfoAndActiveProfile(userId: String): Pair<User, UserSportProfile> {
+    private fun getMyInfoAndActiveProfile(userId: String): UserWithActiveProfile {
         val user = userRepository.findByIdOrNull(userId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
         val activeProfile = userSportProfileRepository.findByIdOrNull(user.activeUserSportProfileId!!)
             ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
 
-        return user to activeProfile
+        return UserWithActiveProfile(
+            user = user,
+            activeProfile = activeProfile,
+        )
     }
 
     companion object {
@@ -369,3 +372,8 @@ class UserService(
         private const val LIMIT_RECOMMEND = 5L
     }
 }
+
+data class UserWithActiveProfile(
+    val user: User,
+    val activeProfile: UserSportProfile,
+)
