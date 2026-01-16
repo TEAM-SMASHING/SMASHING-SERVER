@@ -155,7 +155,7 @@ class UserController(
         )
     }
 
-    @GetMapping("/me/games/recent")
+    @GetMapping("/me/reviews/recent")
     fun getUserRecentGame(
         @AuthenticationPrincipal principal: CustomUserDetails,
         @Valid request: CommonCursorRequest,
