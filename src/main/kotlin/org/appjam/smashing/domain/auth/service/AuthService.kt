@@ -63,11 +63,6 @@ class AuthService(
             lp = initLp,
         ) ?: throw CustomException(ErrorCode.INVALID_INITIAL_TIER)
 
-        val tier = tierRepository.findBySportIdAndName(
-            sportId = sport.id!!,
-            name = initTier.name,
-        ) ?: throw CustomException(ErrorCode.INVALID_TIER_SETTING)
-
         val trimmedUrl = requestCommand.openChatUrl.trim()
         validateOpenChatUrl(trimmedUrl)
 
@@ -89,7 +84,7 @@ class AuthService(
                 lp = initLp,
                 user = user,
                 sport = sport,
-                tier = tier,
+                tier = initTier,
             )
         )
 
