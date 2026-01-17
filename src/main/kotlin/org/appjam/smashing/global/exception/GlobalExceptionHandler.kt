@@ -8,6 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
+import org.springframework.web.servlet.NoHandlerFoundException
 import org.springframework.web.servlet.resource.NoResourceFoundException
 
 @RestControllerAdvice
@@ -22,7 +23,15 @@ class GlobalExceptionHandler {
     }
 
     /**
-     * 존재하지 않는 경로 (404)
+     * 존재하지 않는 API 매핑 (404)
+     */
+    @ExceptionHandler(NoHandlerFoundException::class)
+    fun handleNoHandlerFoundException(exception: NoHandlerFoundException): ResponseEntity<ApiResponse<Unit>> {
+        return ApiResponse.error(ErrorCode.NOT_FOUND)
+    }
+
+    /**
+     * 존재하지 않는 정적 리소스 (404)
      */
     @ExceptionHandler(NoResourceFoundException::class)
     fun handleNoResourceFoundException(exception: NoResourceFoundException): ResponseEntity<ApiResponse<Unit>> {

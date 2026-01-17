@@ -1,5 +1,7 @@
 package org.appjam.smashing.domain.auth.controller
 
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.appjam.smashing.domain.auth.dto.request.SignInRequest
 import org.appjam.smashing.domain.auth.dto.request.SignUpRequest
@@ -14,11 +16,16 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
+@Tag(name = "Auth")
 @RestController
 @RequestMapping("/api/v1/auth")
 class AuthController(
     private val authService: AuthService,
 ) {
+    @Operation(
+        summary = "카카오 로그인 API",
+        description = "카카오 로그인을 진행합니다."
+    )
     @PostMapping("/login/kakao")
     fun signIn(
         @Valid @RequestBody signInRequest: SignInRequest
@@ -37,6 +44,10 @@ class AuthController(
         }
     }
 
+    @Operation(
+        summary = "회원가입 API",
+        description = "회원가입을 진행합니다."
+    )
     @PostMapping("/signup")
     fun signUp(
         @Valid @RequestBody signUpRequest: SignUpRequest,
