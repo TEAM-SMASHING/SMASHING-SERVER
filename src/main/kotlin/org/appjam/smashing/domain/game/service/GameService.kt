@@ -14,6 +14,8 @@ import org.appjam.smashing.domain.game.enums.GameResultStatus
 import org.appjam.smashing.domain.game.enums.SubmissionStatus
 import org.appjam.smashing.domain.game.repository.GameRepository
 import org.appjam.smashing.domain.game.repository.GameResultSubmissionRepository
+import org.appjam.smashing.domain.lp.entity.LpHistory
+import org.appjam.smashing.domain.lp.repository.LpHistoryRepository
 import org.appjam.smashing.domain.notification.enums.NotificationType
 import org.appjam.smashing.domain.notification.service.NotificationService
 import org.appjam.smashing.domain.outbox.components.OutboxEventPublisher
@@ -50,6 +52,7 @@ class GameService(
     private val outboxEventPublisher: OutboxEventPublisher,
     private val gameReviewService: GameReviewService,
     private val userSportProfileRepository: UserSportProfileRepository,
+    private val lpHistoryRepository: LpHistoryRepository,
     private val tierRepository: TierRepository,
 ) {
 
@@ -231,12 +234,11 @@ class GameService(
             .findByUserIdAndSportIdForUpdate(submission.confirmer.id!!, sportId)
             ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
 
-        // 승자/패자 프로필 업데이트 (승리/패배 수 + LP + 티어)
-        // TODO: 추후 lp 기록 쌓이는 로직 추가 필요
+        // 승자/패자 프로필 업데이트 (승리/패배 수 + LP + 티어 + LP history)
         val winnerProfile = if (submission.winner.id == submission.submitter.id) submitterProfile else confirmerProfile
         val loserProfile = if (submission.loser.id == submission.submitter.id) submitterProfile else confirmerProfile
 
-        applyLpAndTierUpdate(winnerProfile, loserProfile, sportId)
+        applyLpAndTierUpdate(winnerProfile, loserProfile, sportId, game)
 
         // 게임 상태 변경 SSE 발행
         publishGameUpdated(
@@ -835,26 +837,55 @@ class GameService(
         winnerProfile: UserSportProfile,
         loserProfile: UserSportProfile,
         sportId: Long,
+        game: Game,
     ) {
         // 승/패 수 갱신
         winnerProfile.recordWin()
         loserProfile.recordLoss()
 
-        // 각자 이번 경기가 몇 번째 경기인지 계산 (업데이트 후 wins+losses 기준)
-        val winnerGameNo = (winnerProfile.wins + winnerProfile.losses)
-        val loserGameNo = (loserProfile.wins + loserProfile.losses)
+        // 이번 경기 기준 gameNo 계산 (업데이트 후 wins+losses 기준)
+        val winnerGameNo = winnerProfile.wins + winnerProfile.losses
+        val loserGameNo = loserProfile.wins + loserProfile.losses
 
-        // 구간별 lp 증감 계산
-        val winnerLpDelta = calcWinLpDelta(winnerGameNo)
-        val loserLpDelta = calcLoseLpDelta(loserGameNo)
+        // 이번 경기 LP 변화량 계산
+        val winnerDelta = calcWinLpDelta(winnerGameNo)
+        val loserDelta = calcLoseLpDelta(loserGameNo)
 
-        // lp 반영 (0 미만 방지)
-        winnerProfile.lp += winnerLpDelta
-        loserProfile.lp = (loserProfile.lp - loserLpDelta).coerceAtLeast(0)
+        // before/after 계산 (0 미만 방지 포함)
+        val winnerBefore = winnerProfile.lp
+        val loserBefore = loserProfile.lp
 
-        // lp 기준 tier 재계산/갱신
-        winnerProfile.changeTier(resolveTierOrThrow(sportId, winnerProfile.lp))
-        loserProfile.changeTier(resolveTierOrThrow(sportId, loserProfile.lp))
+        val winnerAfter = winnerBefore + winnerDelta
+        val loserAfter = (loserBefore - loserDelta).coerceAtLeast(0)
+
+        // 실제 LP 반영
+        winnerProfile.lp = winnerAfter
+        loserProfile.lp = loserAfter
+
+        // tier 재계산/갱신
+        winnerProfile.changeTier(resolveTierOrThrow(sportId, winnerAfter))
+        loserProfile.changeTier(resolveTierOrThrow(sportId, loserAfter))
+
+        // LP history 2건 저장 (승자/패자 각각 1건)
+        lpHistoryRepository.save(
+            LpHistory.create(
+                userSportProfile = winnerProfile,
+                game = game,
+                beforeLp = winnerBefore,
+                deltaLp = winnerDelta,
+                afterLp = winnerAfter,
+            )
+        )
+
+        lpHistoryRepository.save(
+            LpHistory.create(
+                userSportProfile = loserProfile,
+                game = game,
+                beforeLp = loserBefore,
+                deltaLp = -loserDelta,
+                afterLp = loserAfter,
+            )
+        )
     }
 
     private fun calcWinLpDelta(
