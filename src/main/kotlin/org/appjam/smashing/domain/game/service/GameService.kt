@@ -345,7 +345,7 @@ class GameService(
             receiver = submission.submitter,
             receiverProfile = receiverProfile,
             rejector = submission.confirmer,
-            rejectorTierId = rejectorProfile.tier.id!!,
+            rejectorTierCode = rejectorProfile.tier.code,
             gameId = game.id!!,
             submissionId = submission.id!!,
             reason = command.reason,
@@ -791,7 +791,7 @@ class GameService(
         receiver: User,
         receiverProfile: UserSportProfile,
         rejector: User,
-        rejectorTierId: Long,
+        rejectorTierCode: TierCode,
         gameId: String,
         submissionId: String,
         reason: GameResultRejectReason,
@@ -828,7 +828,7 @@ class GameService(
                 rejector = GameResultRejectedNotificationCreatedPayload.RejectorSummary(
                     userId = rejector.id!!,
                     nickname = rejector.nickname,
-                    tierId = rejectorTierId,
+                    tierCode = rejectorTierCode,
                 ),
             )
         )

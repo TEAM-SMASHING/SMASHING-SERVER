@@ -167,6 +167,6 @@ data class GameResultRejectedNotificationCreatedPayload(
     data class RejectorSummary(
         val userId: String,
         val nickname: String,
-        val tierId: Long,
+        val tierCode: TierCode,
     )
 }
