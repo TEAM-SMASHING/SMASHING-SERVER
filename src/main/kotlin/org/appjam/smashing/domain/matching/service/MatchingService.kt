@@ -428,7 +428,7 @@ class MatchingService(
                     userId = requesterProfile.user.id!!,
                     nickname = requesterProfile.user.nickname,
                     gender = requesterProfile.user.gender,
-                    tierId = requesterProfile.tier.id!!,
+                    tierCode = requesterProfile.tier.code,
                     wins = requesterProfile.wins,
                     losses = requesterProfile.losses,
                     reviewCount = reviewCount,
@@ -473,7 +473,7 @@ class MatchingService(
                 requester = MatchingRequestNotificationCreatedPayload.RequesterSummary(
                     userId = requesterProfile.user.id!!,
                     nickname = requesterProfile.user.nickname,
-                    tierId = requesterProfile.tier.id!!,
+                    tierCode = requesterProfile.tier.code,
                 )
             )
         )
@@ -551,7 +551,7 @@ class MatchingService(
                 acceptor = MatchingAcceptNotificationCreatedPayload.AcceptorSummary(
                     userId = receiverUserId,
                     nickname = receiverProfile.user.nickname,
-                    tierId = receiverProfile.tier.id!!,
+                    tierCode = receiverProfile.tier.code,
                 )
             )
         )

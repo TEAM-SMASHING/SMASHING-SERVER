@@ -26,6 +26,7 @@ import org.appjam.smashing.domain.outbox.dto.ReviewReceivedNotificationCreatedPa
 import org.appjam.smashing.domain.outbox.enums.SseEventType
 import org.appjam.smashing.domain.review.service.GameReviewService
 import org.appjam.smashing.domain.tier.entity.Tier
+import org.appjam.smashing.domain.tier.enums.TierCode
 import org.appjam.smashing.domain.tier.repository.TierRepository
 import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.entity.UserSportProfile
@@ -152,7 +153,7 @@ class GameService(
             game = game,
             submission = submission,
             submitter = submitter,
-            submitterTierId = submitterProfile.tier.id!!,
+            submitterTierCode = submitterProfile.tier.code,
         )
 
         // 후기 저장 + 후기 제출 알림 + SSE 발행
@@ -163,7 +164,7 @@ class GameService(
                 reviewee = confirmer,
                 receiverProfile = confirmerProfile,
                 review = command.review!!,
-                reviewerTierId = submitterProfile.tier.id!!,
+                reviewerTierCode = submitterProfile.tier.code,
             )
         } else {
             null
@@ -255,7 +256,7 @@ class GameService(
                 reviewee = submission.submitter,
                 receiverProfile = submitterProfile,
                 review = command.review!!,
-                reviewerTierId = confirmerProfile.tier.id!!,
+                reviewerTierCode = confirmerProfile.tier.code,
             )
         }
     }
@@ -344,7 +345,7 @@ class GameService(
             receiver = submission.submitter,
             receiverProfile = receiverProfile,
             rejector = submission.confirmer,
-            rejectorTierId = rejectorProfile.tier.id!!,
+            rejectorTierCode = rejectorProfile.tier.code,
             gameId = game.id!!,
             submissionId = submission.id!!,
             reason = command.reason,
@@ -638,7 +639,7 @@ class GameService(
         game: Game,
         submission: GameResultSubmission,
         submitter: User,
-        submitterTierId: Long,
+        submitterTierCode: TierCode,
     ) {
         val notification = notificationService.createMatchingResultSubmitted(
             receiver = receiver,
@@ -665,7 +666,7 @@ class GameService(
                 submitter = GameResultSubmittedNotificationCreatedPayload.SubmitterSummary(
                     userId = submitter.id!!,
                     nickname = submitter.nickname,
-                    tierId = submitterTierId,
+                    tierCode = submitterTierCode,
                 )
             )
         )
@@ -677,7 +678,7 @@ class GameService(
         reviewee: User,
         receiverProfile: UserSportProfile,
         review: GameResultSubmitCommand.ReviewCommand,
-        reviewerTierId: Long,
+        reviewerTierCode: TierCode,
     ): String {
         val savedReview = gameReviewService.createReview(
             gameId = game.id!!,
@@ -714,7 +715,7 @@ class GameService(
                 reviewer = ReviewReceivedNotificationCreatedPayload.ReviewerSummary(
                     userId = reviewer.id!!,
                     nickname = reviewer.nickname,
-                    tierId = reviewerTierId,
+                    tierCode = reviewerTierCode,
                 )
             )
         )
@@ -728,7 +729,7 @@ class GameService(
         reviewee: User,
         receiverProfile: UserSportProfile,
         review: GameResultConfirmCommand.ReviewCommand,
-        reviewerTierId: Long,
+        reviewerTierCode: TierCode,
     ) {
         val savedReview = gameReviewService.createReview(
             gameId = game.id!!,
@@ -765,7 +766,7 @@ class GameService(
                 reviewer = ReviewReceivedNotificationCreatedPayload.ReviewerSummary(
                     userId = reviewer.id!!,
                     nickname = reviewer.nickname,
-                    tierId = reviewerTierId,
+                    tierCode = reviewerTierCode,
                 )
             )
         )
@@ -790,7 +791,7 @@ class GameService(
         receiver: User,
         receiverProfile: UserSportProfile,
         rejector: User,
-        rejectorTierId: Long,
+        rejectorTierCode: TierCode,
         gameId: String,
         submissionId: String,
         reason: GameResultRejectReason,
@@ -827,7 +828,7 @@ class GameService(
                 rejector = GameResultRejectedNotificationCreatedPayload.RejectorSummary(
                     userId = rejector.id!!,
                     nickname = rejector.nickname,
-                    tierId = rejectorTierId,
+                    tierCode = rejectorTierCode,
                 ),
             )
         )
