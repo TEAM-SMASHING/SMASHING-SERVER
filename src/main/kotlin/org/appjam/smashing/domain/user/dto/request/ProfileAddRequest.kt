@@ -1,16 +1,20 @@
 package org.appjam.smashing.domain.user.dto.request
 
 import jakarta.validation.constraints.NotBlank
+import org.appjam.smashing.domain.sport.enums.ExperienceRange
 import org.appjam.smashing.domain.user.dto.command.ProfileAddCommand
+import org.appjam.smashing.global.common.validator.annotation.ValidEnum
+import org.appjam.smashing.global.extensions.ofIgnoreCase
 
 data class ProfileAddRequest(
     @field:NotBlank(message = "sportCode를 입력해주세요.")
     val sportCode: String?,
-    @field:NotBlank(message = "tier를 입력해주세요.")
-    val tier: String?,
+    @field:NotBlank(message = "experienceRange를 입력해주세요.")
+    @field:ValidEnum(message = "잘못된 experienceRange 값입니다.", enumClass = ExperienceRange::class)
+    val experienceRange: String?,
 ) {
     fun toCommand() = ProfileAddCommand(
         sportCode = sportCode!!,
-        tier = tier!!,
+        experienceRange = ofIgnoreCase<ExperienceRange>(experienceRange!!),
     )
 }

@@ -12,9 +12,9 @@ class AsyncConfig {
     fun outboxEventExecutor(): Executor {
         val executor = ThreadPoolTaskExecutor()
 
-        executor.corePoolSize = 4
-        executor.maxPoolSize = 8
-        executor.queueCapacity = 500
+        executor.corePoolSize = 2
+        executor.maxPoolSize = 4
+        executor.queueCapacity = 200
         executor.keepAliveSeconds = 30
         executor.setThreadNamePrefix("Outbox-Sse-")
         executor.initialize()
