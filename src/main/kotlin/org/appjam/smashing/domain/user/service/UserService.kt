@@ -147,9 +147,15 @@ class UserService(
         val activeProfile = allProfiles.find { it.id == user.activeUserSportProfileId }
             ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
 
+        val reviews = gameReviewRepository.countByRevieweeAndSport(
+            revieweeUserId = userId,
+            sportId = activeProfile.sport.id!!,
+        )
+
         return UserProfilesResponse.from(
             nickname = user.nickname,
             gender = user.gender,
+            reviews = reviews,
             activeProfile = activeProfile,
             allProfiles = allProfiles,
         )
