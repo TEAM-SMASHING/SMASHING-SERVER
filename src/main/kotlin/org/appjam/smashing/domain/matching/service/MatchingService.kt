@@ -551,7 +551,7 @@ class MatchingService(
                 acceptor = MatchingAcceptNotificationCreatedPayload.AcceptorSummary(
                     userId = receiverUserId,
                     nickname = receiverProfile.user.nickname,
-                    tierId = receiverProfile.tier.id!!,
+                    tierCode = receiverProfile.tier.code,
                 )
             )
         )

@@ -87,7 +87,7 @@ data class MatchingAcceptNotificationCreatedPayload(
     data class AcceptorSummary(
         val userId: String,
         val nickname: String,
-        val tierId: Long,
+        val tierCode: TierCode,
     )
 }
 
