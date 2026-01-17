@@ -5,6 +5,7 @@ import org.appjam.smashing.domain.game.enums.GameResultStatus
 import org.appjam.smashing.domain.notification.enums.NotificationType
 import org.appjam.smashing.domain.outbox.enums.MatchingUpdateStatus
 import org.appjam.smashing.domain.outbox.enums.SseEventType
+import org.appjam.smashing.domain.tier.enums.TierCode
 import org.appjam.smashing.domain.user.enums.Gender
 
 sealed interface SsePayload {
@@ -39,7 +40,7 @@ data class MatchingReceivedPayload(
         val userId: String,
         val nickname: String,
         val gender: Gender,
-        val tierId: Long,
+        val tierCode: TierCode,
         val wins: Int,
         val losses: Int,
         val reviewCount: Long,
@@ -64,7 +65,7 @@ data class MatchingRequestNotificationCreatedPayload(
     data class RequesterSummary(
         val userId: String,
         val nickname: String,
-        val tierId: Long,
+        val tierCode: TierCode,
     )
 }
 
