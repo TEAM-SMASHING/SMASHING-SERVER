@@ -36,7 +36,7 @@ class UserSportProfileRepositoryCustomImpl(
                 QOtherUserRecommendationProjection(
                     user.id,
                     user.nickname,
-                    userSportProfile.tier.id,
+                    userSportProfile.tier.code,
                     userSportProfile.wins,
                     userSportProfile.losses,
                     JPAExpressions

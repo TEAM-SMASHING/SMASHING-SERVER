@@ -1,5 +1,6 @@
 package org.appjam.smashing.domain.user.dto.response
 
+import org.appjam.smashing.domain.tier.enums.TierCode
 import org.appjam.smashing.domain.user.dto.projection.OtherUserRecommendationProjection
 
 data class OtherUsersRecommendationResponse(
@@ -8,7 +9,7 @@ data class OtherUsersRecommendationResponse(
     data class OtherUsers(
         val userId: String,
         val nickname: String,
-        val tierId: Long,
+        val tierCode: TierCode,
         val wins: Int,
         val losses: Int,
         val reviews: Int,
@@ -18,7 +19,7 @@ data class OtherUsersRecommendationResponse(
             fun from(
                 userId: String,
                 nickname: String,
-                tierId: Long,
+                tierCode: TierCode,
                 wins: Int,
                 losses: Int,
                 reviews: Int,
@@ -26,7 +27,7 @@ data class OtherUsersRecommendationResponse(
             ) = OtherUsers(
                 userId = userId,
                 nickname = nickname,
-                tierId = tierId,
+                tierCode = tierCode,
                 wins = wins,
                 losses = losses,
                 reviews = reviews,
@@ -39,7 +40,7 @@ data class OtherUsersRecommendationResponse(
                 from(
                     userId = profile.userId,
                     nickname = profile.nickname,
-                    tierId = profile.tierId,
+                    tierCode = profile.tierCode,
                     wins = profile.wins,
                     losses = profile.losses,
                     reviews = profile.reviews,
