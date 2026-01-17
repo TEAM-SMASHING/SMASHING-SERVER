@@ -58,11 +58,8 @@ class GameRepositoryCustomImpl(
         val opponentGenderExpr = CaseBuilder().`when`(matching.requester.id.eq(userId)).then(receiver.gender)
             .otherwise(requester.gender)
 
-        val opponentTierIdExpr = CaseBuilder().`when`(matching.requester.id.eq(userId)).then(receiverTier.id)
-            .otherwise(requesterTier.id)
-
-        val opponentTierNameExpr = CaseBuilder().`when`(matching.requester.id.eq(userId)).then(receiverTier.name)
-            .otherwise(requesterTier.name)
+        val opponentTierCodeExpr = CaseBuilder().`when`(matching.requester.id.eq(userId)).then(receiverTier.code)
+            .otherwise(requesterTier.code)
 
         val where = BooleanBuilder().and(
                 matching.requester.id.eq(userId)
@@ -97,8 +94,7 @@ class GameRepositoryCustomImpl(
                     opponentNicknameExpr,
                     opponentOpenchatExpr,
                     opponentGenderExpr,
-                    opponentTierIdExpr,
-                    opponentTierNameExpr,
+                    opponentTierCodeExpr,
                 )
             )
             .from(game)

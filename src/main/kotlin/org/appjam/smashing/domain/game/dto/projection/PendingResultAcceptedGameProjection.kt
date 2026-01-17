@@ -2,6 +2,7 @@ package org.appjam.smashing.domain.game.dto.projection
 
 import com.querydsl.core.annotations.QueryProjection
 import org.appjam.smashing.domain.game.enums.GameResultStatus
+import org.appjam.smashing.domain.tier.enums.TierCode
 import org.appjam.smashing.domain.user.enums.Gender
 import org.appjam.smashing.global.common.dto.CursorKey
 import org.appjam.smashing.global.util.TimeUtils
@@ -19,8 +20,7 @@ data class PendingResultAcceptedGameProjection(
     val opponentNickname: String,
     val opponentOpenchatUrl: String?,
     val opponentGender: Gender,
-    val opponentTierId: Long,
-    val opponentTierName: String,
+    val opponentTierCode: TierCode
 ) : CursorKey {
 
     override val cursorId: String
