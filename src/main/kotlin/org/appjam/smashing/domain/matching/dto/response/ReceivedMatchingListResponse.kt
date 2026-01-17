@@ -2,6 +2,7 @@ package org.appjam.smashing.domain.matching.dto.response
 
 import org.appjam.smashing.domain.matching.enums.MatchingStatus
 import org.appjam.smashing.domain.matching.dto.projection.ReceivedMatchingSummaryProjection
+import org.appjam.smashing.domain.tier.enums.TierCode
 import org.appjam.smashing.domain.user.enums.Gender
 import java.time.OffsetDateTime
 
@@ -17,8 +18,7 @@ data class ReceivedMatchingSummaryResponse(
         val nickname: String,
         val gender: Gender,
         val reviewCount: Long,
-        val tierId: Long,
-        val tierName: String,
+        val tierCode: TierCode,
         val wins: Int,
         val losses: Int,
     )
@@ -35,8 +35,7 @@ data class ReceivedMatchingSummaryResponse(
                 nickname = p.requesterNickname,
                 gender = p.requesterGender,
                 reviewCount = p.requesterReviewCount,
-                tierId = p.requesterTierId,
-                tierName = p.requesterTierName,
+                tierCode = p.requesterTierCode,
                 wins = p.requesterWins,
                 losses = p.requesterLosses,
             )
