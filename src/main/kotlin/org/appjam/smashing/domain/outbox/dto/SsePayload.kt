@@ -120,7 +120,7 @@ data class GameResultSubmittedNotificationCreatedPayload(
     data class SubmitterSummary(
         val userId: String,
         val nickname: String,
-        val tierId: Long,
+        val tierCode: TierCode,
     )
 }
 
@@ -143,7 +143,7 @@ data class ReviewReceivedNotificationCreatedPayload(
     data class ReviewerSummary(
         val userId: String,
         val nickname: String,
-        val tierId: Long,
+        val tierCode: TierCode,
     )
 }
 
