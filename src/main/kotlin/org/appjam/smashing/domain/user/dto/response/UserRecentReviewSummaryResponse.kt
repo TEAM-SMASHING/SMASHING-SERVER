@@ -1,5 +1,8 @@
 package org.appjam.smashing.domain.user.dto.response
 
+import org.appjam.smashing.domain.review.enums.ReviewRating
+import org.appjam.smashing.domain.review.enums.ReviewTag
+
 data class UserRecentReviewSummaryResponse(
     val ratingCounts: RatingCounts,
     val tagCounts: TagCounts
@@ -10,14 +13,10 @@ data class UserRecentReviewSummaryResponse(
         val bad: Long,
     ) {
         companion object {
-            fun from(
-                best: Long,
-                good: Long,
-                bad: Long,
-            ) = RatingCounts(
-                best = best,
-                good = good,
-                bad = bad,
+            fun from(map: Map<ReviewRating, Long>) = RatingCounts(
+                best = map[ReviewRating.BEST] ?: 0,
+                good = map[ReviewRating.GOOD] ?: 0,
+                bad = map[ReviewRating.BAD] ?: 0
             )
         }
     }
@@ -29,36 +28,22 @@ data class UserRecentReviewSummaryResponse(
         val fastResponse: Long,
     ) {
         companion object {
-            fun from(
-                goodManner: Long,
-                onTime: Long,
-                fairPlay: Long,
-                fastResponse: Long,
-            ) = TagCounts(
-                goodManner = goodManner,
-                onTime = onTime,
-                fairPlay = fairPlay,
-                fastResponse = fastResponse,
+            fun from(map: Map<ReviewTag, Long>) = TagCounts(
+                goodManner = map[ReviewTag.GOOD_MANNER] ?: 0,
+                onTime = map[ReviewTag.ON_TIME] ?: 0,
+                fairPlay = map[ReviewTag.FAIR_PLAY] ?: 0,
+                fastResponse = map[ReviewTag.FAST_RESPONSE] ?: 0
             )
         }
     }
 
     companion object {
         fun from(
-            ratingCounts: RatingCounts,
-            tagCounts: TagCounts,
+            ratingMap: Map<ReviewRating, Long>,
+            tagMap: Map<ReviewTag, Long>,
         ) = UserRecentReviewSummaryResponse(
-            ratingCounts = RatingCounts.from(
-                best = ratingCounts.best,
-                good = ratingCounts.good,
-                bad = ratingCounts.bad,
-            ),
-            tagCounts = TagCounts.from(
-                goodManner = tagCounts.goodManner,
-                onTime = tagCounts.onTime,
-                fairPlay = tagCounts.fairPlay,
-                fastResponse = tagCounts.fastResponse,
-            ),
+            ratingCounts = RatingCounts.from(ratingMap),
+            tagCounts = TagCounts.from(tagMap)
         )
     }
 }
