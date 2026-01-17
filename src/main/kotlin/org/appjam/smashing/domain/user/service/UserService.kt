@@ -200,9 +200,16 @@ class UserService(
     ) {
         val user = userRepository.findByIdOrNull(userId) ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
-        // TODO: 지역 관련 검증 로직 추가 필요
+        val trimmedRegion = requestCommand.region.trim()
+        validateRegion(trimmedRegion)
 
-        user.updateRegion(requestCommand.region)
+        user.updateRegion(trimmedRegion)
+    }
+
+    private fun validateRegion(region: String) {
+        if (!region.endsWith(DISTRICT_SUFFIX)) {
+            throw CustomException(ErrorCode.INVALID_REGION)
+        }
     }
 
     @Transactional
@@ -463,5 +470,6 @@ class UserService(
         val OPEN_CHAT_URL_REGEX = Regex("^https://open\\.kakao\\.com/o/[a-zA-Z0-9]+\$")
         private const val LP_THRESHOLD = 200
         private const val LIMIT_RECOMMEND = 5L
+        const val DISTRICT_SUFFIX = "구"
     }
 }

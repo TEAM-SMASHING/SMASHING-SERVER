@@ -11,6 +11,7 @@ import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.appjam.smashing.domain.user.repository.UserRepository
 import org.appjam.smashing.domain.user.repository.UserSportProfileRepository
+import org.appjam.smashing.domain.user.service.UserService.Companion.DISTRICT_SUFFIX
 import org.appjam.smashing.domain.user.service.UserService.Companion.OPEN_CHAT_URL_REGEX
 import org.appjam.smashing.global.auth.jwt.components.JwtProvider
 import org.appjam.smashing.global.exception.CustomException
@@ -53,7 +54,6 @@ class AuthService(
 
     fun signUp(requestCommand: SignUpRequestCommand): SignUpResponse {
         validateUser(requestCommand)
-
         val sport = sportRepository.findByCode(requestCommand.sportCode)
             ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
 
@@ -71,13 +71,16 @@ class AuthService(
         val trimmedUrl = requestCommand.openChatUrl.trim()
         validateOpenChatUrl(trimmedUrl)
 
+        val trimmedRegion = requestCommand.region.trim()
+        validateRegion(trimmedRegion)
+
         val user = userRepository.save(
             User.create(
                 kakaoId = requestCommand.kakaoId,
                 nickname = requestCommand.nickname,
                 gender = requestCommand.gender,
                 openchatUrl = trimmedUrl,
-                region = requestCommand.region,
+                region = trimmedRegion,
             )
         )
 
@@ -114,6 +117,12 @@ class AuthService(
     private fun validateOpenChatUrl(trimmedUrl: String) {
         if (!OPEN_CHAT_URL_REGEX.matches(trimmedUrl)) {
             throw CustomException(ErrorCode.INVALID_OPENCHAT_FORMAT)
+        }
+    }
+
+    private fun validateRegion(region: String) {
+        if (!region.endsWith(DISTRICT_SUFFIX)) {
+            throw CustomException(ErrorCode.INVALID_REGION)
         }
     }
 }

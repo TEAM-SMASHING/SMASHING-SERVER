@@ -55,6 +55,7 @@ enum class ErrorCode(
     DUPLICATE_OPEN_CHAT_URL(HttpStatus.CONFLICT, "USER-006", "이미 사용중인 오픈채팅방 링크입니다."),
     INVALID_OPENCHAT_FORMAT(HttpStatus.BAD_REQUEST, "USER-007", "잘못된 오픈채팅 링크 형식입니다."),
     ALREADY_EXIST_SPORT_PROFILE(HttpStatus.CONFLICT, "USER-008", "이미 존재하는 스포츠 프로필입니다."),
+    INVALID_REGION(HttpStatus.BAD_REQUEST, "USER-009", "잘못된 지역구 형식입니다."),
 
     // Domain - Matching
     MATCHING_REQUESTER_NOT_FOUND(HttpStatus.NOT_FOUND, "MATCH-001", "요청자 유저를 찾을 수 없습니다."),
