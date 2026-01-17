@@ -84,6 +84,7 @@ enum class ErrorCode(
     GAME_SUBMISSION_NOT_SUBMITTED(HttpStatus.BAD_REQUEST, "GAME-014", "이미 처리된 제출안입니다."),
     GAME_SUBMISSION_CONFIRMER_MISMATCH(HttpStatus.FORBIDDEN, "GAME-015", "해당 제출안을 확정할 권한이 없습니다."),
     GAME_RESULT_ALREADY_CONFIRMED(HttpStatus.BAD_REQUEST, "GAME-016", "확정된 경기는 삭제할 수 없습니다."),
+    GAME_RESULT_RESUBMIT_ONLY_PREVIOUS_SUBMITTER(HttpStatus.FORBIDDEN, "GAME-017", "재제출은 기존에 결과를 제출했던 사용자만 가능합니다."),
 
     // Domain - Game Review
     REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "GAMEREVIEW-001", "해당 리뷰를 찾을 수 없습니다."),
