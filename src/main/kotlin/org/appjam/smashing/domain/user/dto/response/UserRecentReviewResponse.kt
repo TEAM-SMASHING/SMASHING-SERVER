@@ -3,7 +3,7 @@ package org.appjam.smashing.domain.user.dto.response
 import org.appjam.smashing.domain.review.dto.projection.UserRecentGameProjection
 import java.time.LocalDateTime
 
-data class UserRecentGameResponse(
+data class UserRecentReviewResponse(
     val gameReviewId: String,
     val opponentNickname: String,
     val createdAt: LocalDateTime,
@@ -12,7 +12,7 @@ data class UserRecentGameResponse(
     companion object {
         fun from(
             p: UserRecentGameProjection
-        ) = UserRecentGameResponse(
+        ) = UserRecentReviewResponse(
             gameReviewId = p.gameReviewId,
             opponentNickname = p.opponentNickname,
             createdAt = p.createdAt,
@@ -21,6 +21,6 @@ data class UserRecentGameResponse(
 
         fun listForm(
             projections: List<UserRecentGameProjection>
-        ): List<UserRecentGameResponse> = projections.map { from(it) }
+        ): List<UserRecentReviewResponse> = projections.map { from(it) }
     }
 }

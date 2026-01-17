@@ -156,11 +156,11 @@ class UserController(
     }
 
     @GetMapping("/me/reviews/recent")
-    fun getUserRecentGame(
+    fun getUserRecentReview(
         @AuthenticationPrincipal principal: CustomUserDetails,
         @Valid request: CommonCursorRequest,
-    ): ResponseEntity<ApiResponse<CursorResponse<UserRecentGameResponse>>> {
-        val response = userService.getUserRecentGame(
+    ): ResponseEntity<ApiResponse<CursorResponse<UserRecentReviewResponse>>> {
+        val response = userService.getUserRecentReview(
             userId = principal.username,
             request = request,
         )
@@ -170,14 +170,25 @@ class UserController(
         )
     }
 
+    @GetMapping("/me/reviews/summary")
+    fun getUserRecentReviewSummary(
+        @AuthenticationPrincipal principal: CustomUserDetails,
+    ): ResponseEntity<ApiResponse<UserRecentReviewSummaryResponse>> {
+        val response = userService.getUserRecentReviewSummary(principal.username)
+
+        return ApiResponse.success(
+            data = response,
+        )
+    }
+
     @GetMapping("/{userId}/reviews/recent")
-    fun getOtherUserRecentGame(
+    fun getOtherUserRecentReview(
         @AuthenticationPrincipal principal: CustomUserDetails,
         @PathVariable userId: String,
         @RequestParam sportCode: String?,
         @Valid request: CommonCursorRequest,
-    ): ResponseEntity<ApiResponse<CursorResponse<UserRecentGameResponse>>> {
-        val response = userService.getOtherUserRecentGame(
+    ): ResponseEntity<ApiResponse<CursorResponse<UserRecentReviewResponse>>> {
+        val response = userService.getOtherUserRecentReview(
             userId = principal.username,
             otherUserId = userId,
             sportCode = sportCode,

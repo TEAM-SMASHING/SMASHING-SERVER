@@ -1,5 +1,7 @@
 package org.appjam.smashing.domain.user.service
 
+import org.appjam.smashing.domain.review.enums.ReviewRating
+import org.appjam.smashing.domain.review.enums.ReviewTag
 import org.appjam.smashing.domain.review.repository.GameReviewRepository
 import org.appjam.smashing.domain.sport.repository.SportRepository
 import org.appjam.smashing.domain.tier.repository.TierRepository
@@ -259,10 +261,10 @@ class UserService(
     }
 
     @Transactional(readOnly = true)
-    fun getUserRecentGame(
+    fun getUserRecentReview(
         userId: String,
         request: CommonCursorRequest
-    ): CursorResponse<UserRecentGameResponse> {
+    ): CursorResponse<UserRecentReviewResponse> {
         val myInfo = getMyInfoAndActiveProfile(userId)
         val snapshotAt = request.snapshotAt ?: OffsetDateTime.now()
         val sportId = myInfo.activeProfile.sport.id ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
@@ -276,19 +278,38 @@ class UserService(
 
         return CursorResponse(
             snapshotAt = response.snapshotAt,
-            results = UserRecentGameResponse.listForm(response.results),
+            results = UserRecentReviewResponse.listForm(response.results),
             nextCursor = response.nextCursor,
             hasNext = response.hasNext,
         )
     }
 
     @Transactional(readOnly = true)
-    fun getOtherUserRecentGame(
+    fun getUserRecentReviewSummary(
+        userId: String,
+    ): UserRecentReviewSummaryResponse {
+        val myInfo = getMyInfoAndActiveProfile(userId)
+
+        val sportId = myInfo.activeProfile.sport.id!!
+
+        val (ratingCounts, tagCounts) = getCounts(
+            userId = userId,
+            sportId = sportId,
+        )
+
+        return UserRecentReviewSummaryResponse.from(
+            ratingCounts = ratingCounts,
+            tagCounts = tagCounts,
+        )
+    }
+
+    @Transactional(readOnly = true)
+    fun getOtherUserRecentReview(
         userId: String,
         otherUserId: String,
         sportCode: String?,
         request: CommonCursorRequest,
-    ): CursorResponse<UserRecentGameResponse> {
+    ): CursorResponse<UserRecentReviewResponse> {
         val otherUser = userRepository.findByIdOrNull(otherUserId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
@@ -310,7 +331,7 @@ class UserService(
 
         return CursorResponse(
             snapshotAt = snapshotAt,
-            results = UserRecentGameResponse.listForm(response.results),
+            results = UserRecentReviewResponse.listForm(response.results),
             nextCursor = response.nextCursor,
             hasNext = response.hasNext
         )
@@ -369,6 +390,43 @@ class UserService(
         )
     }
 
+    private fun getCounts(
+        userId: String,
+        sportId: Long,
+    ): CountsResult {
+        val ratingResults = gameReviewRepository.countRatingsByRevieweeAndSport(
+            revieweeId = userId,
+            activeSportId = sportId,
+        )
+        val ratingMap = ratingResults.associate { data ->
+            data.reviewRating to data.counts
+        }
+        val ratingCounts = UserRecentReviewSummaryResponse.RatingCounts.from(
+            best = ratingMap[ReviewRating.BEST] ?: 0,
+            good = ratingMap[ReviewRating.GOOD] ?: 0,
+            bad = ratingMap[ReviewRating.BAD] ?: 0
+        )
+
+        val tagResults = gameReviewRepository.countTagsByRevieweeAndSport(
+            revieweeId = userId,
+            activeSportId = sportId,
+        )
+        val tagMap = tagResults.associate { data ->
+            data.reviewTag to data.counts
+        }
+        val tagCounts = UserRecentReviewSummaryResponse.TagCounts.from(
+            goodManner = tagMap[ReviewTag.GOOD_MANNER] ?: 0,
+            onTime = tagMap[ReviewTag.ON_TIME] ?: 0,
+            fairPlay = tagMap[ReviewTag.FAIR_PLAY] ?: 0,
+            fastResponse = tagMap[ReviewTag.FAST_RESPONSE] ?: 0
+        )
+
+        return CountsResult(
+            ratingCounts = ratingCounts,
+            tagCounts = tagCounts,
+        )
+    }
+
     companion object {
         private val NICKNAME_VALID_REGEX = Regex("^[a-zA-Z0-9가-힣]*$")
         private const val MAX_NICKNAME_LENGTH = 10
@@ -377,8 +435,3 @@ class UserService(
         private const val LIMIT_RECOMMEND = 5L
     }
 }
-
-data class UserWithActiveProfile(
-    val user: User,
-    val activeProfile: UserSportProfile,
-)
