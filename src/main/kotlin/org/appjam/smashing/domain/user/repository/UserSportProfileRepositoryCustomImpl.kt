@@ -135,7 +135,7 @@ class UserSportProfileRepositoryCustomImpl(
                     user.id,
                     user.nickname,
                     user.gender.stringValue(),
-                    userSportProfile.tier.id,
+                    userSportProfile.tier.code,
                     userSportProfile.wins,
                     userSportProfile.losses,
                     reviewCountExpression,
