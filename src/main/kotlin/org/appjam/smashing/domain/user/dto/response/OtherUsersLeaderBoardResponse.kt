@@ -1,5 +1,6 @@
 package org.appjam.smashing.domain.user.dto.response
 
+import org.appjam.smashing.domain.tier.enums.TierCode
 import org.appjam.smashing.domain.user.entity.UserSportProfile
 
 data class OtherUsersLeaderBoardResponse(
@@ -10,7 +11,7 @@ data class OtherUsersLeaderBoardResponse(
         val rank: Int,
         val userId: String,
         val nickname: String,
-        val tierId: Long,
+        val tierCode: TierCode,
         val lp: Int,
     ) {
         companion object {
@@ -21,7 +22,7 @@ data class OtherUsersLeaderBoardResponse(
                 rank = rank,
                 userId = u.user.id!!,
                 nickname = u.user.nickname,
-                tierId = u.tier.id!!,
+                tierCode = u.tier.code,
                 lp = u.lp,
             )
 
@@ -38,17 +39,17 @@ data class OtherUsersLeaderBoardResponse(
 
     data class UserInfo(
         val nickname: String,
-        val tierId: Long,
+        val tierCode: TierCode,
         val lp: Int,
     ) {
         companion object {
             fun from(
                 nickname: String,
-                tierId: Long,
+                tierCode: TierCode,
                 lp: Int,
             ) = UserInfo(
                 nickname = nickname,
-                tierId = tierId,
+                tierCode = tierCode,
                 lp = lp,
             )
         }
@@ -58,12 +59,12 @@ data class OtherUsersLeaderBoardResponse(
         fun from(
             topUsers: List<UserSportProfile>,
             nickname: String,
-            tierId: Long,
+            tierCode: TierCode,
             lp: Int,
         ) = OtherUsersLeaderBoardResponse(
             user = UserInfo.from(
                 nickname = nickname,
-                tierId = tierId,
+                tierCode = tierCode,
                 lp = lp,
             ),
             topUsers = OtherUsers.listForm(topUsers),

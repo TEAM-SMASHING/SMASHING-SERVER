@@ -260,7 +260,7 @@ class UserService(
         return OtherUsersLeaderBoardResponse.from(
             topUsers = leaderBoardProfiles,
             nickname = myInfo.user.nickname,
-            tierId = myInfo.activeProfile.tier.id!!,
+            tierCode = myInfo.activeProfile.tier.code,
             lp = myInfo.activeProfile.lp,
         )
     }
