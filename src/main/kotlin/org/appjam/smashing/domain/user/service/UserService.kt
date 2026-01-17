@@ -86,6 +86,8 @@ class UserService(
             ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
 
         return UserProfileTierResponse.from(
+            region = user.region,
+            nickname = user.nickname,
             activeProfile = activeProfile,
             allProfiles = allProfiles,
         )

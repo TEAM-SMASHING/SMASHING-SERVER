@@ -3,6 +3,8 @@ package org.appjam.smashing.domain.user.dto.response
 import org.appjam.smashing.domain.user.entity.UserSportProfile
 
 data class UserProfileTierResponse(
+    val region: String,
+    val nickname: String,
     val activeProfile: ActiveProfile,
     val allProfiles: List<ProfileInfo>,
 ) {
@@ -61,9 +63,13 @@ data class UserProfileTierResponse(
 
     companion object {
         fun from(
+            region: String,
+            nickname: String,
             activeProfile: UserSportProfile,
             allProfiles: List<UserSportProfile>
         ) = UserProfileTierResponse(
+            region = region,
+            nickname = nickname,
             activeProfile = ActiveProfile.from(activeProfile),
             allProfiles = ProfileInfo.listForm(
                 allProfiles = allProfiles,
