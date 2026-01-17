@@ -132,15 +132,11 @@ class MatchingRepositoryCustomImpl(
                     matching.id,
                     matching.createdAt,
                     matching.status,
-
                     receiver.id,
                     receiver.nickname,
                     receiver.gender,
-
                     receiverReviewCount,
-
-                    receiverTier.id,
-                    receiverTier.name,
+                    receiverTier.code,
                     receiverProfile.wins,
                     receiverProfile.losses,
                 )
