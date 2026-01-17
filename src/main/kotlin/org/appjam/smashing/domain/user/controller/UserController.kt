@@ -80,7 +80,7 @@ class UserController(
     fun getOtherUserProfiles(
         @AuthenticationPrincipal principal: CustomUserDetails,
         @PathVariable userId: String,
-        @RequestParam(required = false) sportCode: String?,
+        @RequestParam sportCode: String?,
     ): ResponseEntity<ApiResponse<OtherUserProfilesResponse>> {
         val response = userService.getOtherUserProfiles(
             otherUserId = userId,

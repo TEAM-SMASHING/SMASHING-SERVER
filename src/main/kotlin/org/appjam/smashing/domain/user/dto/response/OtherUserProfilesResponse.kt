@@ -1,9 +1,11 @@
 package org.appjam.smashing.domain.user.dto.response
 
 import org.appjam.smashing.domain.user.entity.UserSportProfile
+import org.appjam.smashing.domain.user.enums.Gender
 
 data class OtherUserProfilesResponse(
     val nickname: String,
+    val gender: Gender,
     val selectedProfile: SelectedProfile,
     val allProfiles: List<ProfileInfo>,
 ) {
@@ -16,10 +18,12 @@ data class OtherUserProfilesResponse(
         val maxLp: Int,
         val wins: Int,
         val losses: Int,
+        val reviews: Long,
     ) {
         companion object {
             fun from(
                 u: UserSportProfile,
+                reviews: Long,
             ) = SelectedProfile(
                 profileId = u.id!!,
                 sportCode = u.sport.code,
@@ -29,6 +33,7 @@ data class OtherUserProfilesResponse(
                 maxLp = u.tier.maxLp,
                 wins = u.wins,
                 losses = u.losses,
+                reviews = reviews,
             )
         }
     }
@@ -63,11 +68,17 @@ data class OtherUserProfilesResponse(
     companion object {
         fun from(
             nickname: String,
+            gender: Gender,
+            reviews: Long,
             selectedProfile: UserSportProfile,
             allProfiles: List<UserSportProfile>,
         ) = OtherUserProfilesResponse(
             nickname = nickname,
-            selectedProfile = SelectedProfile.from(selectedProfile),
+            gender = gender,
+            selectedProfile = SelectedProfile.from(
+                u = selectedProfile,
+                reviews = reviews
+            ),
             allProfiles = ProfileInfo.listForm(
                 allProfiles = allProfiles,
                 selectedProfileId = selectedProfile.id!!
