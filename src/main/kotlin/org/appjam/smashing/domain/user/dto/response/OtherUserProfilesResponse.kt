@@ -18,10 +18,12 @@ data class OtherUserProfilesResponse(
         val maxLp: Int,
         val wins: Int,
         val losses: Int,
+        val reviews: Long,
     ) {
         companion object {
             fun from(
                 u: UserSportProfile,
+                reviews: Long,
             ) = SelectedProfile(
                 profileId = u.id!!,
                 sportCode = u.sport.code,
@@ -31,6 +33,7 @@ data class OtherUserProfilesResponse(
                 maxLp = u.tier.maxLp,
                 wins = u.wins,
                 losses = u.losses,
+                reviews = reviews,
             )
         }
     }
@@ -66,12 +69,16 @@ data class OtherUserProfilesResponse(
         fun from(
             nickname: String,
             gender: Gender,
+            reviews: Long,
             selectedProfile: UserSportProfile,
             allProfiles: List<UserSportProfile>,
         ) = OtherUserProfilesResponse(
             nickname = nickname,
             gender = gender,
-            selectedProfile = SelectedProfile.from(selectedProfile),
+            selectedProfile = SelectedProfile.from(
+                u = selectedProfile,
+                reviews = reviews
+            ),
             allProfiles = ProfileInfo.listForm(
                 allProfiles = allProfiles,
                 selectedProfileId = selectedProfile.id!!
