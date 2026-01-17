@@ -5,6 +5,7 @@ import org.appjam.smashing.domain.game.dto.command.GameResultRejectCommand
 import org.appjam.smashing.domain.game.dto.command.GameResultSubmitCommand
 import org.appjam.smashing.domain.game.dto.response.GameResultSubmissionDetailResponse
 import org.appjam.smashing.domain.game.dto.response.GameResultSubmitLockResponse
+import org.appjam.smashing.domain.game.dto.response.GameResultSubmitResponse
 import org.appjam.smashing.domain.game.dto.response.PendingResultAcceptedGameSummaryResponse
 import org.appjam.smashing.domain.game.entity.Game
 import org.appjam.smashing.domain.game.entity.GameResultSubmission
@@ -57,7 +58,7 @@ class GameService(
         submitterUserId: String,
         gameId: String,
         command: GameResultSubmitCommand,
-    ) {
+    ): GameResultSubmitResponse {
         // 게임 조회(잠금)
         val game = gameRepository.findByIdFetchAllForUpdate(gameId)
             ?: throw CustomException(ErrorCode.GAME_NOT_FOUND)
@@ -82,16 +83,24 @@ class GameService(
             sportId = game.sport.id!!,
         ) ?: throw CustomException(ErrorCode.MATCHING_RECEIVER_PROFILE_NOT_FOUND)
 
-        // 유저당 제출 2회 제한
-        if (submissionRepository.countByGame_IdAndSubmitter_Id(gameId, submitterUserId) >= 2L) {
-            throw CustomException(ErrorCode.GAME_RESULT_SUBMISSION_LIMIT_EXCEEDED)
-        }
-
         // 게임 결과 제출 시간 제약
         validateSubmitWindow(game)
 
-        // attemptNo = 해당 게임 제출 순번 계산
-        val attemptNo = (submissionRepository.countByGame_Id(gameId) + 1).toInt()
+        val totalSubmissionCount = submissionRepository.countByGame_Id(gameId)
+        val submitterSubmissionCount = submissionRepository.countByGame_IdAndSubmitter_Id(gameId, submitterUserId)
+
+        // 재제출 제약 (이전 제출자만 가능)
+        if (totalSubmissionCount >= 1L && submitterSubmissionCount == 0L) {
+            throw CustomException(ErrorCode.GAME_RESULT_RESUBMIT_ONLY_PREVIOUS_SUBMITTER)
+        }
+
+        // 유저당 제출 2회 제한
+        if (submitterSubmissionCount >= 2L) {
+            throw CustomException(ErrorCode.GAME_RESULT_SUBMISSION_LIMIT_EXCEEDED)
+        }
+
+        // attemptNo 계산
+        val attemptNo = (totalSubmissionCount + 1).toInt()
 
         // 리뷰 검증 (첫 제출 시 필수, 재제출 시 불가)
         validateReviewRule(attemptNo, command.review)
@@ -144,7 +153,7 @@ class GameService(
         )
 
         // 후기 저장 + 후기 제출 알림 + SSE 발행
-        if (attemptNo == 1) {
+        val reviewId = if (attemptNo == 1) {
             notifyReviewReceived(
                 game = game,
                 reviewer = submitter,
@@ -153,7 +162,11 @@ class GameService(
                 review = command.review!!,
                 reviewerTierId = submitterProfile.tier.id!!,
             )
+        } else {
+            null
         }
+
+        return GameResultSubmitResponse.from(reviewId)
     }
 
     @Transactional
@@ -663,7 +676,7 @@ class GameService(
         receiverProfile: UserSportProfile,
         review: GameResultSubmitCommand.ReviewCommand,
         reviewerTierId: Long,
-    ) {
+    ): String {
         val savedReview = gameReviewService.createReview(
             gameId = game.id!!,
             reviewer = reviewer,
@@ -703,6 +716,8 @@ class GameService(
                 )
             )
         )
+
+        return savedReview.id!!
     }
 
     private fun notifyReviewReceivedOnConfirm(
