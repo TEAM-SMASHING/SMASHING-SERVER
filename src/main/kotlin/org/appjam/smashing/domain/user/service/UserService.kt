@@ -208,13 +208,13 @@ class UserService(
     fun getOtherUsersRecommendation(
         userId: String,
     ): OtherUsersRecommendationResponse {
-        val (user, activeProfile) = getMyInfoAndActiveProfile(userId)
+        val myInfo = getMyInfoAndActiveProfile(userId)
 
         val recommendedProfiles = userSportProfileRepository.findRandomRecommendation(
-            region = user.region,
-            sportId = activeProfile.sport.id!!,
-            excludeUserId = user.id!!,
-            myLp = activeProfile.lp,
+            region = myInfo.user.region,
+            sportId = myInfo.activeProfile.sport.id!!,
+            excludeUserId = myInfo.user.id!!,
+            myLp = myInfo.activeProfile.lp,
             lpThreshold = LP_THRESHOLD,
             limit = LIMIT_RECOMMEND
         )
@@ -226,19 +226,19 @@ class UserService(
     fun getOtherUsersLeaderBoard(
         userId: String,
     ): OtherUsersLeaderBoardResponse {
-        val (user, activeProfile) = getMyInfoAndActiveProfile(userId)
+        val myInfo = getMyInfoAndActiveProfile(userId)
 
         val leaderBoardProfiles = userSportProfileRepository.findAllByRegionAndSportOrderByLp(
-            region = user.region,
-            sportId = activeProfile.sport.id!!,
-            excludeUserId = user.id!!
+            region = myInfo.user.region,
+            sportId = myInfo.activeProfile.sport.id!!,
+            excludeUserId = myInfo.user.id!!
         )
 
         return OtherUsersLeaderBoardResponse.from(
             topUsers = leaderBoardProfiles,
-            nickname = user.nickname,
-            tierId = activeProfile.tier.id!!,
-            lp = activeProfile.lp,
+            nickname = myInfo.user.nickname,
+            tierId = myInfo.activeProfile.tier.id!!,
+            lp = myInfo.activeProfile.lp,
         )
     }
 
@@ -247,11 +247,11 @@ class UserService(
         userId: String,
         requestCommand: OtherUserSearchCommand,
     ): OtherUserSearchResponse {
-        val (user, activeProfile) = getMyInfoAndActiveProfile(userId)
+        val myInfo = getMyInfoAndActiveProfile(userId)
 
         val otherUsersSearch = userSportProfileRepository.findAllBySportOrderByNickname(
             nickname = requestCommand.nickname,
-            sportId = activeProfile.sport.id!!,
+            sportId = myInfo.activeProfile.sport.id!!,
             excludeUserId = userId,
         )
 
@@ -263,9 +263,9 @@ class UserService(
         userId: String,
         request: CommonCursorRequest
     ): CursorResponse<UserRecentGameResponse> {
-        val (_, activeProfile) = getMyInfoAndActiveProfile(userId)
+        val myInfo = getMyInfoAndActiveProfile(userId)
         val snapshotAt = request.snapshotAt ?: OffsetDateTime.now()
-        val sportId = activeProfile.sport.id ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
+        val sportId = myInfo.activeProfile.sport.id ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
 
         val response = gameReviewRepository.findAllBySportIdOrderByDate(
             request = request,
@@ -333,15 +333,15 @@ class UserService(
         requestCommand: OtherUserRegionCommand,
         requestCursor: CommonCursorRequest,
     ): CursorResponse<OtherUserRegionResponse> {
-        val (user, activeProfile) = getMyInfoAndActiveProfile(userId)
-        val sportId = activeProfile.sport.id!!
+        val myInfo = getMyInfoAndActiveProfile(userId)
+        val sportId = myInfo.activeProfile.sport.id!!
 
         val snapshotAt = requestCursor.snapshotAt ?: TimeUtils.nowOffsetDateTime()
 
         val response = userSportProfileRepository.findAllBySportAndRegion(
             userId = userId,
             sportId = sportId,
-            region = user.region,
+            region = myInfo.user.region,
             request = requestCursor,
             gender = requestCommand.gender,
             tier = requestCommand.tier?.name,
