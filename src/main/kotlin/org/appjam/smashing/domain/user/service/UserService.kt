@@ -13,6 +13,7 @@ import org.appjam.smashing.global.common.dto.CommonCursorRequest
 import org.appjam.smashing.global.common.dto.CursorResponse
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
+import org.appjam.smashing.global.util.TimeUtils
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -207,13 +208,13 @@ class UserService(
     fun getOtherUsersRecommendation(
         userId: String,
     ): OtherUsersRecommendationResponse {
-        val (user, activeProfile) = getMyInfoAndActiveProfile(userId)
+        val myInfo = getMyInfoAndActiveProfile(userId)
 
         val recommendedProfiles = userSportProfileRepository.findRandomRecommendation(
-            region = user.region,
-            sportId = activeProfile.sport.id!!,
-            excludeUserId = user.id!!,
-            myLp = activeProfile.lp,
+            region = myInfo.user.region,
+            sportId = myInfo.activeProfile.sport.id!!,
+            excludeUserId = myInfo.user.id!!,
+            myLp = myInfo.activeProfile.lp,
             lpThreshold = LP_THRESHOLD,
             limit = LIMIT_RECOMMEND
         )
@@ -225,19 +226,19 @@ class UserService(
     fun getOtherUsersLeaderBoard(
         userId: String,
     ): OtherUsersLeaderBoardResponse {
-        val (user, activeProfile) = getMyInfoAndActiveProfile(userId)
+        val myInfo = getMyInfoAndActiveProfile(userId)
 
         val leaderBoardProfiles = userSportProfileRepository.findAllByRegionAndSportOrderByLp(
-            region = user.region,
-            sportId = activeProfile.sport.id!!,
-            excludeUserId = user.id!!
+            region = myInfo.user.region,
+            sportId = myInfo.activeProfile.sport.id!!,
+            excludeUserId = myInfo.user.id!!
         )
 
         return OtherUsersLeaderBoardResponse.from(
             topUsers = leaderBoardProfiles,
-            nickname = user.nickname,
-            tierId = activeProfile.tier.id!!,
-            lp = activeProfile.lp,
+            nickname = myInfo.user.nickname,
+            tierId = myInfo.activeProfile.tier.id!!,
+            lp = myInfo.activeProfile.lp,
         )
     }
 
@@ -246,11 +247,11 @@ class UserService(
         userId: String,
         requestCommand: OtherUserSearchCommand,
     ): OtherUserSearchResponse {
-        val (user, activeProfile) = getMyInfoAndActiveProfile(userId)
+        val myInfo = getMyInfoAndActiveProfile(userId)
 
         val otherUsersSearch = userSportProfileRepository.findAllBySportOrderByNickname(
             nickname = requestCommand.nickname,
-            sportId = activeProfile.sport.id!!,
+            sportId = myInfo.activeProfile.sport.id!!,
             excludeUserId = userId,
         )
 
@@ -262,9 +263,9 @@ class UserService(
         userId: String,
         request: CommonCursorRequest
     ): CursorResponse<UserRecentGameResponse> {
-        val (_, activeProfile) = getMyInfoAndActiveProfile(userId)
+        val myInfo = getMyInfoAndActiveProfile(userId)
         val snapshotAt = request.snapshotAt ?: OffsetDateTime.now()
-        val sportId = activeProfile.sport.id ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
+        val sportId = myInfo.activeProfile.sport.id ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
 
         val response = gameReviewRepository.findAllBySportIdOrderByDate(
             request = request,
@@ -279,16 +280,6 @@ class UserService(
             nextCursor = response.nextCursor,
             hasNext = response.hasNext,
         )
-    }
-
-    private fun getMyInfoAndActiveProfile(userId: String): Pair<User, UserSportProfile> {
-        val user = userRepository.findByIdOrNull(userId)
-            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
-
-        val activeProfile = userSportProfileRepository.findByIdOrNull(user.activeUserSportProfileId!!)
-            ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
-
-        return user to activeProfile
     }
 
     @Transactional(readOnly = true)
@@ -336,6 +327,48 @@ class UserService(
                 ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
         }
 
+    @Transactional(readOnly = true)
+    fun getOtherUserRegion(
+        userId: String,
+        requestCommand: OtherUserRegionCommand,
+        requestCursor: CommonCursorRequest,
+    ): CursorResponse<OtherUserRegionResponse> {
+        val myInfo = getMyInfoAndActiveProfile(userId)
+        val sportId = myInfo.activeProfile.sport.id!!
+
+        val snapshotAt = requestCursor.snapshotAt ?: TimeUtils.nowOffsetDateTime()
+
+        val response = userSportProfileRepository.findAllBySportAndRegion(
+            userId = userId,
+            sportId = sportId,
+            region = myInfo.user.region,
+            request = requestCursor,
+            gender = requestCommand.gender,
+            tier = requestCommand.tier?.name,
+            snapshotAt = snapshotAt,
+        )
+
+        return CursorResponse(
+            snapshotAt = response.snapshotAt,
+            results = OtherUserRegionResponse.listForm(response.results),
+            nextCursor = response.nextCursor,
+            hasNext = response.hasNext,
+        )
+    }
+
+    private fun getMyInfoAndActiveProfile(userId: String): UserWithActiveProfile {
+        val user = userRepository.findByIdOrNull(userId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+
+        val activeProfile = userSportProfileRepository.findByIdOrNull(user.activeUserSportProfileId!!)
+            ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
+
+        return UserWithActiveProfile(
+            user = user,
+            activeProfile = activeProfile,
+        )
+    }
+
     companion object {
         private val NICKNAME_VALID_REGEX = Regex("^[a-zA-Z0-9가-힣]*$")
         private const val MAX_NICKNAME_LENGTH = 10
@@ -344,3 +377,8 @@ class UserService(
         private const val LIMIT_RECOMMEND = 5L
     }
 }
+
+data class UserWithActiveProfile(
+    val user: User,
+    val activeProfile: UserSportProfile,
+)
