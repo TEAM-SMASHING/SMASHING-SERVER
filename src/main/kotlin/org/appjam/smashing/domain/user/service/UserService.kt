@@ -3,7 +3,6 @@ package org.appjam.smashing.domain.user.service
 import org.appjam.smashing.domain.review.enums.ReviewRating
 import org.appjam.smashing.domain.review.enums.ReviewTag
 import org.appjam.smashing.domain.review.repository.GameReviewRepository
-import org.appjam.smashing.domain.sport.enums.InitTierLp
 import org.appjam.smashing.domain.sport.repository.SportRepository
 import org.appjam.smashing.domain.tier.repository.TierRepository
 import org.appjam.smashing.domain.user.dto.command.*
@@ -107,17 +106,20 @@ class UserService(
 
         validateAlreadyRegisteredSport(user.id!!, sport.id!!)
 
-        val tierName = requestCommand.tier
-        val initTier = runCatching { InitTierLp.valueOf(tierName) }.getOrNull()
-            ?: throw CustomException(ErrorCode.INVALID_INITIAL_TIER)
+        val initLp = requestCommand.experienceRange.initLp
+        val initTier = tierRepository.findBySportIdAndLpInRange(
+            sportId = sport.id!!,
+            lp = initLp,
+        ) ?: throw CustomException(ErrorCode.INVALID_INITIAL_TIER)
+
         val tier = tierRepository.findBySportIdAndName(
             sportId = sport.id!!,
-            name = tierName,
+            name = initTier.name,
         ) ?: throw CustomException(ErrorCode.INVALID_TIER_SETTING)
 
         val profile = userSportProfileRepository.save(
             UserSportProfile.create(
-                lp = initTier.initLp,
+                lp = initLp,
                 user = user,
                 sport = sport,
                 tier = tier,
@@ -235,7 +237,10 @@ class UserService(
         )
 
         return OtherUsersLeaderBoardResponse.from(
-            topUsers = leaderBoardProfiles
+            topUsers = leaderBoardProfiles,
+            nickname = user.nickname,
+            tierId = activeProfile.tier.id!!,
+            lp = activeProfile.lp,
         )
     }
 
