@@ -1,7 +1,16 @@
-package org.appjam.smashing.domain.matching.entity
+package org.appjam.smashing.domain.lp.entity
 
 import io.hypersistence.utils.hibernate.id.Tsid
-import jakarta.persistence.*
+import jakarta.persistence.Column
+import jakarta.persistence.ConstraintMode
+import jakarta.persistence.Entity
+import jakarta.persistence.FetchType
+import jakarta.persistence.ForeignKey
+import jakarta.persistence.Id
+import jakarta.persistence.Index
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.ManyToOne
+import jakarta.persistence.Table
 import org.appjam.smashing.domain.common.entity.BaseEntity
 import org.appjam.smashing.domain.game.entity.Game
 import org.appjam.smashing.domain.user.entity.UserSportProfile
@@ -55,5 +64,21 @@ class LpHistory(
     )
     @Comment("경기 IDX")
     val game: Game,
-) : BaseEntity()
+) : BaseEntity() {
 
+    companion object {
+        fun create(
+            userSportProfile: UserSportProfile,
+            game: Game,
+            beforeLp: Int,
+            deltaLp: Int,
+            afterLp: Int,
+        )= LpHistory(
+                deltaLp = deltaLp,
+                beforeLp = beforeLp,
+                afterLp = afterLp,
+                userSportProfile = userSportProfile,
+                game = game,
+            )
+        }
+}
