@@ -2,6 +2,7 @@ package org.appjam.smashing.domain.game.dto.response
 
 import org.appjam.smashing.domain.game.dto.projection.PendingResultAcceptedGameProjection
 import org.appjam.smashing.domain.game.enums.GameResultStatus
+import org.appjam.smashing.domain.tier.enums.TierCode
 import org.appjam.smashing.domain.user.enums.Gender
 import java.time.OffsetDateTime
 
@@ -20,8 +21,7 @@ data class PendingResultAcceptedGameSummaryResponse(
         val nickname: String,
         val openchatUrl: String?,
         val gender: Gender,
-        val tierId: Long,
-        val tierName: String,
+        val tierCode: TierCode
     )
 
     companion object {
@@ -39,8 +39,7 @@ data class PendingResultAcceptedGameSummaryResponse(
                 nickname = projection.opponentNickname,
                 openchatUrl = projection.opponentOpenchatUrl,
                 gender = projection.opponentGender,
-                tierId = projection.opponentTierId,
-                tierName = projection.opponentTierName,
+                tierCode = projection.opponentTierCode
             ),
             submitAvailableAt = submitAvailableAt,
             remainingSeconds = remainingSeconds,
