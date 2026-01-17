@@ -118,7 +118,7 @@ class UserController(
         return ApiResponse.success()
     }
 
-    @GetMapping("/regions/recommendation")
+    @GetMapping("/me/regions/recommendation")
     fun getOtherUsersRecommendation(
         @AuthenticationPrincipal principal: CustomUserDetails,
     ): ResponseEntity<ApiResponse<OtherUsersRecommendationResponse>> {
