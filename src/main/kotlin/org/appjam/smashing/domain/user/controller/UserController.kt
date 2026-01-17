@@ -134,7 +134,7 @@ class UserController(
 
     @Operation(
         summary = "사용자 주소 변경 API",
-        description = "사용자의 주소를 변겅합니다."
+        description = "사용자의 주소를 변경합니다."
     )
     @PutMapping("/me/regions")
     fun updateRegion(
