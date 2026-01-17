@@ -2,6 +2,7 @@ package org.appjam.smashing.domain.matching.dto.projection
 
 import com.querydsl.core.annotations.QueryProjection
 import org.appjam.smashing.domain.matching.enums.MatchingStatus
+import org.appjam.smashing.domain.tier.enums.TierCode
 import org.appjam.smashing.domain.user.enums.Gender
 import org.appjam.smashing.global.common.dto.CursorKey
 import org.appjam.smashing.global.util.TimeUtils
@@ -17,8 +18,7 @@ data class ReceivedMatchingSummaryProjection(
     val requesterNickname: String,
     val requesterGender: Gender,
     val requesterReviewCount: Long,
-    val requesterTierId: Long,
-    val requesterTierName: String,
+    val requesterTierCode: TierCode,
     val requesterWins: Int,
     val requesterLosses: Int,
 ) : CursorKey {

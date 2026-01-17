@@ -68,8 +68,7 @@ class MatchingRepositoryCustomImpl(
                     requester.nickname,
                     requester.gender,
                     requesterReviewCount,
-                    requesterTier.id,
-                    requesterTier.name,
+                    requesterTier.code,
                     requesterProfile.wins,
                     requesterProfile.losses,
                 )
