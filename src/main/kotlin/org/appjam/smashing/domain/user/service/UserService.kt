@@ -1,7 +1,5 @@
 package org.appjam.smashing.domain.user.service
 
-import org.appjam.smashing.domain.review.enums.ReviewRating
-import org.appjam.smashing.domain.review.enums.ReviewTag
 import org.appjam.smashing.domain.review.repository.GameReviewRepository
 import org.appjam.smashing.domain.sport.repository.SportRepository
 import org.appjam.smashing.domain.tier.repository.TierRepository
@@ -292,14 +290,14 @@ class UserService(
 
         val sportId = myInfo.activeProfile.sport.id!!
 
-        val (ratingCounts, tagCounts) = getCounts(
+        val counts = getCounts(
             userId = userId,
-            sportId = sportId,
+            sportId = sportId
         )
 
         return UserRecentReviewSummaryResponse.from(
-            ratingCounts = ratingCounts,
-            tagCounts = tagCounts,
+            ratingMap = counts.ratingMap,
+            tagMap = counts.tagMap,
         )
     }
 
@@ -337,6 +335,33 @@ class UserService(
         )
     }
 
+    @Transactional(readOnly = true)
+    fun getOtherUserRecentReviewSummary(
+        userId: String,
+        otherUserId: String,
+        sportCode: String?,
+    ): UserRecentReviewSummaryResponse {
+        val otherUser = userRepository.findByIdOrNull(otherUserId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+
+        val selectedProfile = resolveProfile(
+            user = otherUser,
+            sportCode = sportCode,
+        )
+
+        val sportId = selectedProfile.sport.id!!
+
+        val counts = getCounts(
+            userId = userId,
+            sportId = sportId
+        )
+
+        return UserRecentReviewSummaryResponse.from(
+            ratingMap = counts.ratingMap,
+            tagMap = counts.tagMap,
+        )
+    }
+
     private fun resolveProfile(user: User, sportCode: String?) =
         if (sportCode == null) {
             val activeProfileId = user.activeUserSportProfileId
@@ -347,6 +372,32 @@ class UserService(
             userSportProfileRepository.findByUserIdAndSportCode(user.id!!, sportCode)
                 ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
         }
+
+    private fun getCounts(
+        userId: String,
+        sportId: Long
+    ): ReviewCountsResult {
+        val ratingResults = gameReviewRepository.countRatingsByRevieweeAndSport(
+            revieweeId = userId,
+            sportId = sportId,
+        )
+        val ratingMap = ratingResults.associate { data ->
+            data.reviewRating to data.counts
+        }
+
+        val tagResults = gameReviewRepository.countTagsByRevieweeAndSport(
+            revieweeId = userId,
+            sportId = sportId,
+        )
+        val tagMap = tagResults.associate { data ->
+            data.reviewTag to data.counts
+        }
+
+        return ReviewCountsResult(
+            ratingMap = ratingMap,
+            tagMap = tagMap,
+        )
+    }
 
     @Transactional(readOnly = true)
     fun getOtherUserRegion(
@@ -387,43 +438,6 @@ class UserService(
         return UserWithActiveProfile(
             user = user,
             activeProfile = activeProfile,
-        )
-    }
-
-    private fun getCounts(
-        userId: String,
-        sportId: Long,
-    ): CountsResult {
-        val ratingResults = gameReviewRepository.countRatingsByRevieweeAndSport(
-            revieweeId = userId,
-            activeSportId = sportId,
-        )
-        val ratingMap = ratingResults.associate { data ->
-            data.reviewRating to data.counts
-        }
-        val ratingCounts = UserRecentReviewSummaryResponse.RatingCounts.from(
-            best = ratingMap[ReviewRating.BEST] ?: 0,
-            good = ratingMap[ReviewRating.GOOD] ?: 0,
-            bad = ratingMap[ReviewRating.BAD] ?: 0
-        )
-
-        val tagResults = gameReviewRepository.countTagsByRevieweeAndSport(
-            revieweeId = userId,
-            activeSportId = sportId,
-        )
-        val tagMap = tagResults.associate { data ->
-            data.reviewTag to data.counts
-        }
-        val tagCounts = UserRecentReviewSummaryResponse.TagCounts.from(
-            goodManner = tagMap[ReviewTag.GOOD_MANNER] ?: 0,
-            onTime = tagMap[ReviewTag.ON_TIME] ?: 0,
-            fairPlay = tagMap[ReviewTag.FAIR_PLAY] ?: 0,
-            fastResponse = tagMap[ReviewTag.FAST_RESPONSE] ?: 0
-        )
-
-        return CountsResult(
-            ratingCounts = ratingCounts,
-            tagCounts = tagCounts,
         )
     }
 
