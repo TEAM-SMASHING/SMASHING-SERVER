@@ -1,5 +1,6 @@
 package org.appjam.smashing.domain.user.dto.response
 
+import org.appjam.smashing.domain.tier.enums.TierCode
 import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.appjam.smashing.domain.user.enums.Gender
 
@@ -12,7 +13,7 @@ data class UserProfilesResponse(
     data class ActiveProfile(
         val profileId: String,
         val sportCode: String,
-        val tierId: Long,
+        val tierCode: TierCode,
         val lp: Int,
         val minLp: Int,
         val maxLp: Int,
@@ -27,7 +28,7 @@ data class UserProfilesResponse(
             ) = ActiveProfile(
                 profileId = u.id!!,
                 sportCode = u.sport.code,
-                tierId = u.tier.id!!,
+                tierCode = u.tier.code,
                 lp = u.lp,
                 minLp = u.tier.minLp,
                 maxLp = u.tier.maxLp,
