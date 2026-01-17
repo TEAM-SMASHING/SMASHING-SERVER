@@ -1,7 +1,5 @@
 package org.appjam.smashing.domain.user.service
 
-import org.appjam.smashing.domain.review.enums.ReviewRating
-import org.appjam.smashing.domain.review.enums.ReviewTag
 import org.appjam.smashing.domain.review.repository.GameReviewRepository
 import org.appjam.smashing.domain.sport.repository.SportRepository
 import org.appjam.smashing.domain.tier.repository.TierRepository
@@ -226,13 +224,13 @@ class UserService(
     fun getOtherUsersRecommendation(
         userId: String,
     ): OtherUsersRecommendationResponse {
-        val (user, activeProfile) = getMyInfoAndActiveProfile(userId)
+        val myInfo = getMyInfoAndActiveProfile(userId)
 
         val recommendedProfiles = userSportProfileRepository.findRandomRecommendation(
-            region = user.region,
-            sportId = activeProfile.sport.id!!,
-            excludeUserId = user.id!!,
-            myLp = activeProfile.lp,
+            region = myInfo.user.region,
+            sportId = myInfo.activeProfile.sport.id!!,
+            excludeUserId = myInfo.user.id!!,
+            myLp = myInfo.activeProfile.lp,
             lpThreshold = LP_THRESHOLD,
             limit = LIMIT_RECOMMEND
         )
@@ -244,19 +242,19 @@ class UserService(
     fun getOtherUsersLeaderBoard(
         userId: String,
     ): OtherUsersLeaderBoardResponse {
-        val (user, activeProfile) = getMyInfoAndActiveProfile(userId)
+        val myInfo = getMyInfoAndActiveProfile(userId)
 
         val leaderBoardProfiles = userSportProfileRepository.findAllByRegionAndSportOrderByLp(
-            region = user.region,
-            sportId = activeProfile.sport.id!!,
-            excludeUserId = user.id!!
+            region = myInfo.user.region,
+            sportId = myInfo.activeProfile.sport.id!!,
+            excludeUserId = myInfo.user.id!!
         )
 
         return OtherUsersLeaderBoardResponse.from(
             topUsers = leaderBoardProfiles,
-            nickname = user.nickname,
-            tierId = activeProfile.tier.id!!,
-            lp = activeProfile.lp,
+            nickname = myInfo.user.nickname,
+            tierId = myInfo.activeProfile.tier.id!!,
+            lp = myInfo.activeProfile.lp,
         )
     }
 
@@ -265,11 +263,11 @@ class UserService(
         userId: String,
         requestCommand: OtherUserSearchCommand,
     ): OtherUserSearchResponse {
-        val (_, activeProfile) = getMyInfoAndActiveProfile(userId)
+        val myInfo = getMyInfoAndActiveProfile(userId)
 
         val otherUsersSearch = userSportProfileRepository.findAllBySportOrderByNickname(
             nickname = requestCommand.nickname,
-            sportId = activeProfile.sport.id!!,
+            sportId = myInfo.activeProfile.sport.id!!,
             excludeUserId = userId,
         )
 
@@ -281,9 +279,9 @@ class UserService(
         userId: String,
         request: CommonCursorRequest
     ): CursorResponse<UserRecentReviewResponse> {
-        val (_, activeProfile) = getMyInfoAndActiveProfile(userId)
+        val myInfo = getMyInfoAndActiveProfile(userId)
         val snapshotAt = request.snapshotAt ?: OffsetDateTime.now()
-        val sportId = activeProfile.sport.id ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
+        val sportId = myInfo.activeProfile.sport.id ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
 
         val response = gameReviewRepository.findAllBySportIdOrderByDate(
             request = request,
@@ -304,18 +302,18 @@ class UserService(
     fun getUserRecentReviewSummary(
         userId: String,
     ): UserRecentReviewSummaryResponse {
-        val (_, activeProfile) = getMyInfoAndActiveProfile(userId)
+        val myInfo = getMyInfoAndActiveProfile(userId)
 
-        val sportId = activeProfile.sport.id!!
+        val sportId = myInfo.activeProfile.sport.id!!
 
-        val (ratingCounts, tagCounts) = getCounts(
+        val counts = getCounts(
             userId = userId,
-            sportId = sportId,
+            sportId = sportId
         )
 
         return UserRecentReviewSummaryResponse.from(
-            ratingCounts = ratingCounts,
-            tagCounts = tagCounts,
+            ratingMap = counts.ratingMap,
+            tagMap = counts.tagMap,
         )
     }
 
@@ -369,14 +367,14 @@ class UserService(
 
         val sportId = selectedProfile.sport.id!!
 
-        val (ratingCounts, tagCounts) = getCounts(
+        val counts = getCounts(
             userId = userId,
-            sportId = sportId,
+            sportId = sportId
         )
 
         return UserRecentReviewSummaryResponse.from(
-            ratingCounts = ratingCounts,
-            tagCounts = tagCounts,
+            ratingMap = counts.ratingMap,
+            tagMap = counts.tagMap,
         )
     }
 
@@ -393,8 +391,8 @@ class UserService(
 
     private fun getCounts(
         userId: String,
-        sportId: Long,
-    ): CountsResult {
+        sportId: Long
+    ): ReviewCountsResult {
         val ratingResults = gameReviewRepository.countRatingsByRevieweeAndSport(
             revieweeId = userId,
             sportId = sportId,
@@ -402,11 +400,6 @@ class UserService(
         val ratingMap = ratingResults.associate { data ->
             data.reviewRating to data.counts
         }
-        val ratingCounts = UserRecentReviewSummaryResponse.RatingCounts.from(
-            best = ratingMap[ReviewRating.BEST] ?: 0,
-            good = ratingMap[ReviewRating.GOOD] ?: 0,
-            bad = ratingMap[ReviewRating.BAD] ?: 0
-        )
 
         val tagResults = gameReviewRepository.countTagsByRevieweeAndSport(
             revieweeId = userId,
@@ -415,16 +408,10 @@ class UserService(
         val tagMap = tagResults.associate { data ->
             data.reviewTag to data.counts
         }
-        val tagCounts = UserRecentReviewSummaryResponse.TagCounts.from(
-            goodManner = tagMap[ReviewTag.GOOD_MANNER] ?: 0,
-            onTime = tagMap[ReviewTag.ON_TIME] ?: 0,
-            fairPlay = tagMap[ReviewTag.FAIR_PLAY] ?: 0,
-            fastResponse = tagMap[ReviewTag.FAST_RESPONSE] ?: 0
-        )
 
-        return CountsResult(
-            ratingCounts = ratingCounts,
-            tagCounts = tagCounts,
+        return ReviewCountsResult(
+            ratingMap = ratingMap,
+            tagMap = tagMap,
         )
     }
 
@@ -434,15 +421,15 @@ class UserService(
         requestCommand: OtherUserRegionCommand,
         requestCursor: CommonCursorRequest,
     ): CursorResponse<OtherUserRegionResponse> {
-        val (user, activeProfile) = getMyInfoAndActiveProfile(userId)
-        val sportId = activeProfile.sport.id!!
+        val myInfo = getMyInfoAndActiveProfile(userId)
+        val sportId = myInfo.activeProfile.sport.id!!
 
         val snapshotAt = requestCursor.snapshotAt ?: TimeUtils.nowOffsetDateTime()
 
         val response = userSportProfileRepository.findAllBySportAndRegion(
             userId = userId,
             sportId = sportId,
-            region = user.region,
+            region = myInfo.user.region,
             request = requestCursor,
             gender = requestCommand.gender,
             tier = requestCommand.tier?.name,
