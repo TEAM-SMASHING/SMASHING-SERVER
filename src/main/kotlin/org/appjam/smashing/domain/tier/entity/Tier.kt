@@ -3,6 +3,8 @@ package org.appjam.smashing.domain.tier.entity
 import jakarta.persistence.Column
 import jakarta.persistence.ConstraintMode
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
 import jakarta.persistence.ForeignKey
 import jakarta.persistence.GeneratedValue
@@ -13,6 +15,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import org.appjam.smashing.domain.sport.entity.Sport
+import org.appjam.smashing.domain.tier.enums.TierCode
 import org.hibernate.annotations.Comment
 
 @Entity
@@ -31,6 +34,11 @@ class Tier(
     @Column(nullable = false, length = 50)
     @Comment("티어명")
     val name: String,
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, columnDefinition = "VARCHAR(30)")
+    @Comment("티어 코드")
+    val code: TierCode,
 
     @Column(nullable = false)
     @Comment("정렬 순서(높을수록 상위 티어)")
