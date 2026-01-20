@@ -11,10 +11,10 @@ import org.appjam.smashing.global.extensions.ofIgnoreCaseOrNull
 
 data class GameResultConfirmRequest(
     @field:Valid
-    val review: ReviewRequest? = null,
+    val review: ReviewRequest,
 ) {
     fun toCommand() = GameResultConfirmCommand(
-        review = review?.toCommand(),
+        review = review.toCommand(),
     )
 
     data class ReviewRequest(

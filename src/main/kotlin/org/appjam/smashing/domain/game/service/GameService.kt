@@ -205,12 +205,6 @@ class GameService(
             throw CustomException(ErrorCode.GAME_SUBMISSION_CONFIRMER_MISMATCH)
         }
 
-        // review 정책 검증
-        validateConfirmReviewRule(
-            attemptNo = submission.attemptNo,
-            review = command.review,
-        )
-
         // 확정 점수 매핑
         val scoreWinner = if (submission.winner.id == submission.submitter.id) submission.scoreSubmitter else submission.scoreConfirmer
         val scoreLoser = if (submission.loser.id == submission.submitter.id) submission.scoreSubmitter else submission.scoreConfirmer
@@ -249,16 +243,14 @@ class GameService(
         )
 
         // 후기 저장 + 후기 제출 알림 + SSE 발행
-        if (submission.attemptNo == 1) {
-            notifyReviewReceivedOnConfirm(
-                game = game,
-                reviewer = submission.confirmer,
-                reviewee = submission.submitter,
-                receiverProfile = submitterProfile,
-                review = command.review!!,
-                reviewerTierCode = confirmerProfile.tier.code,
-            )
-        }
+        notifyReviewReceivedOnConfirm(
+            game = game,
+            reviewer = submission.confirmer,
+            reviewee = submission.submitter,
+            receiverProfile = submitterProfile,
+            review = command.review,
+            reviewerTierCode = confirmerProfile.tier.code,
+        )
     }
 
     @Transactional(readOnly = true)
@@ -520,18 +512,6 @@ class GameService(
             submission.submitter.id!! -> submission.scoreSubmitter
             submission.confirmer.id!! -> submission.scoreConfirmer
             else -> throw CustomException(ErrorCode.GAME_RESULT_INVALID_PLAYERS)
-        }
-    }
-
-    private fun validateConfirmReviewRule(
-        attemptNo: Int,
-        review: GameResultConfirmCommand.ReviewCommand?,
-    ) {
-        if (attemptNo == 1 && review == null) {
-            throw CustomException(ErrorCode.GAME_REVIEW_REQUIRED_ON_FIRST_SUBMISSION)
-        }
-        if (attemptNo != 1 && review != null) {
-            throw CustomException(ErrorCode.GAME_REVIEW_ONLY_FIRST_SUBMISSION_ALLOWED)
         }
     }
 
