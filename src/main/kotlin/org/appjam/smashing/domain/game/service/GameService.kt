@@ -179,7 +179,7 @@ class GameService(
         gameId: String,
         submissionId: String,
         command: GameResultConfirmCommand,
-    ) {
+    ): String? {
         val now = LocalDateTime.now(DEFAULT_ZONE_ID)
 
         // 게임 조회(잠금)
@@ -243,7 +243,7 @@ class GameService(
         )
 
         // 후기 저장 + 후기 제출 알림 + SSE 발행
-        notifyReviewReceivedOnConfirm(
+        val reviewId = notifyReviewReceivedOnConfirm(
             game = game,
             reviewer = submission.confirmer,
             reviewee = submission.submitter,
@@ -251,6 +251,8 @@ class GameService(
             review = command.review,
             reviewerTierCode = confirmerProfile.tier.code,
         )
+
+        return reviewId
     }
 
     @Transactional(readOnly = true)
@@ -712,7 +714,7 @@ class GameService(
         receiverProfile: UserSportProfile,
         review: GameResultConfirmCommand.ReviewCommand,
         reviewerTierCode: TierCode,
-    ) {
+    ): String {
         val savedReview = gameReviewService.createReview(
             gameId = game.id!!,
             reviewer = reviewer,
@@ -752,6 +754,8 @@ class GameService(
                 )
             )
         )
+
+        return savedReview.id!!
     }
 
     private fun publishGameUpdated(
