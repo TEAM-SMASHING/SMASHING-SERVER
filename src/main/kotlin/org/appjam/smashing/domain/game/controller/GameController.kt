@@ -126,13 +126,13 @@ class GameController(
     )
     @PostMapping("/{gameId}/submissions/{submissionId}/reject")
     fun rejectGameResult(
-        @RequestHeader principal: String,
+        @AuthenticationPrincipal principal: CustomUserDetails,
         @PathVariable gameId: String,
         @PathVariable submissionId: String,
         @Valid @RequestBody request: GameResultRejectRequest,
     ): ResponseEntity<ApiResponse<Unit>> {
         gameService.rejectResult(
-            confirmerUserId = principal,
+            confirmerUserId = principal.username,
             gameId = gameId,
             submissionId = submissionId,
             command = request.toCommand(),
