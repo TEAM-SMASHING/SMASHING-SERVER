@@ -82,6 +82,7 @@ class GameRepositoryCustomImpl(
                     GameResultStatus.PENDING_RESULT,
                     GameResultStatus.WAITING_CONFIRMATION,
                     GameResultStatus.RESULT_REJECTED,
+                    GameResultStatus.CANCELED
                 )
             )
 
