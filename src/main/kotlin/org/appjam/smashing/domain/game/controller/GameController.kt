@@ -58,9 +58,6 @@ class GameController(
             - game.resultStatus 는 WAITING_CONFIRMATION 이어야 합니다.
             - submission.status 는 SUBMITTED 이어야 합니다.
             - confirmerUserId 는 해당 submission.confirmer 와 일치해야 합니다.
-            - review 정책은 제출 API와 동일:
-              - attemptNo=1 인 제출 건을 확정할 때만 review 허용(+필수)
-              - attemptNo!=1 인 제출 건은 review 불가
 
             [확정 시 처리]
             - Game.resultStatus = RESULT_CONFIRMED 로 변경
@@ -125,8 +122,6 @@ class GameController(
             - 거절은 submission.confirmer(받은 사람)만 가능합니다.
             - 상태 변경 sse가 발행됩니다.
             - 거절 사유에 따라 NotificationType이 분리되어 전송됩니다. (알림+sse)
-              - SCORE_MISMATCH -> RESULT_REJECTED_SCORE_MISMATCH
-              - WIN_LOSE_REVERSED -> RESULT_REJECTED_WIN_LOSE_REVERSED
         """
     )
     @PostMapping("/{gameId}/submissions/{submissionId}/reject")
