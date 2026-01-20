@@ -38,6 +38,7 @@ class AuthService(
                 refreshToken = null,
                 kakaoId = kakaoId,
                 userId = null,
+                nickname = null,
             )
 
         val userId = user.id ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
@@ -48,7 +49,8 @@ class AuthService(
             accessToken = token.accessToken.token,
             refreshToken = token.refreshToken.token,
             kakaoId = kakaoId,
-            userId = userId
+            userId = userId,
+            nickname = user.nickname,
         )
     }
 

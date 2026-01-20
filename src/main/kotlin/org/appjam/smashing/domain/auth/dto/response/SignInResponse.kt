@@ -5,6 +5,7 @@ data class SignInResponse(
     val refreshToken: String?,
     val kakaoId: String,
     val userId: String?,
+    val nickname: String?,
 ) {
     fun isCompletedSignUp(): Boolean = accessToken != null && refreshToken != null
 }
