@@ -170,6 +170,38 @@ class Notification(
             receiverSportId = receiverProfile.sport.id!!, // TODO: 발신자 프로필 ID 추가
             notificationTemplate = template,
         )
+
+        fun createResultRejectedScoreAndWinLoseMismatch(
+            receiver: User,
+            receiverProfile: UserSportProfile,
+            template: NotificationTemplate,
+            rejectorNickname: String,
+        ) = Notification(
+            params = """{"sportName":"${receiverProfile.sport.name}","rejectorNickname":"$rejectorNickname"}""",
+            isRead = false,
+            linkUrl = "/api/v1/users/me/games/pending-results",
+            user = receiver,
+            senderNickname = rejectorNickname,
+            receiverProfileId = receiverProfile.id!!,
+            receiverSportId = receiverProfile.sport.id!!,
+            notificationTemplate = template,
+        )
+
+        fun createResultRejectedGameNotPlayedYet(
+            receiver: User,
+            receiverProfile: UserSportProfile,
+            template: NotificationTemplate,
+            rejectorNickname: String,
+        ) = Notification(
+            params = """{"sportName":"${receiverProfile.sport.name}","rejectorNickname":"$rejectorNickname"}""",
+            isRead = false,
+            linkUrl = "/api/v1/users/me/games/pending-results",
+            user = receiver,
+            senderNickname = rejectorNickname,
+            receiverProfileId = receiverProfile.id!!,
+            receiverSportId = receiverProfile.sport.id!!,
+            notificationTemplate = template,
+        )
     }
 
     fun markAsRead() {

@@ -283,7 +283,7 @@ class GameService(
         submissionId: String,
         command: GameResultRejectCommand,
     ) {
-        val now = LocalDateTime.now(DEFAULT_ZONE_ID) // TODO: 인증인가 회복시 변경
+        val now = LocalDateTime.now(DEFAULT_ZONE_ID)// TODO: 인증인가 회복시 변경
 
         // 게임 조회(잠금)
         val game = gameRepository.findByIdForUpdate(gameId)
@@ -303,47 +303,54 @@ class GameService(
             throw CustomException(ErrorCode.GAME_SUBMISSION_NOT_SUBMITTED)
         }
 
-        // 받은 사람만 거절 가능
+        // confirmer 검증
         if (submission.confirmer.id != confirmerUserId) {
             throw CustomException(ErrorCode.GAME_SUBMISSION_CONFIRMER_MISMATCH)
         }
 
-        // 상태 변경
+        // 재제출 가능하도록 게임 상태를 REJECTED로
         game.markRejected()
-        submission.reject(
-            reason = command.reason,
-            actedAt = now,
-        )
 
-        val sportId = game.sport.id!!
-
-        // 게임 상태 변경 SSE 발행
+        // 상태 변경 SSE는 항상 보내도록
         publishGameUpdated(
             receiverUserId = submission.submitter.id!!,
             gameId = game.id!!,
             resultStatus = game.resultStatus,
         )
 
-        val receiverProfile = userSportProfileRepository.findByUserIdAndSportIdFetch(
-            userId = submission.submitter.id!!,
-            sportId = sportId,
-        ) ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+        if (submission.attemptNo == 1) {
+            // 1회차 반려: 사유 필수 + 알림/SSE 발행
+            val reason = command.reason ?: throw CustomException(ErrorCode.GAME_RESULT_REJECT_REASON_REQUIRED_ON_FIRST_REJECT)
 
-        val rejectorProfile = userSportProfileRepository.findByUserIdAndSportIdFetch(
-            userId = submission.confirmer.id!!,
-            sportId = sportId,
-        ) ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+            submission.rejectWithReason(
+                reason = reason,
+                actedAt = now,
+            )
 
-        // 결과 거절 알림 + SSE 발행
-        notifyGameResultRejected(
-            receiver = submission.submitter,
-            receiverProfile = receiverProfile,
-            rejector = submission.confirmer,
-            rejectorTierCode = rejectorProfile.tier.code,
-            gameId = game.id!!,
-            submissionId = submission.id!!,
-            reason = command.reason,
-        )
+            val receiverProfile = userSportProfileRepository.findByUserIdAndSportIdFetch(
+                userId = submission.submitter.id!!,
+                sportId = game.sport.id!!,
+            ) ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+
+            val rejectorProfile = userSportProfileRepository.findByUserIdAndSportIdFetch(
+                userId = submission.confirmer.id!!,
+                sportId = game.sport.id!!,
+            ) ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+
+            notifyGameResultRejected(
+                receiver = submission.submitter,
+                receiverProfile = receiverProfile,
+                rejector = submission.confirmer,
+                rejectorTierCode = rejectorProfile.tier.code,
+                gameId = game.id!!,
+                submissionId = submission.id!!,
+                reason = reason,
+            )
+            return
+        }
+
+        // 2회차 이상 반려: 제출안 삭제 + 알림/SSE 없음
+        submissionRepository.delete(submission)
     }
 
     @Transactional
@@ -785,6 +792,8 @@ class GameService(
         val notificationType = when (reason) {
             GameResultRejectReason.SCORE_MISMATCH -> NotificationType.RESULT_REJECTED_SCORE_MISMATCH
             GameResultRejectReason.WIN_LOSE_REVERSED -> NotificationType.RESULT_REJECTED_WIN_LOSE_REVERSED
+            GameResultRejectReason.SCORE_AND_WIN_LOSE_MISMATCH -> NotificationType.RESULT_REJECTED_SCORE_AND_WIN_LOSE_MISMATCH
+            GameResultRejectReason.GAME_NOT_PLAYED_YET -> NotificationType.RESULT_REJECTED_GAME_NOT_PLAYED_YET
         }
 
         val notification = notificationService.createResultRejected(

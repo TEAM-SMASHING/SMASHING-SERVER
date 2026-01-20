@@ -129,6 +129,22 @@ class NotificationService(
                     rejectorNickname = rejectorNickname,
                 )
 
+            NotificationType.RESULT_REJECTED_SCORE_AND_WIN_LOSE_MISMATCH ->
+                Notification.createResultRejectedScoreAndWinLoseMismatch(
+                    receiver = receiver,
+                    receiverProfile = receiverProfile,
+                    template = template,
+                    rejectorNickname = rejectorNickname,
+                )
+
+            NotificationType.RESULT_REJECTED_GAME_NOT_PLAYED_YET ->
+                Notification.createResultRejectedGameNotPlayedYet(
+                    receiver = receiver,
+                    receiverProfile = receiverProfile,
+                    template = template,
+                    rejectorNickname = rejectorNickname,
+                )
+
             else -> throw CustomException(ErrorCode.NOTIFICATION_RESULT_REJECTED_TYPE_MISMATCH)
         }
 
