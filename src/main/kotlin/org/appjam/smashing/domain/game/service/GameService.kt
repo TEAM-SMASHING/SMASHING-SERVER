@@ -645,6 +645,8 @@ class GameService(
             receiver = receiver,
             receiverProfile = receiverProfile,
             submitterNickname = submitter.nickname,
+            game = game,
+            submission = submission,
         )
 
         val notificationCreatedAt = notification.createdAt
