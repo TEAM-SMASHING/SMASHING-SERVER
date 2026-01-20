@@ -1,5 +1,7 @@
 package org.appjam.smashing.domain.notification.service
 
+import org.appjam.smashing.domain.game.entity.Game
+import org.appjam.smashing.domain.game.entity.GameResultSubmission
 import org.appjam.smashing.domain.notification.dto.response.NotificationSummaryResponse
 import org.appjam.smashing.domain.notification.entity.Notification
 import org.appjam.smashing.domain.notification.enums.NotificationType
@@ -63,6 +65,8 @@ class NotificationService(
         receiver: User,
         receiverProfile: UserSportProfile,
         submitterNickname: String,
+        game : Game,
+        submission : GameResultSubmission,
     ): Notification {
         val template = notificationTemplateRepository.findByType(NotificationType.MATCHING_RESULT_SUBMITTED)
             ?: throw CustomException(ErrorCode.NOTIFICATION_TEMPLATE_NOT_FOUND)
@@ -73,6 +77,8 @@ class NotificationService(
                 receiverProfile = receiverProfile,
                 template = template,
                 submitterNickname = submitterNickname,
+                game = game,
+                submission = submission,
             )
         )
     }
