@@ -23,6 +23,7 @@ data class PendingResultAcceptedGameProjection(
     val opponentTierCode: TierCode,
     val latestSubmissionId: String?,
     val latestAttemptNo: Int?,
+    val latestSubmitterId: String?,
 ) : CursorKey {
 
     override val cursorId: String

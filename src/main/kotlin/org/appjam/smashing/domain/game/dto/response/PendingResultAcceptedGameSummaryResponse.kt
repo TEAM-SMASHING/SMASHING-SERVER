@@ -16,6 +16,7 @@ data class PendingResultAcceptedGameSummaryResponse(
     val isSubmitLocked: Boolean,
     val latestSubmissionId: String? = null,
     val latestAttemptNo: Int?,
+    val latestSubmitterId: String? = null,
 ) {
 
     data class OpponentSummary(
@@ -48,6 +49,7 @@ data class PendingResultAcceptedGameSummaryResponse(
             isSubmitLocked = isSubmitLocked,
             latestSubmissionId = projection.latestSubmissionId,
             latestAttemptNo = projection.latestAttemptNo,
+            latestSubmitterId = projection.latestSubmitterId
         )
     }
 }

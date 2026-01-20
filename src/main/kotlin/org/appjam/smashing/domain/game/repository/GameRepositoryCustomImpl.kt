@@ -107,6 +107,7 @@ class GameRepositoryCustomImpl(
                     opponentTierCodeExpr,
                     submission.id,
                     submission.attemptNo,
+                    submission.submitter.id
                 )
             )
             .from(game)
