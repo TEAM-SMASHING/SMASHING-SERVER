@@ -3,6 +3,8 @@ package org.appjam.smashing.domain.notification.entity
 import io.hypersistence.utils.hibernate.id.Tsid
 import jakarta.persistence.*
 import org.appjam.smashing.domain.common.entity.BaseEntity
+import org.appjam.smashing.domain.game.entity.Game
+import org.appjam.smashing.domain.game.entity.GameResultSubmission
 import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.hibernate.annotations.Comment
@@ -107,10 +109,12 @@ class Notification(
             receiverProfile: UserSportProfile,
             template: NotificationTemplate,
             submitterNickname: String,
+            game : Game,
+            submission : GameResultSubmission,
         ) = Notification(
             params = """{"sportName":"${receiverProfile.sport.name}","submitterNickname":"$submitterNickname"}""",
             isRead = false,
-            linkUrl = "/api/v1/users/me/games/pending-results",
+            linkUrl = "/api/v1/games/${game.id}/submissions/${submission.id}",
             user = receiver,
             senderNickname = submitterNickname,
             receiverProfileId = receiverProfile.id!!, // TODO: 발신자 프로필 ID 추가
