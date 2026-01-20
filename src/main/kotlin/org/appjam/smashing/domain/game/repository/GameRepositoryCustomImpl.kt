@@ -2,10 +2,12 @@ package org.appjam.smashing.domain.game.repository
 
 import com.querydsl.core.BooleanBuilder
 import com.querydsl.core.types.dsl.CaseBuilder
+import com.querydsl.jpa.JPAExpressions
 import com.querydsl.jpa.impl.JPAQueryFactory
 import org.appjam.smashing.domain.game.dto.projection.PendingResultAcceptedGameProjection
 import org.appjam.smashing.domain.game.dto.projection.QPendingResultAcceptedGameProjection
 import org.appjam.smashing.domain.game.entity.QGame.Companion.game
+import org.appjam.smashing.domain.game.entity.QGameResultSubmission
 import org.appjam.smashing.domain.game.enums.GameResultStatus
 import org.appjam.smashing.domain.matching.entity.QMatching.Companion.matching
 import org.appjam.smashing.domain.matching.enums.MatchingStatus
@@ -46,6 +48,9 @@ class GameRepositoryCustomImpl(
         val requesterTier = QTier("requesterTier")
         val receiverTier = QTier("receiverTier")
 
+        val submission = QGameResultSubmission("submission")
+        val submissionSub = QGameResultSubmission("submissionSub")
+
         val opponentIdExpr = CaseBuilder().`when`(matching.requester.id.eq(userId)).then(receiver.id)
             .otherwise(requester.id)
 
@@ -60,6 +65,10 @@ class GameRepositoryCustomImpl(
 
         val opponentTierCodeExpr = CaseBuilder().`when`(matching.requester.id.eq(userId)).then(receiverTier.code)
             .otherwise(requesterTier.code)
+
+        val latestAttemptNoSubQuery = JPAExpressions.select(submissionSub.attemptNo.max())
+            .from(submissionSub)
+            .where(submissionSub.game.id.eq(game.id))
 
         val where = BooleanBuilder().and(
                 matching.requester.id.eq(userId)
@@ -95,6 +104,8 @@ class GameRepositoryCustomImpl(
                     opponentOpenchatExpr,
                     opponentGenderExpr,
                     opponentTierCodeExpr,
+                    submission.id,
+                    submission.attemptNo,
                 )
             )
             .from(game)
@@ -111,7 +122,10 @@ class GameRepositoryCustomImpl(
                     .and(receiverProfile.sport.id.eq(sportId))
             )
             .join(receiverProfile.tier, receiverTier)
-
+            .leftJoin(submission).on(
+                submission.game.eq(game)
+                    .and(submission.attemptNo.eq(latestAttemptNoSubQuery))
+            )
             .where(where)
             .orderBy(CursorQueryUtils.orderBy(game.id, orderType))
             .limit((size + 1).toLong())
