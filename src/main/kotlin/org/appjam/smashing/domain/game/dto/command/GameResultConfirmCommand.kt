@@ -4,7 +4,7 @@ import org.appjam.smashing.domain.review.enums.ReviewRating
 import org.appjam.smashing.domain.review.enums.ReviewTag
 
 data class GameResultConfirmCommand(
-    val review: ReviewCommand?,
+    val review: ReviewCommand,
 ) {
     data class ReviewCommand(
         val rating: ReviewRating,

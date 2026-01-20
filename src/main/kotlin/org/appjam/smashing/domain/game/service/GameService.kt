@@ -179,7 +179,7 @@ class GameService(
         gameId: String,
         submissionId: String,
         command: GameResultConfirmCommand,
-    ) {
+    ): String? {
         val now = LocalDateTime.now(DEFAULT_ZONE_ID)
 
         // 게임 조회(잠금)
@@ -204,12 +204,6 @@ class GameService(
         if (submission.confirmer.id != confirmerUserId) {
             throw CustomException(ErrorCode.GAME_SUBMISSION_CONFIRMER_MISMATCH)
         }
-
-        // review 정책 검증
-        validateConfirmReviewRule(
-            attemptNo = submission.attemptNo,
-            review = command.review,
-        )
 
         // 확정 점수 매핑
         val scoreWinner = if (submission.winner.id == submission.submitter.id) submission.scoreSubmitter else submission.scoreConfirmer
@@ -249,16 +243,16 @@ class GameService(
         )
 
         // 후기 저장 + 후기 제출 알림 + SSE 발행
-        if (submission.attemptNo == 1) {
-            notifyReviewReceivedOnConfirm(
-                game = game,
-                reviewer = submission.confirmer,
-                reviewee = submission.submitter,
-                receiverProfile = submitterProfile,
-                review = command.review!!,
-                reviewerTierCode = confirmerProfile.tier.code,
-            )
-        }
+        val reviewId = notifyReviewReceivedOnConfirm(
+            game = game,
+            reviewer = submission.confirmer,
+            reviewee = submission.submitter,
+            receiverProfile = submitterProfile,
+            review = command.review,
+            reviewerTierCode = confirmerProfile.tier.code,
+        )
+
+        return reviewId
     }
 
     @Transactional(readOnly = true)
@@ -523,18 +517,6 @@ class GameService(
         }
     }
 
-    private fun validateConfirmReviewRule(
-        attemptNo: Int,
-        review: GameResultConfirmCommand.ReviewCommand?,
-    ) {
-        if (attemptNo == 1 && review == null) {
-            throw CustomException(ErrorCode.GAME_REVIEW_REQUIRED_ON_FIRST_SUBMISSION)
-        }
-        if (attemptNo != 1 && review != null) {
-            throw CustomException(ErrorCode.GAME_REVIEW_ONLY_FIRST_SUBMISSION_ALLOWED)
-        }
-    }
-
     private fun determineSubmitterAndConfirmer(
         submitterUserId: String,
         requester: User,
@@ -732,7 +714,7 @@ class GameService(
         receiverProfile: UserSportProfile,
         review: GameResultConfirmCommand.ReviewCommand,
         reviewerTierCode: TierCode,
-    ) {
+    ): String {
         val savedReview = gameReviewService.createReview(
             gameId = game.id!!,
             reviewer = reviewer,
@@ -772,6 +754,8 @@ class GameService(
                 )
             )
         )
+
+        return savedReview.id!!
     }
 
     private fun publishGameUpdated(
