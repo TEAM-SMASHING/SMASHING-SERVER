@@ -97,7 +97,8 @@ class AuthService(
         return SignUpResponse(
             accessToken = token.accessToken.token,
             refreshToken = token.refreshToken.token,
-            userId = user.id
+            userId = user.id,
+            nickname = user.nickname,
         )
     }
 
