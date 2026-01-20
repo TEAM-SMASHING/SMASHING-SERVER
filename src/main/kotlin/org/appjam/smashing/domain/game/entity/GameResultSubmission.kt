@@ -132,7 +132,7 @@ class GameResultSubmission(
         this.actedAt = actedAt
     }
 
-    fun reject(
+    fun rejectWithReason(
         reason: GameResultRejectReason,
         actedAt: LocalDateTime,
     ) {
