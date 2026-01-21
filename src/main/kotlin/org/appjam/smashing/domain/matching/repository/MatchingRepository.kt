@@ -67,4 +67,10 @@ interface MatchingRepository : JpaRepository<Matching, String>, MatchingReposito
         userA: String,
         userB: String,
     ): Int
+
+    fun findFirstByReceiverIdAndSportIdAndStatusOrderByCreatedAtDesc(
+        receiverId: String,
+        sportId: Long,
+        status: MatchingStatus
+    ): Matching?
 }

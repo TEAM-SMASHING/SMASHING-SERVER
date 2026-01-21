@@ -207,7 +207,14 @@ class UserService(
 
         val canChallenge = validateDailyLimit && validateNoPendingMatching
 
-        val canAccept = true
+        val receivedMatching = matchingRepository.findFirstByReceiverIdAndSportIdAndStatusOrderByCreatedAtDesc(
+            receiverId = userId,
+            sportId = selectedProfile.sport.id!!,
+            status = MatchingStatus.REQUESTED
+        )
+
+        val canAccept = receivedMatching != null
+        val matchingId = receivedMatching?.id
 
         return OtherUserProfilesResponse.from(
             nickname = otherUser.nickname,
@@ -217,7 +224,7 @@ class UserService(
             allProfiles = allProfiles,
             canChallenge = canChallenge,
             canAccept = canAccept,
-            matchingId = "", // todo change
+            matchingId = matchingId,
         )
     }
 

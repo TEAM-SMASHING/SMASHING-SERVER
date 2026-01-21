@@ -76,7 +76,7 @@ data class OtherUserProfilesResponse(
             reviews: Long,
             canChallenge: Boolean,
             canAccept: Boolean,
-            matchingId: String,
+            matchingId: String?,
             selectedProfile: UserSportProfile,
             allProfiles: List<UserSportProfile>,
         ) = OtherUserProfilesResponse(
