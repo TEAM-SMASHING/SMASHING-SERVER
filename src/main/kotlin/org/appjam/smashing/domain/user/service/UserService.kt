@@ -529,8 +529,12 @@ class UserService(
     fun getUserRegion(
         userId: String,
     ): UserRegionResponse {
+        val user = userRepository.findByIdOrNull(userId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
-        TODO()
+        return UserRegionResponse(
+            region = user.region
+        )
     }
 
     companion object {
