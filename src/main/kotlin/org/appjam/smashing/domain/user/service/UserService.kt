@@ -189,7 +189,9 @@ class UserService(
             gender = otherUser.gender,
             reviews = reviews,
             selectedProfile = selectedProfile,
-            allProfiles = allProfiles
+            allProfiles = allProfiles,
+            canChallenge = true, // todo change
+            canAccept = false,  // todo change
         )
     }
 
