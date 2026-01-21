@@ -359,8 +359,9 @@ class GameService(
             return
         }
 
-        // 2회차 이상 반려: 제출안 삭제 + 알림/SSE 없음
+        // 2회차 이상 반려: 게임 + 제출안 삭제 + 알림/SSE 없음
         submissionRepository.delete(submission)
+        gameRepository.delete(game)
     }
 
     @Transactional
