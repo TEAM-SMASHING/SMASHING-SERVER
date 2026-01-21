@@ -25,6 +25,7 @@ import org.appjam.smashing.domain.outbox.dto.GameResultSubmittedNotificationCrea
 import org.appjam.smashing.domain.outbox.dto.GameUpdatedPayload
 import org.appjam.smashing.domain.outbox.dto.ReviewReceivedNotificationCreatedPayload
 import org.appjam.smashing.domain.outbox.enums.SseEventType
+import org.appjam.smashing.domain.review.repository.GameReviewRepository
 import org.appjam.smashing.domain.review.service.GameReviewService
 import org.appjam.smashing.domain.tier.entity.Tier
 import org.appjam.smashing.domain.tier.enums.TierCode
@@ -53,6 +54,7 @@ class GameService(
     private val notificationService: NotificationService,
     private val outboxEventPublisher: OutboxEventPublisher,
     private val gameReviewService: GameReviewService,
+    private val gameReviewRepository: GameReviewRepository,
     private val userSportProfileRepository: UserSportProfileRepository,
     private val lpHistoryRepository: LpHistoryRepository,
     private val tierRepository: TierRepository,
@@ -230,6 +232,12 @@ class GameService(
             .findByUserIdAndSportIdForUpdate(submission.confirmer.id!!, sportId)
             ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
 
+        val opponentReviewId = gameReviewRepository.findIdByGameAndReviewerAndReviewee(
+            gameId = gameId,
+            reviewerId = submission.submitter.id!!,
+            revieweeId = submission.confirmer.id!!,
+        ) ?: throw CustomException(ErrorCode.REVIEW_NOT_FOUND)
+
         // 승자/패자 프로필 업데이트 (승리/패배 수 + LP + 티어 + LP history)
         val winnerProfile = if (submission.winner.id == submission.submitter.id) submitterProfile else confirmerProfile
         val loserProfile = if (submission.loser.id == submission.submitter.id) submitterProfile else confirmerProfile
@@ -244,7 +252,7 @@ class GameService(
         )
 
         // 후기 저장 + 후기 제출 알림 + SSE 발행
-        val reviewId = notifyReviewReceivedOnConfirm(
+        notifyReviewReceivedOnConfirm(
             game = game,
             reviewer = submission.confirmer,
             reviewee = submission.submitter,
@@ -253,7 +261,8 @@ class GameService(
             reviewerTierCode = confirmerProfile.tier.code,
         )
 
-        return GameResultConfirmResponse.from(reviewId)
+        // 응답은 상대가 나에게 쓴 리뷰 ID
+        return GameResultConfirmResponse.from(opponentReviewId)
     }
 
     @Transactional(readOnly = true)
