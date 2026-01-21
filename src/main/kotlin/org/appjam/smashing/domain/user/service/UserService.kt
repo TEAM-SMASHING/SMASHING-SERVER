@@ -315,7 +315,6 @@ class UserService(
         val leaderBoardProfiles = userSportProfileRepository.findAllByRegionAndSportOrderByLp(
             region = myInfo.user.region,
             sportId = myInfo.activeProfile.sport.id!!,
-            excludeUserId = myInfo.user.id!!
         )
 
         return OtherUsersLeaderBoardResponse.from(
