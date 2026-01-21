@@ -8,7 +8,7 @@ data class ReviewDetailResponse(
     val reviewerNickname: String,
     val revieweeNickname: String,
     val tag: List<String>,
-    val content: String,
+    val content: String?,
 ) {
     companion object {
         fun from(
@@ -18,7 +18,7 @@ data class ReviewDetailResponse(
             reviewerNickname = gr.reviewer.nickname,
             revieweeNickname = gr.reviewee.nickname,
             tag = gr.tags.map { it.name },
-            content = gr.content.orEmpty()
+            content = gr.content
         )
     }
 }
