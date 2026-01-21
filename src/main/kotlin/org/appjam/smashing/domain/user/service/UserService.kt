@@ -1,5 +1,9 @@
 package org.appjam.smashing.domain.user.service
 
+import org.appjam.smashing.domain.game.repository.GameRepository
+import org.appjam.smashing.domain.matching.enums.MatchingStatus
+import org.appjam.smashing.domain.matching.repository.MatchingRepository
+import org.appjam.smashing.domain.matching.service.MatchingService
 import org.appjam.smashing.domain.review.repository.GameReviewRepository
 import org.appjam.smashing.domain.sport.repository.SportRepository
 import org.appjam.smashing.domain.tier.repository.TierRepository
@@ -14,9 +18,11 @@ import org.appjam.smashing.global.common.dto.CursorResponse
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
 import org.appjam.smashing.global.util.TimeUtils
+import org.appjam.smashing.global.util.TimeUtils.DEFAULT_ZONE_ID
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
 
 @Service
@@ -26,6 +32,8 @@ class UserService(
     private val sportRepository: SportRepository,
     private val tierRepository: TierRepository,
     private val gameReviewRepository: GameReviewRepository,
+    private val gameRepository: GameRepository,
+    private val matchingRepository: MatchingRepository,
 ) {
     @Transactional(readOnly = true)
     fun checkNicknameAvailability(
@@ -163,6 +171,7 @@ class UserService(
 
     @Transactional(readOnly = true)
     fun getOtherUserProfiles(
+        userId: String,
         otherUserId: String,
         sportCode: String?,
     ): OtherUserProfilesResponse {
@@ -184,15 +193,67 @@ class UserService(
             sportId = selectedProfile.sport.id!!,
         )
 
+        // 하루 (00:00 ~) 최대 3회 게임 가능
+        val validateDailyLimit = validateDailyLimit(
+            requesterUserId = userId,
+            receiverUserId = selectedProfile.user.id!!,
+        )
+
+        // 24시간 내 매칭 요청이 남아있는 경우, 동일 상대방에 대해 중복 매칭 요청 불가
+        val validateNoPendingMatching = validateNoPendingMatching(
+            requesterUserId = userId,
+            receiverUserId = selectedProfile.user.id!!,
+        )
+
+        val canChallenge = validateDailyLimit && validateNoPendingMatching
+
+        val canAccept = true
+
         return OtherUserProfilesResponse.from(
             nickname = otherUser.nickname,
             gender = otherUser.gender,
             reviews = reviews,
             selectedProfile = selectedProfile,
             allProfiles = allProfiles,
-            canChallenge = true, // todo change
-            canAccept = false,  // todo change
+            canChallenge = canChallenge,
+            canAccept = canAccept,
+            matchingId = "", // todo change
         )
+    }
+
+    private fun validateDailyLimit(
+        requesterUserId: String,
+        receiverUserId: String
+    ): Boolean {
+        val now = LocalDateTime.now(DEFAULT_ZONE_ID)
+        val startOfDay = now.toLocalDate().atStartOfDay()
+
+        // 하루 확정 게임 갯수 조회
+        val todayConfirmedGames = gameRepository.countTodayConfirmedGamesBetweenUsers(
+            startAt = startOfDay,
+            userA = requesterUserId,
+            userB = receiverUserId,
+        )
+
+        // 하루 최대 3회 제한
+        return todayConfirmedGames < 3L
+    }
+
+    private fun validateNoPendingMatching(
+        requesterUserId: String,
+        receiverUserId: String,
+    ): Boolean {
+        val now = LocalDateTime.now(MatchingService.DEFAULT_ZONE_ID)
+        val since = now.minusHours(24)
+
+        val existsPending = matchingRepository.existsBetweenUsersSinceWithStatus(
+            startAt = since,
+            userA = requesterUserId,
+            userB = receiverUserId,
+            status = MatchingStatus.REQUESTED,
+        )
+
+        return !existsPending
     }
 
     @Transactional

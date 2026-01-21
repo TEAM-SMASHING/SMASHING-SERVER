@@ -7,6 +7,9 @@ import org.appjam.smashing.domain.user.enums.Gender
 data class OtherUserProfilesResponse(
     val nickname: String,
     val gender: Gender,
+    val canChallenge: Boolean,
+    val canAccept: Boolean,
+    val matchingId: String?,
     val selectedProfile: SelectedProfile,
     val allProfiles: List<ProfileInfo>,
 ) {
@@ -20,15 +23,11 @@ data class OtherUserProfilesResponse(
         val wins: Int,
         val losses: Int,
         val reviews: Long,
-        val canChallenge: Boolean,
-        val canAccept: Boolean,
     ) {
         companion object {
             fun from(
                 u: UserSportProfile,
                 reviews: Long,
-                canChallenge: Boolean,
-                canAccept: Boolean,
             ) = SelectedProfile(
                 profileId = u.id!!,
                 sportCode = u.sport.code,
@@ -39,8 +38,6 @@ data class OtherUserProfilesResponse(
                 wins = u.wins,
                 losses = u.losses,
                 reviews = reviews,
-                canChallenge = canChallenge,
-                canAccept = canAccept,
             )
         }
     }
@@ -79,16 +76,18 @@ data class OtherUserProfilesResponse(
             reviews: Long,
             canChallenge: Boolean,
             canAccept: Boolean,
+            matchingId: String,
             selectedProfile: UserSportProfile,
             allProfiles: List<UserSportProfile>,
         ) = OtherUserProfilesResponse(
             nickname = nickname,
             gender = gender,
+            canChallenge = canChallenge,
+            canAccept = canAccept,
+            matchingId = matchingId,
             selectedProfile = SelectedProfile.from(
                 u = selectedProfile,
                 reviews = reviews,
-                canChallenge = canChallenge,
-                canAccept = canAccept,
             ),
             allProfiles = ProfileInfo.listForm(
                 allProfiles = allProfiles,

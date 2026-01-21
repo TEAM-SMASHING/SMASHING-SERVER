@@ -123,6 +123,7 @@ class UserController(
         @RequestParam sportCode: String?,
     ): ResponseEntity<ApiResponse<OtherUserProfilesResponse>> {
         val response = userService.getOtherUserProfiles(
+            userId = principal.username,
             otherUserId = userId,
             sportCode = sportCode,
         )
