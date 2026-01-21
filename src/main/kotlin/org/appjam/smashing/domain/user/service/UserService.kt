@@ -220,7 +220,7 @@ class UserService(
             allProfiles = allProfiles,
             isChallengeable = validateDailyLimit && validateNoMatchingRequest,
             isAcceptable = receivedMatching != null,
-            matchingId = receivedMatching?.id,
+            receivedMatchingId = receivedMatching?.id,
         )
     }
 

@@ -9,7 +9,7 @@ data class OtherUserProfilesResponse(
     val gender: Gender,
     val isChallengeable: Boolean,
     val isAcceptable: Boolean,
-    val matchingId: String?,
+    val receivedMatchingId: String?,
     val selectedProfile: SelectedProfile,
     val allProfiles: List<ProfileInfo>,
 ) {
@@ -76,7 +76,7 @@ data class OtherUserProfilesResponse(
             reviews: Long,
             isChallengeable: Boolean,
             isAcceptable: Boolean,
-            matchingId: String?,
+            receivedMatchingId: String?,
             selectedProfile: UserSportProfile,
             allProfiles: List<UserSportProfile>,
         ) = OtherUserProfilesResponse(
@@ -84,7 +84,7 @@ data class OtherUserProfilesResponse(
             gender = gender,
             isChallengeable = isChallengeable,
             isAcceptable = isAcceptable,
-            matchingId = matchingId,
+            receivedMatchingId = receivedMatchingId,
             selectedProfile = SelectedProfile.from(
                 u = selectedProfile,
                 reviews = reviews,
