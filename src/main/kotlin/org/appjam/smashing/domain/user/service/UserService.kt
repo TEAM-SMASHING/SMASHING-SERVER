@@ -525,6 +525,14 @@ class UserService(
         )
     }
 
+    @Transactional(readOnly = true)
+    fun getUserRegion(
+        userId: String,
+    ): UserRegionResponse {
+
+        TODO()
+    }
+
     companion object {
         private val NICKNAME_VALID_REGEX = Regex("^[a-zA-Z0-9가-힣]*$")
         private const val MAX_NICKNAME_LENGTH = 10
