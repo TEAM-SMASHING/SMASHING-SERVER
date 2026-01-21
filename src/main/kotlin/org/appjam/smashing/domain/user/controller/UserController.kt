@@ -390,6 +390,12 @@ class UserController(
         )
     }
 
+    @Operation(
+        summary = "사용자 주소 조회 API",
+        description = """
+            사용자 주소를 조회합니다.
+        """
+    )
     @GetMapping("/me/regions")
     fun getUserRegion(
         @AuthenticationPrincipal principal: CustomUserDetails,
