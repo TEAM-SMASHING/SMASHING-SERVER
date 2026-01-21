@@ -3,6 +3,7 @@ package org.appjam.smashing.domain.game.service
 import org.appjam.smashing.domain.game.dto.command.GameResultConfirmCommand
 import org.appjam.smashing.domain.game.dto.command.GameResultRejectCommand
 import org.appjam.smashing.domain.game.dto.command.GameResultSubmitCommand
+import org.appjam.smashing.domain.game.dto.response.GameResultConfirmResponse
 import org.appjam.smashing.domain.game.dto.response.GameResultSubmissionDetailResponse
 import org.appjam.smashing.domain.game.dto.response.GameResultSubmitLockResponse
 import org.appjam.smashing.domain.game.dto.response.GameResultSubmitResponse
@@ -179,7 +180,7 @@ class GameService(
         gameId: String,
         submissionId: String,
         command: GameResultConfirmCommand,
-    ): String? {
+    ): GameResultConfirmResponse {
         val now = LocalDateTime.now(DEFAULT_ZONE_ID)
 
         // 게임 조회(잠금)
@@ -252,7 +253,7 @@ class GameService(
             reviewerTierCode = confirmerProfile.tier.code,
         )
 
-        return reviewId
+        return GameResultConfirmResponse.from(reviewId)
     }
 
     @Transactional(readOnly = true)

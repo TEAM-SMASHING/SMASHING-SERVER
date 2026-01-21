@@ -6,6 +6,7 @@ import jakarta.validation.Valid
 import org.appjam.smashing.domain.game.dto.request.GameResultConfirmRequest
 import org.appjam.smashing.domain.game.dto.request.GameResultRejectRequest
 import org.appjam.smashing.domain.game.dto.request.GameResultSubmitRequest
+import org.appjam.smashing.domain.game.dto.response.GameResultConfirmResponse
 import org.appjam.smashing.domain.game.dto.response.GameResultSubmissionDetailResponse
 import org.appjam.smashing.domain.game.dto.response.GameResultSubmitResponse
 import org.appjam.smashing.domain.game.service.GameService
@@ -83,15 +84,15 @@ class GameController(
         @PathVariable gameId: String,
         @PathVariable submissionId: String,
         @Valid @RequestBody request: GameResultConfirmRequest,
-    ): ResponseEntity<ApiResponse<Unit>> {
-        gameService.confirmResult(
+    ): ResponseEntity<ApiResponse<GameResultConfirmResponse>> {
+        val response =gameService.confirmResult(
             confirmerUserId = principal.username,
             gameId = gameId,
             submissionId = submissionId,
             command = request.toCommand(),
         )
 
-        return ApiResponse.success()
+        return ApiResponse.success(response)
     }
 
     @Operation(
