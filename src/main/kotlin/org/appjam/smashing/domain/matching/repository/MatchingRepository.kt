@@ -49,6 +49,12 @@ interface MatchingRepository : JpaRepository<Matching, String>, MatchingReposito
         userB: String,
     ): Int
 
+    fun findFirstByReceiverIdAndSportIdAndStatusOrderByCreatedAtDesc(
+        receiverId: String,
+        sportId: Long,
+        status: MatchingStatus
+    ): Matching?
+
     @Query(
         value = """
         select exists(

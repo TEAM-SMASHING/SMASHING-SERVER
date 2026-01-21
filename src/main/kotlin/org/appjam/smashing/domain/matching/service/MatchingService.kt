@@ -563,6 +563,6 @@ class MatchingService(
     }
 
     companion object {
-        private val DEFAULT_ZONE_ID = ZoneId.of("Asia/Seoul")
+        val DEFAULT_ZONE_ID = ZoneId.of("Asia/Seoul")
     }
 }

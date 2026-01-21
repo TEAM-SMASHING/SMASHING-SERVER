@@ -7,6 +7,9 @@ import org.appjam.smashing.domain.user.enums.Gender
 data class OtherUserProfilesResponse(
     val nickname: String,
     val gender: Gender,
+    val isChallengeable: Boolean,
+    val isAcceptable: Boolean,
+    val receivedMatchingId: String?,
     val selectedProfile: SelectedProfile,
     val allProfiles: List<ProfileInfo>,
 ) {
@@ -71,14 +74,20 @@ data class OtherUserProfilesResponse(
             nickname: String,
             gender: Gender,
             reviews: Long,
+            isChallengeable: Boolean,
+            isAcceptable: Boolean,
+            receivedMatchingId: String?,
             selectedProfile: UserSportProfile,
             allProfiles: List<UserSportProfile>,
         ) = OtherUserProfilesResponse(
             nickname = nickname,
             gender = gender,
+            isChallengeable = isChallengeable,
+            isAcceptable = isAcceptable,
+            receivedMatchingId = receivedMatchingId,
             selectedProfile = SelectedProfile.from(
                 u = selectedProfile,
-                reviews = reviews
+                reviews = reviews,
             ),
             allProfiles = ProfileInfo.listForm(
                 allProfiles = allProfiles,
