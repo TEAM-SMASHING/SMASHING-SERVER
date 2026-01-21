@@ -27,25 +27,6 @@ interface MatchingRepository : JpaRepository<Matching, String>, MatchingReposito
         matchingId: String
     ): Matching?
 
-    @Query(
-        """
-        select case when count(m) > 0 then true else false end
-        from Matching m
-        where m.status = :status
-          and m.createdAt >= :startAt
-          and (
-                (m.requester.id = :userA and m.receiver.id = :userB)
-             or (m.requester.id = :userB and m.receiver.id = :userA)
-          )
-        """
-    )
-    fun existsBetweenUsersSinceWithStatus(
-        startAt: LocalDateTime,
-        userA: String,
-        userB: String,
-        status: MatchingStatus,
-    ): Boolean
-
     @Modifying
     @Query(
         """
@@ -73,4 +54,26 @@ interface MatchingRepository : JpaRepository<Matching, String>, MatchingReposito
         sportId: Long,
         status: MatchingStatus
     ): Matching?
+
+    @Query(
+        value = """
+        select exists(
+            select 1
+            from matching m
+            where m.created_at >= :startAt
+              and m.status not in ('ACCEPTED', 'COMPLETED')
+              and (
+                (m.requester_user_id = :userA and m.receiver_user_id = :userB)
+                or
+                (m.requester_user_id = :userB and m.receiver_user_id = :userA)
+              )
+        )
+    """,
+        nativeQuery = true
+    )
+    fun existsBetweenUsersSinceExcludingAcceptedAndCompleted(
+        startAt: LocalDateTime,
+        userA: String,
+        userB: String,
+    ): Boolean
 }
