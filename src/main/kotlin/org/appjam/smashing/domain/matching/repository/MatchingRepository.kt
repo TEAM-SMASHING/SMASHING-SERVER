@@ -55,6 +55,7 @@ interface MatchingRepository : JpaRepository<Matching, String>, MatchingReposito
             select 1
             from matching m
             where m.created_at >= :startAt
+              and m.status not in ('ACCEPTED', 'COMPLETED')
               and (
                 (m.requester_user_id = :userA and m.receiver_user_id = :userB)
                 or
@@ -64,10 +65,9 @@ interface MatchingRepository : JpaRepository<Matching, String>, MatchingReposito
     """,
         nativeQuery = true
     )
-    fun existsBetweenUsersSinceIncludingDeleted(
+    fun existsBetweenUsersSinceExcludingAcceptedAndCompleted(
         startAt: LocalDateTime,
         userA: String,
         userB: String,
     ): Boolean
-
 }

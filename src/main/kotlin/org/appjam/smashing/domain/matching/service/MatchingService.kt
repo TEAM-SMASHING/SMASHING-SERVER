@@ -64,7 +64,7 @@ class MatchingService(
             receiverUserId = receiverProfile.user.id!!,
         )
 
-        // 24시간 내 매칭 요청 이력이 남아있는 경우, 동일 상대방에 대해 중복 매칭 요청 불가
+        // 24시간 내 진행되지 않은 매칭 요청 이력이 남아있는 경우, 동일 상대방에 대해 중복 매칭 요청 불가
         validateNoMatchingRequestWithin24h(
             requesterUserId = requesterUserId,
             receiverUserId = receiverProfile.user.id!!,
@@ -384,13 +384,13 @@ class MatchingService(
         val now = LocalDateTime.now(DEFAULT_ZONE_ID)
         val since = now.minusHours(24)
 
-        val existsRequestWithin24h = matchingRepository.existsBetweenUsersSinceIncludingDeleted(
+        val existsBlockedHistory = matchingRepository.existsBetweenUsersSinceExcludingAcceptedAndCompleted(
                 startAt = since,
                 userA = requesterUserId,
                 userB = receiverUserId,
             )
 
-        if (existsRequestWithin24h) {
+        if (existsBlockedHistory) {
             throw CustomException(ErrorCode.MATCHING_PENDING_EXISTS)
         }
     }
