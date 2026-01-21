@@ -64,8 +64,8 @@ class MatchingService(
             receiverUserId = receiverProfile.user.id!!,
         )
 
-        // 24시간 내 매칭 요청이 남아있는 경우, 동일 상대방에 대해 중복 매칭 요청 불가
-        validateNoPendingMatching(
+        // 24시간 내 매칭 요청 이력이 남아있는 경우, 동일 상대방에 대해 중복 매칭 요청 불가
+        validateNoMatchingRequestWithin24h(
             requesterUserId = requesterUserId,
             receiverUserId = receiverProfile.user.id!!,
         )
@@ -302,16 +302,26 @@ class MatchingService(
         )
     }
 
-    private fun findReceiverProfile(receiverProfileId: String): UserSportProfile = userSportProfileRepository.findByIdFetchAll(receiverProfileId)
+    private fun findReceiverProfile(
+        receiverProfileId: String
+    ) = userSportProfileRepository.findByIdFetchAll(receiverProfileId)
         ?: throw CustomException(ErrorCode.MATCHING_RECEIVER_PROFILE_NOT_FOUND)
 
-    private fun findRequesterUser(requesterUserId: String): User = userRepository.findByIdOrNull(requesterUserId)
+    private fun findRequesterUser(
+        requesterUserId: String
+    ) = userRepository.findByIdOrNull(requesterUserId)
         ?: throw CustomException(ErrorCode.MATCHING_REQUESTER_NOT_FOUND)
 
-    private fun findRequesterProfileBySport(requesterUserId: String, sportId: Long): UserSportProfile = userSportProfileRepository.findByUserIdAndSportIdFetch(requesterUserId, sportId)
+    private fun findRequesterProfileBySport(
+        requesterUserId: String,
+        sportId: Long
+    ) = userSportProfileRepository.findByUserIdAndSportIdFetch(requesterUserId, sportId)
         ?: throw CustomException(ErrorCode.MATCHING_REQUESTER_NOT_FOUND)
 
-    private fun validateNotSelf(requesterUserId: String, receiverUserId: String) {
+    private fun validateNotSelf(
+        requesterUserId: String,
+        receiverUserId: String
+    ) {
         if (requesterUserId == receiverUserId) {
             throw CustomException(ErrorCode.MATCHING_CANNOT_REQUEST_TO_SELF)
         }
@@ -367,21 +377,20 @@ class MatchingService(
         }
     }
 
-    private fun validateNoPendingMatching(
+    private fun validateNoMatchingRequestWithin24h(
         requesterUserId: String,
         receiverUserId: String,
     ) {
         val now = LocalDateTime.now(DEFAULT_ZONE_ID)
         val since = now.minusHours(24)
 
-        val existsPending = matchingRepository.existsBetweenUsersSinceWithStatus(
-            startAt = since,
-            userA = requesterUserId,
-            userB = receiverUserId,
-            status = MatchingStatus.REQUESTED,
-        )
+        val existsRequestWithin24h = matchingRepository.existsBetweenUsersSinceIncludingDeleted(
+                startAt = since,
+                userA = requesterUserId,
+                userB = receiverUserId,
+            )
 
-        if (existsPending) {
+        if (existsRequestWithin24h) {
             throw CustomException(ErrorCode.MATCHING_PENDING_EXISTS)
         }
     }
