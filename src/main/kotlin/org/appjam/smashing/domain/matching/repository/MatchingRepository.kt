@@ -65,9 +65,9 @@ interface MatchingRepository : JpaRepository<Matching, String>, MatchingReposito
     """,
         nativeQuery = true
     )
-    fun existsBetweenUsersSinceExcludingAcceptedAndCompleted(
+    fun existsBetweenUsersSinceExcludingAcceptedAndCompletedRaw(
         startAt: LocalDateTime,
         userA: String,
         userB: String,
-    ): Boolean
+    ): Long
 }
