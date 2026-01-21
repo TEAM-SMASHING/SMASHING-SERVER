@@ -532,7 +532,7 @@ class UserService(
         val user = userRepository.findByIdOrNull(userId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
-        return UserRegionResponse(
+        return UserRegionResponse.from(
             region = user.region
         )
     }
