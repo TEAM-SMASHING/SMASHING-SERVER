@@ -201,7 +201,7 @@ class UserService(
             receiverUserId = selectedProfile.user.id!!,
         )
         // 24시간 내 매칭 요청이 남아있는 경우, 동일 상대방에 대해 중복 매칭 요청 불가
-        val validateNoPendingMatching = validateNoPendingMatching(
+        val validateNoMatchingRequest = validateNoMatchingRequestWithin24h(
             requesterUserId = userId,
             receiverUserId = selectedProfile.user.id!!,
         )
@@ -218,7 +218,7 @@ class UserService(
             reviews = reviews,
             selectedProfile = selectedProfile,
             allProfiles = allProfiles,
-            isChallengeable = validateDailyLimit && validateNoPendingMatching,
+            isChallengeable = validateDailyLimit && validateNoMatchingRequest,
             isAcceptable = receivedMatching != null,
             matchingId = receivedMatching?.id,
         )
@@ -242,21 +242,16 @@ class UserService(
         return todayConfirmedGames < 3L
     }
 
-    private fun validateNoPendingMatching(
+    private fun validateNoMatchingRequestWithin24h(
         requesterUserId: String,
         receiverUserId: String,
     ): Boolean {
         val now = LocalDateTime.now(MatchingService.DEFAULT_ZONE_ID)
         val since = now.minusHours(24)
 
-        val existsPending = matchingRepository.existsBetweenUsersSinceWithStatus(
-            startAt = since,
-            userA = requesterUserId,
-            userB = receiverUserId,
-            status = MatchingStatus.REQUESTED,
-        )
+        val existsBlockedHistory = matchingRepository.existsBetweenUsersSinceExcludingAcceptedAndCompletedRaw(since, requesterUserId, receiverUserId) == 1L
 
-        return !existsPending
+        return !existsBlockedHistory
     }
 
     @Transactional
