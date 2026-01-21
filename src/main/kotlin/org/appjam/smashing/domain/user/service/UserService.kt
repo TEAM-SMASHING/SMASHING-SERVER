@@ -453,12 +453,15 @@ class UserService(
         sportCode: String?
     ) = if (sportCode == null) {
         val myInfo = getMyInfoAndActiveProfile(userId)
-        val allProfiles = userSportProfileRepository.findAllByUserIdOrderBySportName(otherUser.id!!)
-        allProfiles.find { myInfo.activeProfile.sport.code == it.sport.code }
-            ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
+        userSportProfileRepository.findByUserIdAndSportCode(
+            userId = otherUser.id!!,
+            sportCode = myInfo.activeProfile.sport.code,
+        ) ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
     } else {
-        userSportProfileRepository.findByUserIdAndSportCode(otherUser.id!!, sportCode)
-            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+        userSportProfileRepository.findByUserIdAndSportCode(
+            userId = otherUser.id!!,
+            sportCode = sportCode,
+        ) ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
     }
 
     private fun getCounts(
