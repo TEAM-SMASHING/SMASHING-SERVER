@@ -205,14 +205,14 @@ class UserService(
             requesterUserId = userId,
             receiverUserId = selectedProfile.user.id!!,
         )
-        val canChallenge = validateDailyLimit && validateNoPendingMatching
+        val isChallengeable = validateDailyLimit && validateNoPendingMatching
 
         val receivedMatching = matchingRepository.findFirstByReceiverIdAndSportIdAndStatusOrderByCreatedAtDesc(
             receiverId = userId,
             sportId = selectedProfile.sport.id!!,
             status = MatchingStatus.REQUESTED
         )
-        val canAccept = receivedMatching != null
+        val isAcceptable = receivedMatching != null
         val matchingId = receivedMatching?.id
 
         return OtherUserProfilesResponse.from(
@@ -221,8 +221,8 @@ class UserService(
             reviews = reviews,
             selectedProfile = selectedProfile,
             allProfiles = allProfiles,
-            canChallenge = canChallenge,
-            canAccept = canAccept,
+            isChallengeable = isChallengeable,
+            isAcceptable = isAcceptable,
             matchingId = matchingId,
         )
     }
