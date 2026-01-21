@@ -175,13 +175,15 @@ class UserService(
         otherUserId: String,
         sportCode: String?,
     ): OtherUserProfilesResponse {
+        val myInfo = getMyInfoAndActiveProfile(userId)
+
         val otherUser = userRepository.findByIdOrNull(otherUserId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
         val allProfiles = userSportProfileRepository.findAllByUserIdOrderBySportName(otherUserId)
 
         val selectedProfile = if (sportCode == null) {
-            allProfiles.find { it.id == otherUser.activeUserSportProfileId }
+            allProfiles.find { myInfo.activeProfile.sport.code == it.sport.code }
                 ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
         } else {
             allProfiles.find { it.sport.code == sportCode }
