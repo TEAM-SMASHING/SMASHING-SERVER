@@ -389,4 +389,17 @@ class UserController(
             data = response,
         )
     }
+
+    @GetMapping("/me/regions")
+    fun getUserRegion(
+        @AuthenticationPrincipal principal: CustomUserDetails,
+    ): ResponseEntity<ApiResponse<UserRegionResponse>> {
+        val response = userService.getUserRegion(
+            userId = principal.username,
+        )
+
+        return ApiResponse.success(
+            data = response,
+        )
+    }
 }
