@@ -106,7 +106,6 @@ interface UserSportProfileRepository : JpaRepository<UserSportProfile, String>, 
             join fetch usp.tier t
             where u.region = :region
               and s.id = :sportId
-              and u.id <> :excludeUserId
             order by usp.lp desc, u.nickname asc 
             limit 30
         """
@@ -114,7 +113,6 @@ interface UserSportProfileRepository : JpaRepository<UserSportProfile, String>, 
     fun findAllByRegionAndSportOrderByLp(
         region: String,
         sportId: Long,
-        excludeUserId: String
     ): List<UserSportProfile>
 
     fun findByUserIdAndSportCode(
