@@ -200,13 +200,11 @@ class UserService(
             requesterUserId = userId,
             receiverUserId = selectedProfile.user.id!!,
         )
-
         // 24시간 내 매칭 요청이 남아있는 경우, 동일 상대방에 대해 중복 매칭 요청 불가
         val validateNoPendingMatching = validateNoPendingMatching(
             requesterUserId = userId,
             receiverUserId = selectedProfile.user.id!!,
         )
-
         val canChallenge = validateDailyLimit && validateNoPendingMatching
 
         val receivedMatching = matchingRepository.findFirstByReceiverIdAndSportIdAndStatusOrderByCreatedAtDesc(
@@ -214,7 +212,6 @@ class UserService(
             sportId = selectedProfile.sport.id!!,
             status = MatchingStatus.REQUESTED
         )
-
         val canAccept = receivedMatching != null
         val matchingId = receivedMatching?.id
 
