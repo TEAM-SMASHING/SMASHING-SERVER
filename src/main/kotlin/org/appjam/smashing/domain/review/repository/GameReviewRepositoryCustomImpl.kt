@@ -28,6 +28,8 @@ class GameReviewRepositoryCustomImpl(
             .and(gr.reviewee.id.eq(userId))
             .and(gr.game.sport.id.eq(sportId))
             .and(gr.createdAt.loe(snapshotAt.toLocalDateTime()))
+            .and(gr.content.isNotNull)
+            .and(gr.content.isNotEmpty)
 
         if (cursor != null) {
             where.and(gr.id.lt(cursor.id))
