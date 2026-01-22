@@ -206,8 +206,9 @@ class UserService(
             receiverUserId = selectedProfile.user.id!!,
         )
 
-        val receivedMatching = matchingRepository.findFirstByReceiverIdAndSportIdAndStatusOrderByCreatedAtDesc(
+        val receivedMatching = matchingRepository.findFirstByReceiverIdAndRequesterIdAndSportIdAndStatusOrderByCreatedAtDesc(
             receiverId = userId,
+            requesterId = otherUserId,
             sportId = selectedProfile.sport.id!!,
             status = MatchingStatus.REQUESTED
         )
