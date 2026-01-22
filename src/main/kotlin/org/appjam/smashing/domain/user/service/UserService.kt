@@ -395,7 +395,8 @@ class UserService(
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
         val selectedProfile = resolveProfile(
-            user = otherUser,
+            userId = userId,
+            otherUser = otherUser,
             sportCode = sportCode,
         )
 
@@ -428,7 +429,8 @@ class UserService(
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
         val selectedProfile = resolveProfile(
-            user = otherUser,
+            userId = userId,
+            otherUser = otherUser,
             sportCode = sportCode,
         )
 
@@ -445,16 +447,22 @@ class UserService(
         )
     }
 
-    private fun resolveProfile(user: User, sportCode: String?) =
-        if (sportCode == null) {
-            val activeProfileId = user.activeUserSportProfileId
-                ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
-            userSportProfileRepository.findByIdOrNull(activeProfileId)
-                ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
-        } else {
-            userSportProfileRepository.findByUserIdAndSportCode(user.id!!, sportCode)
-                ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
-        }
+    private fun resolveProfile(
+        userId: String,
+        otherUser: User,
+        sportCode: String?
+    ) = if (sportCode == null) {
+        val myInfo = getMyInfoAndActiveProfile(userId)
+        userSportProfileRepository.findByUserIdAndSportCode(
+            userId = otherUser.id!!,
+            sportCode = myInfo.activeProfile.sport.code,
+        ) ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+    } else {
+        userSportProfileRepository.findByUserIdAndSportCode(
+            userId = otherUser.id!!,
+            sportCode = sportCode,
+        ) ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+    }
 
     private fun getCounts(
         userId: String,

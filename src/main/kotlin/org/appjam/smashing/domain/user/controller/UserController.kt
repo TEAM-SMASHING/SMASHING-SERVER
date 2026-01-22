@@ -303,7 +303,7 @@ class UserController(
             [조건]
             - 다른 유저의 지역과는 무관
             - 사용자가 선택한 다른 유저의 스포츠 프로필이 노출
-            - QueryParam(sportCode)이 없을 경우 다른 유저의 활성화된 스포츠가 디폴트
+            - QueryParam(sportCode)이 없을 경우 나를 기준으로 활성화된 스포츠 프로필이 디폴트
             
             [정렬]
             - 가장 최근에 받은 리뷰 목록 순
@@ -336,7 +336,7 @@ class UserController(
             [조건]
             - 다른 유저의 지역과는 무관
             - 사용자가 선택한 다른 유저의 스포츠 경기에 대한 목록 리뷰
-            - QueryParam(sportCode)이 없을 경우 다른 유저의 활성화된 스포츠가 디폴트
+            - QueryParam(sportCode)이 없을 경우 나를 기준으로 활성화된 스포츠 프로필이 디폴트
         """
     )
     @GetMapping("/{userId}/reviews/summary")
