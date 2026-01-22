@@ -9,7 +9,7 @@ data class UserRecentGameProjection(
     val gameReviewId: String,
     val opponentNickname: String,
     val createdAt: LocalDateTime,
-    val content: String?,
+    val content: String,
 ) : CursorKey {
     override val cursorId: String
         get() = gameReviewId
