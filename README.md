@@ -30,13 +30,14 @@
 ![Kotlin](https://img.shields.io/badge/Kotlin-2.1.21-7F52FF?style=flat&logo=kotlin&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?style=flat&logo=springboot&logoColor=white)
 
-| Category                  | Stack                                  |
-|---------------------------|----------------------------------------|
-| **Infra , Cloud**         | AWS (EC2, RDS, S3, ECR), Docker, Nginx |
-| **CI/CD , Collaboration** | GitHub Actions, Jenkins, CodeRabbit    |
-| **Security , Auth**       | Spring Security, JWT, OAuth 2.0        |
-| **Data , Cache**          | MySQL, Redis                           |
-| **Docs , Messaging**      | Swagger, FCM, APNs                     |
+| Category                  | Stack                               |
+|---------------------------|-------------------------------------|
+| **Infra , Cloud**         | AWS (EC2, RDS, ECR), Docker         |
+| **CI/CD , Collaboration** | GitHub Actions, Jenkins, CodeRabbit |
+| **Security , Auth**       | Spring Security, JWT, OAuth 2.0     |
+| **Data , Cache**          | MySQL, QueryDSL (JPA 7.0 + KSP)     |
+| **Docs , Messaging**      | Swagger, SSE                        |
+| **External Integration**  | OpenFeign                           |
 
 ## PROJECT STRUCTURE
 
