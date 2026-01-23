@@ -1,13 +1,13 @@
 package org.appjam.smashing.global.common.dto
 
-data class IdCursor(
-    val id: String,
-)
+interface CursorPayload
 
 interface CursorKey {
     val cursorId: String
+
+    fun toCursorPayload(): CursorPayload = IdCursor(cursorId)
 }
 
-interface CompositeCursorKey : CursorKey {
-    fun toCursorPayload(): Any
-}
+data class IdCursor(
+    val id: String,
+) : CursorPayload

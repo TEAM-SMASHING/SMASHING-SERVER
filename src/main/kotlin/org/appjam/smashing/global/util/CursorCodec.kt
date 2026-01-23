@@ -1,6 +1,7 @@
 package org.appjam.smashing.global.util
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.appjam.smashing.global.common.dto.CursorPayload
 import org.appjam.smashing.global.common.dto.IdCursor
 import org.springframework.stereotype.Component
 import java.nio.charset.StandardCharsets
@@ -11,7 +12,7 @@ class CursorCodec(
     private val objectMapper: ObjectMapper,
 ) {
     fun encode(
-        cursor: Any
+        cursor: CursorPayload
     ): String {
         val json = objectMapper.writeValueAsString(cursor)
         return Base64.getUrlEncoder()
