@@ -77,4 +77,23 @@ interface MatchingRepository : JpaRepository<Matching, String>, MatchingReposito
         userA: String,
         userB: String,
     ): Long
+
+    @Query(
+        value = """
+     select exists(
+        select 1
+        from matching m
+        where m.created_at >= :startAt
+          and m.status not in ('ACCEPTED', 'COMPLETED')
+          and m.requester_user_id = :requesterUserId
+          and m.receiver_user_id = :receiverUserId
+    )
+    """,
+        nativeQuery = true
+    )
+    fun existsPendingRequestFromRequesterToReceiverSinceRaw(
+        startAt: LocalDateTime,
+        requesterUserId: String,
+        receiverUserId: String,
+    ): Long
 }

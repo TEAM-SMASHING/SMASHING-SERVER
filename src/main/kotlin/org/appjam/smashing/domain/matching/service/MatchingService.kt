@@ -386,7 +386,11 @@ class MatchingService(
         val now = LocalDateTime.now(DEFAULT_ZONE_ID)
         val since = now.minusHours(24)
 
-        val existsBlockedHistory = matchingRepository.existsBetweenUsersSinceExcludingAcceptedAndCompletedRaw(since, requesterUserId, receiverUserId) == 1L
+        val existsBlockedHistory = matchingRepository.existsPendingRequestFromRequesterToReceiverSinceRaw(
+                startAt = since,
+                requesterUserId = requesterUserId,
+                receiverUserId = receiverUserId,
+            ) == 1L
 
         if (existsBlockedHistory) {
             throw CustomException(ErrorCode.MATCHING_PENDING_EXISTS)
