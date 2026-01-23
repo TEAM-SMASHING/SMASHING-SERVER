@@ -147,6 +147,7 @@ class GameService(
         publishGameUpdated(
             receiverUserId = confirmer.id!!,
             gameId = gameId,
+            submissionId = null,
             resultStatus = game.resultStatus
         )
 
@@ -249,6 +250,7 @@ class GameService(
         publishGameUpdated(
             receiverUserId = submission.submitter.id!!,
             gameId = game.id!!,
+            submissionId = submission.id,
             resultStatus = game.resultStatus,
         )
 
@@ -326,6 +328,7 @@ class GameService(
         publishGameUpdated(
             receiverUserId = submission.submitter.id!!,
             gameId = game.id!!,
+            submissionId = submission.id,
             resultStatus = game.resultStatus,
         )
 
@@ -780,6 +783,7 @@ class GameService(
     private fun publishGameUpdated(
         receiverUserId: String,
         gameId: String,
+        submissionId: String?,
         resultStatus: GameResultStatus,
     ) {
         outboxEventPublisher.publish(
@@ -787,6 +791,7 @@ class GameService(
             eventType = SseEventType.GAME_UPDATED,
             payload = GameUpdatedPayload(
                 gameId = gameId,
+                submissionId = submissionId,
                 resultStatus = resultStatus,
             )
         )
