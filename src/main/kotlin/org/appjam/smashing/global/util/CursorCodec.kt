@@ -32,17 +32,17 @@ class CursorCodec(
         return objectMapper.readValue(json, IdCursor::class.java)
     }
 
-    fun <T> decode(cursor: String?, clazz: Class<T>): T? {
+    fun <T> decode(
+        cursor: String?,
+        clazz: Class<T>,
+    ): T? {
         if (cursor.isNullOrBlank()) return null
 
-        return try {
-            val json = String(
-                Base64.getUrlDecoder().decode(cursor),
-                StandardCharsets.UTF_8,
-            )
-            objectMapper.readValue(json, clazz)
-        } catch (e: Exception) {
-            null
-        }
+        val json = String(
+            Base64.getUrlDecoder().decode(cursor),
+            StandardCharsets.UTF_8,
+        )
+
+        return objectMapper.readValue(json, clazz)
     }
 }
