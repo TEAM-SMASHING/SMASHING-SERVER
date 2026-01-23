@@ -64,3 +64,8 @@
 └─ 🗂️ SmashingApplication
 
 ```
+
+## ERD
+
+<img width="2180" height="2192" alt="SMASHING_ERD" src="https://github.com/user-attachments/assets/397784e9-af73-45a4-a74c-d275422f3593" />
+
