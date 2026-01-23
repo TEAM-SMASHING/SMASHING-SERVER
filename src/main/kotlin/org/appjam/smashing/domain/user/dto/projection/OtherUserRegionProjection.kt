@@ -3,6 +3,7 @@ package org.appjam.smashing.domain.user.dto.projection
 import com.querydsl.core.annotations.QueryProjection
 import org.appjam.smashing.domain.tier.enums.TierCode
 import org.appjam.smashing.global.common.dto.CursorKey
+import org.appjam.smashing.global.common.dto.CursorPayload
 
 @QueryProjection
 data class OtherUserRegionProjection(
@@ -16,4 +17,11 @@ data class OtherUserRegionProjection(
 ) : CursorKey {
     override val cursorId: String
         get() = userId
+
+    override fun toCursorPayload(): CursorPayload =
+        OtherUserRegionCursor(
+            reviewCount = reviews,
+            totalGames = (wins + losses).toLong(),
+            nickname = nickname,
+        )
 }

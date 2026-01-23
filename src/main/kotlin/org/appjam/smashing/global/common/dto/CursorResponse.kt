@@ -27,7 +27,7 @@ data class CursorPageResponse<T : CursorKey>(
             val results = if (hasNext) fetched.take(pageSize) else fetched
 
             val nextCursor = if (hasNext && results.isNotEmpty()) {
-                cursorCodec.encode(IdCursor(id = results.last().cursorId))
+                cursorCodec.encode(results.last().toCursorPayload())
             } else null
 
             return CursorPageResponse(
