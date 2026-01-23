@@ -98,7 +98,7 @@ data class MatchingAcceptNotificationCreatedPayload(
 data class GameUpdatedPayload(
     override val type: String = SseEventType.GAME_UPDATED.eventName,
     val gameId: String,
-    val submissionId: String?,
+    val submissionId: String,
     val resultStatus: GameResultStatus,
 ) : SsePayload
 
