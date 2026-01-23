@@ -30,23 +30,21 @@ interface MatchingRepository : JpaRepository<Matching, String>, MatchingReposito
     @Modifying
     @Query(
         """
-        update Matching m
-           set m.deletedAt = :deletedAt
-         where m.deletedAt is null
-           and m.status = :status
-           and m.id <> :excludeMatchingId
-           and (
-                (m.requester.id = :userA and m.receiver.id = :userB)
-             or (m.requester.id = :userB and m.receiver.id = :userA)
-           )
-        """
+    update Matching m
+       set m.deletedAt = :deletedAt
+     where m.deletedAt is null
+       and m.status = :status
+       and m.id <> :excludeMatchingId
+       and m.requester.id = :requesterUserId
+       and m.receiver.id = :receiverUserId
+    """
     )
-    fun softDeleteRequestedBetweenUsersExcept(
+    fun softDeleteRequestedByDirectionExcept(
         deletedAt: LocalDateTime,
         status: MatchingStatus,
         excludeMatchingId: String,
-        userA: String,
-        userB: String,
+        requesterUserId: String,
+        receiverUserId: String,
     ): Int
 
     fun findFirstByReceiverIdAndRequesterIdAndSportIdAndStatusOrderByCreatedAtDesc(
@@ -92,6 +90,27 @@ interface MatchingRepository : JpaRepository<Matching, String>, MatchingReposito
         nativeQuery = true
     )
     fun existsPendingRequestFromRequesterToReceiverSinceRaw(
+        startAt: LocalDateTime,
+        requesterUserId: String,
+        receiverUserId: String,
+    ): Long
+
+    @Query(
+        value = """
+        select exists(
+            select 1
+              from matching m
+              left join game g
+                     on g.matching_id = m.id
+             where m.created_at >= :startAt
+               and m.requester_user_id = :requesterUserId
+               and m.receiver_user_id = :receiverUserId
+               and (g.id is null or g.result_status <> 'RESULT_CONFIRMED')
+        )
+    """,
+        nativeQuery = true
+    )
+    fun existsUnconfirmedOutgoingMatchingSinceRaw(
         startAt: LocalDateTime,
         requesterUserId: String,
         receiverUserId: String,

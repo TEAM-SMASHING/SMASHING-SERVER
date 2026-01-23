@@ -67,7 +67,7 @@ class MatchingService(
         */
 
         // 24시간 내 진행되지 않은 매칭 요청 이력이 남아있는 경우, 동일 상대방에 대해 중복 매칭 요청 불가
-        validateNoMatchingRequestWithin24h(
+        validateNoUnconfirmedOutgoingWithin24h(
             requesterUserId = requesterUserId,
             receiverUserId = receiverProfile.user.id!!,
         )
@@ -134,12 +134,12 @@ class MatchingService(
         matching.accept(LocalDateTime.now(DEFAULT_ZONE_ID)) // TODO: 인증 붙으면 receiver 타임존으로 교체
 
         // 다른 매칭 요청들 soft delete 처리
-        matchingRepository.softDeleteRequestedBetweenUsersExcept(
+        matchingRepository.softDeleteRequestedByDirectionExcept(
             deletedAt = LocalDateTime.now(DEFAULT_ZONE_ID),
             status = MatchingStatus.REQUESTED,
             excludeMatchingId = matchingId,
-            userA = matching.requester.id!!,
-            userB = matching.receiver.id!!,
+            requesterUserId = matching.requester.id!!,
+            receiverUserId = matching.receiver.id!!,
         )
 
         // 게임 엔티티 생성 (중복 방지)
@@ -379,20 +379,20 @@ class MatchingService(
         }
     }
 
-    private fun validateNoMatchingRequestWithin24h(
+    private fun validateNoUnconfirmedOutgoingWithin24h(
         requesterUserId: String,
         receiverUserId: String,
     ) {
         val now = LocalDateTime.now(DEFAULT_ZONE_ID)
         val since = now.minusHours(24)
 
-        val existsBlockedHistory = matchingRepository.existsPendingRequestFromRequesterToReceiverSinceRaw(
-                startAt = since,
-                requesterUserId = requesterUserId,
-                receiverUserId = receiverUserId,
-            ) == 1L
+        val exists = matchingRepository.existsUnconfirmedOutgoingMatchingSinceRaw(
+            startAt = since,
+            requesterUserId = requesterUserId,
+            receiverUserId = receiverUserId,
+        ) == 1L
 
-        if (existsBlockedHistory) {
+        if (exists) {
             throw CustomException(ErrorCode.MATCHING_PENDING_EXISTS)
         }
     }

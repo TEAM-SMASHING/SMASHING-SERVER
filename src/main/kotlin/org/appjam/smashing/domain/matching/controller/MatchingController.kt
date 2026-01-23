@@ -10,7 +10,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -26,7 +25,8 @@ class MatchingController(
         description = """
             상대 스포츠 프로필(receiverProfileId)에 대해 매칭을 신청합니다.
             - 인증된 사용자 기준으로 매칭 요청을 생성합니다.
-            - 동일 유저 간 하루 최대 3회 신청 가능합니다.
+            - 동일 유저 간 하루 최대 3회 신청 가능합니다. (앱잼 제외)
+            - 상대방에게 24시간 이내 결과까지 모두 확정되지 않은 이력이 존재할 경우 신청 불가합니다.
             - 성공 시 상대 유저에게 알림 및 SSE 이벤트가 전송됩니다.
         """
     )
