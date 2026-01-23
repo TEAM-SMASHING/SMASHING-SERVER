@@ -67,9 +67,9 @@ class MatchingService(
         */
 
         // 24시간 내 진행되지 않은 매칭 요청 이력이 남아있는 경우, 동일 상대방에 대해 중복 매칭 요청 불가
-        validateNoUnconfirmedOutgoingWithin24h(
-            requesterUserId = requesterUserId,
-            receiverUserId = receiverProfile.user.id!!,
+        validateNoMatchingWithin24h(
+            userA = requesterUserId,
+            userB = receiverProfile.user.id!!,
         )
 
         // 매칭 생성
@@ -134,12 +134,13 @@ class MatchingService(
         matching.accept(LocalDateTime.now(DEFAULT_ZONE_ID)) // TODO: 인증 붙으면 receiver 타임존으로 교체
 
         // 다른 매칭 요청들 soft delete 처리
-        matchingRepository.softDeleteRequestedByDirectionExcept(
+        matchingRepository.softDeleteRequestedBetweenUsersExcept(
             deletedAt = LocalDateTime.now(DEFAULT_ZONE_ID),
             status = MatchingStatus.REQUESTED,
             excludeMatchingId = matchingId,
-            requesterUserId = matching.requester.id!!,
-            receiverUserId = matching.receiver.id!!,
+            userA = matching.requester.id!!,
+            userB = matching.receiver.id!!,
+            sportId = matching.sport.id!!,
         )
 
         // 게임 엔티티 생성 (중복 방지)
@@ -379,23 +380,24 @@ class MatchingService(
         }
     }
 
-    private fun validateNoUnconfirmedOutgoingWithin24h(
-        requesterUserId: String,
-        receiverUserId: String,
+    private fun validateNoMatchingWithin24h(
+        userA: String,
+        userB: String,
     ) {
         val now = LocalDateTime.now(DEFAULT_ZONE_ID)
         val since = now.minusHours(24)
 
-        val exists = matchingRepository.existsUnconfirmedOutgoingMatchingSinceRaw(
+        val exists = matchingRepository.existsUnconfirmedMatchingBetweenUsersSinceRaw(
             startAt = since,
-            requesterUserId = requesterUserId,
-            receiverUserId = receiverUserId,
+            userA = userA,
+            userB = userB,
         ) == 1L
 
         if (exists) {
             throw CustomException(ErrorCode.MATCHING_PENDING_EXISTS)
         }
     }
+
 
     private fun createMatching(
         requesterUser: User,
