@@ -401,6 +401,14 @@ class GameService(
         // 게임 취소 처리
         game.cancel()
 
+        publishGameUpdated(
+            receiverUserId = opponentUserId,
+            gameId = game.id!!,
+            submissionId = "no-submission-id", // TODO: 앱잼 기간 내 빠르게 canceled sse 발행 추가.
+            submissionAttemptNo = 123,
+            resultStatus = game.resultStatus,
+        )
+
         /* 앱잼 기간 내 삭제 기능 제외
         gameRepository.flush()
 
