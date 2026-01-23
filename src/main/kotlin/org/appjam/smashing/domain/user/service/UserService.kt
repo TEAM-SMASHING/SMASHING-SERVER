@@ -204,9 +204,9 @@ class UserService(
         */
 
         // 24시간 내 매칭 요청이 남아있는 경우, 동일 상대방에 대해 중복 매칭 요청 불가
-        val validateNoUnconfirmedOutgoing = validateNoUnconfirmedOutgoingWithin24h(
-            requesterUserId = userId,
-            receiverUserId = selectedProfile.user.id!!,
+        val validateNoMatchingWithin24h = validateNoMatchingWithin24h(
+            userA = userId,
+            userB = selectedProfile.user.id!!,
         )
 
         val receivedMatching = matchingRepository.findFirstByReceiverIdAndRequesterIdAndSportIdAndStatusOrderByCreatedAtDesc(
@@ -222,7 +222,7 @@ class UserService(
             reviews = reviews,
             selectedProfile = selectedProfile,
             allProfiles = allProfiles,
-            isChallengeable = validateNoUnconfirmedOutgoing,
+            isChallengeable = validateNoMatchingWithin24h,
             isAcceptable = receivedMatching != null,
             receivedMatchingId = receivedMatching?.id,
         )
@@ -246,17 +246,17 @@ class UserService(
         return todayConfirmedGames < 3L
     }
 
-    private fun validateNoUnconfirmedOutgoingWithin24h(
-        requesterUserId: String,
-        receiverUserId: String,
+    private fun validateNoMatchingWithin24h(
+        userA: String,
+        userB: String,
     ): Boolean {
         val now = LocalDateTime.now(MatchingService.DEFAULT_ZONE_ID)
         val since = now.minusHours(24)
 
-        val exists = matchingRepository.existsUnconfirmedOutgoingMatchingSinceRaw(
+        val exists = matchingRepository.existsUnconfirmedMatchingBetweenUsersSinceRaw(
             startAt = since,
-            requesterUserId = requesterUserId,
-            receiverUserId = receiverUserId,
+            userA = userA,
+            userB = userB,
         ) == 1L
 
         return !exists
