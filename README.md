@@ -41,6 +41,6 @@
 │  ├─ 📂 exception
 │  ├─ 📂 extensions
 │  ├─ 📂 util
-└─ 🗂️ BongbaekApplication
+└─ 🗂️ SmashingApplication
 
 ```
