@@ -94,13 +94,27 @@ class UserSportProfileRepositoryCustomImpl(
         snapshotAt: OffsetDateTime,
     ): CursorPageResponse<OtherUserRegionProjection> {
         val size = request.size.coerceIn(1, 50).toInt()
-        val cursor = cursorCodec.decode(request.cursor)
+        val cursor = cursorCodec.decode(request.cursor, OtherUserRegionCursor::class.java)
 
         val snapshotLocal = snapshotAt
             .atZoneSameInstant(TimeUtils.DEFAULT_ZONE_ID)
             .toLocalDateTime()
 
         val totalGamesExpression = userSportProfile.wins.add(userSportProfile.losses)
+            .castToNum(Long::class.javaObjectType)
+
+        val reviewCountExpression = JPAExpressions
+            .select(gameReview.count())
+            .from(gameReview)
+            .where(
+                gameReview.reviewee.id.eq(user.id),
+                gameReview.game.sport.id.eq(sportId),
+            )
+        val reviewCountOrderExpression = Expressions.numberTemplate(
+            Long::class.javaObjectType,
+            "({0})",
+            reviewCountExpression
+        )
 
         val where = BooleanBuilder()
             .and(user.region.eq(region))
@@ -111,23 +125,20 @@ class UserSportProfileRepositoryCustomImpl(
         gender?.let { where.and(user.gender.eq(gender)) }
         tier?.let { where.and(userSportProfile.tier.name.startsWithIgnoreCase(tier)) }
 
-        if (cursor != null) {
-            where.and(user.id.lt(cursor.id))
+        cursor?.let { lastCursor ->
+            val cursorWhere =
+                reviewCountOrderExpression.lt(lastCursor.reviewCount)
+                    .or(
+                        reviewCountOrderExpression.eq(lastCursor.reviewCount)
+                            .and(totalGamesExpression.lt(lastCursor.totalGames))
+                    )
+                    .or(
+                        reviewCountOrderExpression.eq(lastCursor.reviewCount)
+                            .and(totalGamesExpression.eq(lastCursor.totalGames))
+                            .and(user.nickname.gt(lastCursor.nickname))
+                    )
+            where.and(cursorWhere)
         }
-
-        val reviewCountExpression = JPAExpressions
-            .select(gameReview.count())
-            .from(gameReview)
-            .where(
-                gameReview.reviewee.id.eq(user.id),
-                gameReview.game.sport.id.eq(sportId)
-            )
-
-        val reviewCountOrderExpression = Expressions.numberTemplate(
-            Long::class.java,
-            "({0})",
-            reviewCountExpression
-        )
 
         val projections = queryFactory
             .select(

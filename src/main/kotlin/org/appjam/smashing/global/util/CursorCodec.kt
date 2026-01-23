@@ -4,15 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.appjam.smashing.global.common.dto.IdCursor
 import org.springframework.stereotype.Component
 import java.nio.charset.StandardCharsets
-import java.util.Base64
+import java.util.*
 
 @Component
 class CursorCodec(
     private val objectMapper: ObjectMapper,
 ) {
-
     fun encode(
-        cursor: IdCursor
+        cursor: Any
     ): String {
         val json = objectMapper.writeValueAsString(cursor)
         return Base64.getUrlEncoder()
@@ -31,5 +30,19 @@ class CursorCodec(
         )
 
         return objectMapper.readValue(json, IdCursor::class.java)
+    }
+
+    fun <T> decode(cursor: String?, clazz: Class<T>): T? {
+        if (cursor.isNullOrBlank()) return null
+
+        return try {
+            val json = String(
+                Base64.getUrlDecoder().decode(cursor),
+                StandardCharsets.UTF_8,
+            )
+            objectMapper.readValue(json, clazz)
+        } catch (e: Exception) {
+            null
+        }
     }
 }
