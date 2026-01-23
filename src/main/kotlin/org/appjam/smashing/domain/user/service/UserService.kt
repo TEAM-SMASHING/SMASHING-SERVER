@@ -445,7 +445,7 @@ class UserService(
         val sportId = selectedProfile.sport.id!!
 
         val counts = getCounts(
-            userId = userId,
+            userId = otherUserId,
             sportId = sportId
         )
 
