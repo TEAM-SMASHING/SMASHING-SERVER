@@ -42,3 +42,6 @@ out/
 
 ### Kotlin ###
 .kotlin
+
+### test ###
+src/main/kotlin/org/appjam/smashing/domain/auth/test/
