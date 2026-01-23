@@ -91,7 +91,8 @@ class GameService(
         ) ?: throw CustomException(ErrorCode.MATCHING_RECEIVER_PROFILE_NOT_FOUND)
 
         // 게임 결과 제출 시간 제약
-        validateSubmitWindow(game)
+        // TODO: 앱잼 기간 내 결과 제출 제약 삭제
+        // validateSubmitWindow(game)
 
         val totalSubmissionCount = submissionRepository.countByGame_Id(gameId)
         val submitterSubmissionCount = submissionRepository.countByGame_IdAndSubmitter_Id(gameId, submitterUserId)
@@ -444,7 +445,7 @@ class GameService(
 
             val lockResponse = GameResultSubmitLockResponse.from(
                 now = now,
-                availableAt = availableAt,
+                availableAt = now, //availableAt, // TODO: 앱잼 기간 내 잠금 정책 제외
             )
 
             PendingResultAcceptedGameSummaryResponse.from(
