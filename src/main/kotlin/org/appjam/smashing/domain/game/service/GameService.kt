@@ -148,6 +148,7 @@ class GameService(
             receiverUserId = confirmer.id!!,
             gameId = gameId,
             submissionId = submission.id!!,
+            submissionAttemptNo = submission.attemptNo,
             resultStatus = game.resultStatus
         )
 
@@ -161,21 +162,20 @@ class GameService(
             submitterTierCode = submitterProfile.tier.code,
         )
 
-        // 후기 저장 + 후기 제출 알림 + SSE 발행
-        val reviewId = if (attemptNo == 1) {
-            notifyReviewReceived(
-                game = game,
+        // 후기 저장
+        val savedReviewId = if (attemptNo == 1) {
+            val savedReview = gameReviewService.createReview(
+                gameId = game.id!!,
                 reviewer = submitter,
                 reviewee = confirmer,
-                receiverProfile = confirmerProfile,
-                review = command.review!!,
-                reviewerTierCode = submitterProfile.tier.code,
+                rating = command.review!!.rating,
+                content = command.review.content,
+                tags = command.review.tags,
             )
-        } else {
-            null
-        }
+            savedReview.id!!
+        } else null
 
-        return GameResultSubmitResponse.from(reviewId)
+        return GameResultSubmitResponse.from(savedReviewId)
     }
 
     @Transactional
@@ -251,10 +251,11 @@ class GameService(
             receiverUserId = submission.submitter.id!!,
             gameId = game.id!!,
             submissionId = submission.id!!,
+            submissionAttemptNo = submission.attemptNo,
             resultStatus = game.resultStatus,
         )
 
-        // 후기 저장 + 후기 제출 알림 + SSE 발행
+        // 확정자 리뷰 저장 + 이전 제출자에게 알림/SSE
         notifyReviewReceivedOnConfirm(
             game = game,
             reviewer = submission.confirmer,
@@ -264,7 +265,16 @@ class GameService(
             reviewerTierCode = confirmerProfile.tier.code,
         )
 
-        // 응답은 상대가 나에게 쓴 리뷰 ID
+        // 이전 제출자가 예전에 쓴 리뷰를 확정자에게 알림/SSE
+        notifyOpponentReviewToConfirmer(
+            game = game,
+            receiver = submission.confirmer,
+            receiverProfile = confirmerProfile,
+            reviewId = opponentReviewId,
+            reviewer = submission.submitter,
+            reviewerTierCode = submitterProfile.tier.code,
+        )
+
         return GameResultConfirmResponse.from(opponentReviewId)
     }
 
@@ -329,6 +339,7 @@ class GameService(
             receiverUserId = submission.submitter.id!!,
             gameId = game.id!!,
             submissionId = submission.id!!,
+            submissionAttemptNo = submission.attemptNo,
             resultStatus = game.resultStatus,
         )
 
@@ -780,10 +791,49 @@ class GameService(
         return savedReview.id!!
     }
 
+    private fun notifyOpponentReviewToConfirmer(
+        game: Game,
+        receiver: User,
+        receiverProfile: UserSportProfile,
+        reviewId: String,
+        reviewer: User,
+        reviewerTierCode: TierCode,
+    ) {
+        val notification = notificationService.createReviewReceived(
+            receiver = receiver,
+            receiverProfile = receiverProfile,
+            reviewId = reviewId,
+            reviewerNickname = reviewer.nickname,
+        )
+
+        val notificationCreatedAt = notification.createdAt
+            .atZone(DEFAULT_ZONE_ID).toOffsetDateTime().toString()
+
+        outboxEventPublisher.publish(
+            userId = receiver.id!!,
+            eventType = SseEventType.REVIEW_RECEIVED_NOTIFICATION_CREATED,
+            payload = ReviewReceivedNotificationCreatedPayload(
+                notificationId = notification.id!!,
+                notificationType = NotificationType.REVIEW_RECEIVED,
+                notificationCreatedAt = notificationCreatedAt,
+                sportId = game.sport.id!!,
+                receiverProfileId = receiverProfile.id!!,
+                gameId = game.id!!,
+                reviewId = reviewId,
+                reviewer = ReviewReceivedNotificationCreatedPayload.ReviewerSummary(
+                    userId = reviewer.id!!,
+                    nickname = reviewer.nickname,
+                    tierCode = reviewerTierCode,
+                )
+            )
+        )
+    }
+
     private fun publishGameUpdated(
         receiverUserId: String,
         gameId: String,
         submissionId: String,
+        submissionAttemptNo: Int,
         resultStatus: GameResultStatus,
     ) {
         outboxEventPublisher.publish(
@@ -792,6 +842,7 @@ class GameService(
             payload = GameUpdatedPayload(
                 gameId = gameId,
                 submissionId = submissionId,
+                submissionAttemptNo = submissionAttemptNo,
                 resultStatus = resultStatus,
             )
         )

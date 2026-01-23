@@ -99,6 +99,7 @@ data class GameUpdatedPayload(
     override val type: String = SseEventType.GAME_UPDATED.eventName,
     val gameId: String,
     val submissionId: String,
+    val submissionAttemptNo: Int,
     val resultStatus: GameResultStatus,
 ) : SsePayload
 
