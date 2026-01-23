@@ -53,14 +53,14 @@
 │  ├─ 📂 review
 │  ├─ 📂 sport
 │  ├─ 📂 tier
-│  ├─ 📂 user
+│  └─ 📂 user
 ├─ 📂 global
 │  ├─ 📂 auth
 │  ├─ 📂 common
 │  ├─ 📂 config
 │  ├─ 📂 exception
 │  ├─ 📂 extensions
-│  ├─ 📂 util
+│  └─ 📂 util
 └─ 🗂️ SmashingApplication
 
 ```
