@@ -3,6 +3,8 @@ package org.appjam.smashing.global.util
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.appjam.smashing.global.common.dto.CursorPayload
 import org.appjam.smashing.global.common.dto.IdCursor
+import org.appjam.smashing.global.exception.CustomException
+import org.appjam.smashing.global.exception.ErrorCode
 import org.springframework.stereotype.Component
 import java.nio.charset.StandardCharsets
 import java.util.*
@@ -39,11 +41,15 @@ class CursorCodec(
     ): T? {
         if (cursor.isNullOrBlank()) return null
 
-        val json = String(
-            Base64.getUrlDecoder().decode(cursor),
-            StandardCharsets.UTF_8,
-        )
+        return runCatching {
+            val json = String(
+                Base64.getUrlDecoder().decode(cursor),
+                StandardCharsets.UTF_8,
+            )
 
-        return objectMapper.readValue(json, clazz)
+            objectMapper.readValue(json, clazz)
+        }.getOrElse {
+            throw CustomException(ErrorCode.BAD_REQUEST)
+        }
     }
 }
