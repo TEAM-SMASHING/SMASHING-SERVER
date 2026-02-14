@@ -8,11 +8,14 @@ import org.appjam.smashing.global.auth.jwt.handler.JwtAuthenticationEntryPoint.C
 import org.appjam.smashing.global.config.TimeZoneProperties
 import org.springframework.http.HttpHeaders
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
 import java.time.ZoneId
 
+@Component
 class JwtAuthenticationFilter(
     private val jwtProvider: JwtProvider,
+    private val jwtBlacklistManager: JwtBlacklistManager,
     private val timeZoneProperties: TimeZoneProperties,
 ) : OncePerRequestFilter() {
 
@@ -25,6 +28,12 @@ class JwtAuthenticationFilter(
 
         if (!token.isNullOrBlank()) {
             try {
+                if (jwtBlacklistManager.contains(token)) {
+                    SecurityContextHolder.clearContext()
+                    response.status = HttpServletResponse.SC_UNAUTHORIZED
+                    return
+                }
+
                 val timeZone = resolveTimeZone(request)
                 val authentication = jwtProvider.getAuthentication(token, timeZone)
                 SecurityContextHolder.getContext().authentication = authentication
