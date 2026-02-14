@@ -14,13 +14,14 @@ import org.appjam.smashing.domain.user.repository.UserSportProfileRepository
 import org.appjam.smashing.domain.user.service.UserService.Companion.DISTRICT_SUFFIX
 import org.appjam.smashing.domain.user.service.UserService.Companion.OPEN_CHAT_URL_REGEX
 import org.appjam.smashing.global.auth.jwt.components.JwtProvider
+import org.appjam.smashing.global.auth.jwt.filter.JwtBlacklistManager
+import org.appjam.smashing.global.auth.jwt.filter.JwtRefreshStore
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-@Transactional
 class AuthService(
     private val socialAuthServiceManager: SocialAuthServiceManager,
     private val jwtProvider: JwtProvider,
@@ -28,7 +29,10 @@ class AuthService(
     private val sportRepository: SportRepository,
     private val tierRepository: TierRepository,
     private val userSportProfileRepository: UserSportProfileRepository,
+    private val jwtRefreshStore: JwtRefreshStore,
+    private val jwtBlacklistManager: JwtBlacklistManager,
 ) {
+    @Transactional
     fun signIn(requestCommand: SignInRequestCommand): SignInResponse {
         val kakaoId = socialAuthServiceManager.getKakaoId(requestCommand.accessToken)
 
@@ -44,16 +48,25 @@ class AuthService(
         val userId = user.id ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
         val token = jwtProvider.issueToken(userId)
+        val accessToken = token.accessToken.token
+        val refreshToken = token.refreshToken.token
+
+        jwtRefreshStore.save(
+            userId = userId,
+            refreshToken = refreshToken,
+            ttlMillis = jwtProvider.getRefreshTtlMillis(refreshToken)
+        )
 
         return SignInResponse(
-            accessToken = token.accessToken.token,
-            refreshToken = token.refreshToken.token,
+            accessToken = accessToken,
+            refreshToken = refreshToken,
             kakaoId = kakaoId,
             userId = userId,
             nickname = user.nickname,
         )
     }
 
+    @Transactional
     fun signUp(requestCommand: SignUpRequestCommand): SignUpResponse {
         validateUser(requestCommand)
         val sport = sportRepository.findByCode(requestCommand.sportCode)
@@ -93,10 +106,18 @@ class AuthService(
         user.updateActiveProfile(profileId = profile.id!!)
 
         val token = jwtProvider.issueToken(user.id!!)
+        val accessToken = token.accessToken.token
+        val refreshToken = token.refreshToken.token
+
+        jwtRefreshStore.save(
+            userId = user.id!!,
+            refreshToken = refreshToken,
+            ttlMillis = jwtProvider.getRefreshTtlMillis(refreshToken)
+        )
 
         return SignUpResponse(
-            accessToken = token.accessToken.token,
-            refreshToken = token.refreshToken.token,
+            accessToken = accessToken,
+            refreshToken = refreshToken,
             userId = user.id,
             nickname = user.nickname,
         )
@@ -122,5 +143,15 @@ class AuthService(
         if (!region.endsWith(DISTRICT_SUFFIX)) {
             throw CustomException(ErrorCode.INVALID_REGION)
         }
+    }
+
+    @Transactional
+    fun logout(
+        accessToken: String,
+        userId: String,
+    ) {
+        jwtRefreshStore.deleteAllForUser(userId)
+
+        jwtBlacklistManager.add(accessToken)
     }
 }
