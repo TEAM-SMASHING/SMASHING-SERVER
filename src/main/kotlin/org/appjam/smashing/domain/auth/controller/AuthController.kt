@@ -13,10 +13,7 @@ import org.appjam.smashing.global.common.dto.ApiResponse
 import org.appjam.smashing.global.common.enums.SuccessCode
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @Tag(name = "Auth")
 @RestController
@@ -67,9 +64,11 @@ class AuthController(
     )
     @PostMapping("/logout")
     fun logout(
+        @RequestHeader("Authorization") accessToken: String,
         @AuthenticationPrincipal principal: CustomUserDetails,
     ): ResponseEntity<ApiResponse<Unit>> {
         authService.logout(
+            accessToken = accessToken,
             userId = principal.username,
         )
 
