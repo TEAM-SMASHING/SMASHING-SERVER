@@ -36,7 +36,7 @@ class JwtProvider(
         token: String,
         timeZone: String
     ): Authentication {
-        val claims = jwtValidator.validateAndParseAccessToken(token)
+        val claims = jwtValidator.parseAccessToken(token)
 
         val roles = claims[ROLES_KEY] as? List<*> ?: throw CustomException(ErrorCode.INVALID_ACCESS_TOKEN_CLAIM)
         val authorities = roles.map {
@@ -61,6 +61,20 @@ class JwtProvider(
             null,
             userDetails.authorities
         )
+    }
+
+    fun getAccessTtlMillis(token: String): Long {
+        val claims = jwtValidator.parseAccessToken(token)
+        val expirationMillis = claims.expiration.time
+
+        return (expirationMillis - System.currentTimeMillis()).coerceAtLeast(0)
+    }
+
+    fun getRefreshTtlMillis(token: String): Long {
+        val claims = jwtValidator.parseRefreshToken(token)
+        val expirationMillis = claims.expiration.time
+
+        return (expirationMillis - System.currentTimeMillis()).coerceAtLeast(0)
     }
 
     companion object {

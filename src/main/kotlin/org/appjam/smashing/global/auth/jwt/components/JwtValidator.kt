@@ -33,7 +33,7 @@ class JwtValidator(
         }
     }
 
-    private fun parseRefreshToken(token: String): Claims =
+    fun parseRefreshToken(token: String): Claims =
         try {
             getJwtParser().parseClaimsJws(token).body
         } catch (e: ExpiredJwtException) {
@@ -50,7 +50,7 @@ class JwtValidator(
             throw CustomException(ErrorCode.INVALID_REFRESH_TOKEN)
         }
 
-    fun validateAndParseAccessToken(token: String): Claims =
+    fun parseAccessToken(token: String): Claims =
         try {
             getJwtParser().parseClaimsJws(token).body
         } catch (e: ExpiredJwtException) {
