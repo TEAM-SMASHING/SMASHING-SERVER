@@ -4,6 +4,7 @@ import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.appjam.smashing.global.auth.jwt.components.JwtProvider
+import org.appjam.smashing.global.auth.jwt.handler.JwtAuthenticationEntryPoint.Companion.EXCEPTION_KEY
 import org.appjam.smashing.global.config.TimeZoneProperties
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
@@ -46,10 +47,7 @@ class JwtAuthenticationFilter(
                 SecurityContextHolder.getContext().authentication = authentication
             } catch (e: Exception) {
                 SecurityContextHolder.clearContext()
-                resolver.resolveException(
-                    request, response, null, (e as? CustomException) ?: CustomException(ErrorCode.UNAUTHORIZED)
-                )
-                return
+                request.setAttribute(EXCEPTION_KEY, e)
             }
         }
 
