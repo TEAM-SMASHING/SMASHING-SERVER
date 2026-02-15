@@ -14,7 +14,7 @@ class JwtBlacklistManager(
         val token = normalize(authorizationOrToken)
         if (token.isBlank()) return
 
-        val ttlMillis = jwtProvider.getAccessTtlMills(token)
+        val ttlMillis = jwtProvider.getAccessTtlMillis(token)
         if (ttlMillis <= 0) return
 
         val ttlSeconds = (ttlMillis / MILLIS_PER_SECOND).coerceAtLeast(1)
