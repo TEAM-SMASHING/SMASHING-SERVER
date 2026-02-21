@@ -44,19 +44,17 @@ class AuthService(
         val userId = user.id ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
         val token = jwtProvider.issueToken(userId)
-        val accessToken = token.accessToken.token
-        val refreshToken = token.refreshToken.token
 
         // Redis에 리프레시 토큰 저장
         jwtRefreshStore.save(
             userId = userId,
-            refreshToken = refreshToken,
-            ttlMillis = jwtProvider.getRefreshTtlMillis(refreshToken)
+            refreshToken = token.refreshToken.token,
+            ttlMillis = jwtProvider.getRefreshTtlMillis(token.refreshToken.token)
         )
 
         return SignInResponse.from(
-            accessToken = accessToken,
-            refreshToken = refreshToken,
+            accessToken = token.accessToken.token,
+            refreshToken = token.refreshToken.token,
             kakaoId = kakaoId,
             userId = userId,
             nickname = user.nickname,
@@ -103,19 +101,17 @@ class AuthService(
         user.updateActiveProfile(profileId = profile.id!!)
 
         val token = jwtProvider.issueToken(user.id!!)
-        val accessToken = token.accessToken.token
-        val refreshToken = token.refreshToken.token
 
         // Redis에 리프레시 토큰 저장
         jwtRefreshStore.save(
             userId = user.id!!,
-            refreshToken = refreshToken,
-            ttlMillis = jwtProvider.getRefreshTtlMillis(refreshToken)
+            refreshToken = token.refreshToken.token,
+            ttlMillis = jwtProvider.getRefreshTtlMillis(token.refreshToken.token)
         )
 
         return SignUpResponse.from(
-            accessToken = accessToken,
-            refreshToken = refreshToken,
+            accessToken = token.accessToken.token,
+            refreshToken = token.refreshToken.token,
             userId = user.id,
             nickname = user.nickname,
         )
