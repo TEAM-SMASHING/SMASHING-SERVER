@@ -117,6 +117,16 @@ class AuthService(
         )
     }
 
+    @Transactional
+    fun logout(
+        accessToken: String,
+        userId: String,
+    ) {
+        jwtRefreshStore.deleteAllForUser(userId)
+
+        jwtBlacklistManager.add(accessToken)
+    }
+
     private fun validateUser(requestCommand: SignUpRequestCommand) {
         if (userRepository.existsByKakaoId(requestCommand.kakaoId)) {
             throw CustomException(ErrorCode.DUPLICATE_KAKAO_ID)
@@ -137,15 +147,5 @@ class AuthService(
         if (!region.endsWith(DISTRICT_SUFFIX)) {
             throw CustomException(ErrorCode.INVALID_REGION)
         }
-    }
-
-    @Transactional
-    fun logout(
-        accessToken: String,
-        userId: String,
-    ) {
-        jwtRefreshStore.deleteAllForUser(userId)
-
-        jwtBlacklistManager.add(accessToken)
     }
 }
