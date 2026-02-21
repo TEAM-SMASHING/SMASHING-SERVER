@@ -47,6 +47,7 @@ class AuthService(
         val accessToken = token.accessToken.token
         val refreshToken = token.refreshToken.token
 
+        // Redis에 리프레시 토큰 저장
         jwtRefreshStore.save(
             userId = userId,
             refreshToken = refreshToken,
@@ -105,6 +106,7 @@ class AuthService(
         val accessToken = token.accessToken.token
         val refreshToken = token.refreshToken.token
 
+        // Redis에 리프레시 토큰 저장
         jwtRefreshStore.save(
             userId = user.id!!,
             refreshToken = refreshToken,
