@@ -37,12 +37,8 @@ class AuthService(
         val kakaoId = socialAuthServiceManager.getKakaoId(requestCommand.accessToken)
 
         val user = userRepository.findByKakaoId(kakaoId)
-            ?: return SignInResponse(
-                accessToken = null,
-                refreshToken = null,
+            ?: return SignInResponse.from(
                 kakaoId = kakaoId,
-                userId = null,
-                nickname = null,
             )
 
         val userId = user.id ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
@@ -57,7 +53,7 @@ class AuthService(
             ttlMillis = jwtProvider.getRefreshTtlMillis(refreshToken)
         )
 
-        return SignInResponse(
+        return SignInResponse.from(
             accessToken = accessToken,
             refreshToken = refreshToken,
             kakaoId = kakaoId,
@@ -115,7 +111,7 @@ class AuthService(
             ttlMillis = jwtProvider.getRefreshTtlMillis(refreshToken)
         )
 
-        return SignUpResponse(
+        return SignUpResponse.from(
             accessToken = accessToken,
             refreshToken = refreshToken,
             userId = user.id,
