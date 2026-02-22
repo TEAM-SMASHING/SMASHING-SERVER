@@ -155,7 +155,8 @@ class AuthService(
         accessToken: String,
         userId: String,
     ) {
-        val subject = jwtProvider.extractSubject(accessToken)
+        val token = accessToken.removePrefix("Bearer ").trim()
+        val subject = jwtProvider.extractSubject(token)
         if (subject != userId) {
             throw CustomException(ErrorCode.ACCESS_TOKEN_SUBJECT_MISMATCH)
         }

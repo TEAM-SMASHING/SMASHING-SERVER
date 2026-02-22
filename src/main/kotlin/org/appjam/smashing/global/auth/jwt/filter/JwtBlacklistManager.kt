@@ -41,12 +41,11 @@ class JwtBlacklistManager(
         if (token.isNullOrBlank()) return ""
         val trimmed = token.trim()
 
-        return if (trimmed.startsWith(BEARER_PREFIX)) trimmed.substring(BEARER_PREFIX.length).trim() else trimmed
+        return if (trimmed.startsWith("Bearer ")) trimmed.substring(7).trim() else trimmed
     }
 
     companion object {
         private const val BLACKLIST_PREFIX = "blackList:"
-        private const val BEARER_PREFIX = "Bearer "
         private const val MILLIS_PER_SECOND = 1000
     }
 }
