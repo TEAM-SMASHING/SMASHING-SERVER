@@ -95,6 +95,7 @@ class AuthService(
             )
         )
 
+        // 처음 가입한 프로필로 활성 프로필 업데이트
         user.updateActiveProfile(profileId = profile.id!!)
 
         val token = jwtProvider.issueToken(user.id!!)
