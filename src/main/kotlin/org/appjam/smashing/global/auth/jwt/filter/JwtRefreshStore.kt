@@ -12,6 +12,9 @@ class JwtRefreshStore(
 
     private fun tokenKey(refreshToken: String) = TOKEN_PREFIX + refreshToken
 
+    /**
+     * Redis에 리프레시 토큰 저장
+     */
     fun save(
         userId: String,
         refreshToken: String,
@@ -26,6 +29,9 @@ class JwtRefreshStore(
         redis.opsForValue().set(tokenKey(refreshToken), userId, ttlSeconds, TimeUnit.SECONDS)
     }
 
+    /**
+     * 유저에게 저장된 모든 리프레시 토큰을 삭제
+     */
     fun deleteAllForUser(userId: String) {
         val userRefreshTokens = userKey(userId)
 

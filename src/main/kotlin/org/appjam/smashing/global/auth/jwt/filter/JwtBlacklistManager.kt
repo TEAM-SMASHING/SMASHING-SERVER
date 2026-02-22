@@ -10,6 +10,9 @@ class JwtBlacklistManager(
     private val redis: StringRedisTemplate,
     private val jwtProvider: JwtProvider,
 ) {
+    /**
+     * 블랙리스트에 엑세스 토큰 추가하여 즉시 무효화
+     */
     fun add(authorizationOrToken: String) {
         val token = normalize(authorizationOrToken)
         if (token.isBlank()) return
@@ -22,6 +25,9 @@ class JwtBlacklistManager(
         redis.opsForValue().set(key(token), "1", ttlSeconds, TimeUnit.SECONDS)
     }
 
+    /**
+     * 블랙리스트에 해당 엑세스 토큰이 존재하는지 확인
+     */
     fun contains(authorizationOrToken: String): Boolean {
         val token = normalize(authorizationOrToken)
         if (token.isBlank()) return false

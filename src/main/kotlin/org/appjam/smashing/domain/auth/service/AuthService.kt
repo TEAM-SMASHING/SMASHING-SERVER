@@ -112,10 +112,8 @@ class AuthService(
             userId = userId,
         )
 
-        // 유저에게 저장된 모든 리프레시 토큰을 삭제
         jwtRefreshStore.deleteAllForUser(userId)
 
-        // 블랙리스트에 엑세스 토큰을 추가하여 토큰 무효화
         jwtBlacklistManager.add(accessToken)
     }
 
@@ -144,7 +142,6 @@ class AuthService(
     private fun issueAndStoreTokens(userId: String): TokenDto {
         val token = jwtProvider.issueToken(userId)
 
-        // Redis에 리프레시 토큰 저장
         jwtRefreshStore.save(
             userId = userId,
             refreshToken = token.refreshToken.token,
