@@ -77,7 +77,7 @@ class JwtProvider(
         return (expirationMillis - System.currentTimeMillis()).coerceAtLeast(0)
     }
 
-    fun extractSubject(token: String): String {
+    fun extractAccessSubject(token: String): String {
         val claims = jwtValidator.parseAccessToken(token)
 
         val type = claims[TYPE_KEY] as? String
@@ -86,6 +86,19 @@ class JwtProvider(
         }
 
         val subject = claims.subject ?: throw CustomException(ErrorCode.INVALID_ACCESS_TOKEN_SUBJECT)
+
+        return subject
+    }
+
+    fun extractRefreshSubject(token: String): String {
+        val claims = jwtValidator.parseRefreshToken(token)
+
+        val type = claims[TYPE_KEY] as? String
+        if (type != TokenType.REFRESH_TOKEN.name) {
+            throw CustomException(ErrorCode.INVALID_REFRESH_TOKEN)
+        }
+
+        val subject = claims.subject ?: throw CustomException(ErrorCode.INVALID_REFRESH_TOKEN_SUBJECT)
 
         return subject
     }

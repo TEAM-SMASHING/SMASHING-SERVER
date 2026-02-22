@@ -123,6 +123,10 @@ class AuthService(
         refreshToken: String,
         userId: String,
     ): TokenReissueResponse {
+        validateRefreshTokenSubject(
+            refreshToken = refreshToken,
+            userId = userId,
+        )
 
         return TokenReissueResponse.from(
             accessToken = "",
@@ -169,9 +173,20 @@ class AuthService(
         userId: String,
     ) {
         val token = accessToken.removePrefix("Bearer ").trim()
-        val subject = jwtProvider.extractSubject(token)
+        val subject = jwtProvider.extractAccessSubject(token)
         if (subject != userId) {
             throw CustomException(ErrorCode.ACCESS_TOKEN_SUBJECT_MISMATCH)
+        }
+    }
+
+    private fun validateRefreshTokenSubject(
+        refreshToken: String,
+        userId: String,
+    ) {
+        val token = refreshToken.removePrefix("Bearer ").trim()
+        val subject = jwtProvider.extractRefreshSubject(token)
+        if (subject != userId) {
+            throw CustomException(ErrorCode.REFRESH_TOKEN_SUBJECT_MISMATCH)
         }
     }
 }

@@ -40,11 +40,13 @@ enum class ErrorCode(
     UNSUPPORTED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-017", "지원되지 않는 리프레시 토큰 형식입니다."),
     INVALID_REFRESH_TOKEN_TYPE(HttpStatus.UNAUTHORIZED, "AUTH-018", "리프레시 토큰의 타입이 올바르지 않습니다."),
     INVALID_REFRESH_TOKEN_CONTENTS(HttpStatus.UNAUTHORIZED, "AUTH-019", "유효하지 않은 정보가 담긴 리프레시 토큰입니다."),
+    INVALID_REFRESH_TOKEN_SUBJECT(HttpStatus.UNAUTHORIZED, "AUTH-020", "리프레시 토큰의 유저 정보가 올바르지 않습니다."),
+    REFRESH_TOKEN_SUBJECT_MISMATCH(HttpStatus.UNAUTHORIZED, "AUTH-021", "리프레시 토큰 정보가 일치하지 않습니다."),
 
     // Auth - Kakao Token
-    INVALID_KAKAO_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-020", "유효하지 않은 카카오 액세스 토큰입니다."),
-    DUPLICATE_KAKAO_ID(HttpStatus.CONFLICT, "AUTH-021", "이미 존재하는 유저입니다."),
-    DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "AUTH-022", "이미 사용 중인 닉네임입니다."),
+    INVALID_KAKAO_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-022", "유효하지 않은 카카오 액세스 토큰입니다."),
+    DUPLICATE_KAKAO_ID(HttpStatus.CONFLICT, "AUTH-023", "이미 존재하는 유저입니다."),
+    DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "AUTH-024", "이미 사용 중인 닉네임입니다."),
 
     // Domain - User / Profile
     USER_SPORT_PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND, "USER-001", "유저 스포츠 프로필을 찾을 수 없습니다."),
