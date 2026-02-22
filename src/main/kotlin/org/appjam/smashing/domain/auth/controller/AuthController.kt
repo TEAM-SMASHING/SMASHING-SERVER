@@ -7,6 +7,7 @@ import org.appjam.smashing.domain.auth.dto.request.SignInRequest
 import org.appjam.smashing.domain.auth.dto.request.SignUpRequest
 import org.appjam.smashing.domain.auth.dto.response.SignInResponse
 import org.appjam.smashing.domain.auth.dto.response.SignUpResponse
+import org.appjam.smashing.domain.auth.dto.response.TokenReissueResponse
 import org.appjam.smashing.domain.auth.service.AuthService
 import org.appjam.smashing.global.auth.security.data.CustomUserDetails
 import org.appjam.smashing.global.common.dto.ApiResponse
@@ -73,5 +74,22 @@ class AuthController(
         )
 
         return ApiResponse.success()
+    }
+
+    @Operation(
+        summary = "토큰 재발급 API",
+        description = ""
+    )
+    @PostMapping("/reissue")
+    fun tokenReissue(
+        @AuthenticationPrincipal principal: CustomUserDetails,
+    ): ResponseEntity<ApiResponse<TokenReissueResponse>> {
+        val response = authService.tokenReissue(
+            userId = principal.username,
+        )
+
+        return ApiResponse.success(
+            data = response
+        )
     }
 }
