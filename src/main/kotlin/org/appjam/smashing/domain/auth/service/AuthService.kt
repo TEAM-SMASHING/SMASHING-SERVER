@@ -4,6 +4,7 @@ import org.appjam.smashing.domain.auth.dto.command.SignInRequestCommand
 import org.appjam.smashing.domain.auth.dto.command.SignUpRequestCommand
 import org.appjam.smashing.domain.auth.dto.response.SignInResponse
 import org.appjam.smashing.domain.auth.dto.response.SignUpResponse
+import org.appjam.smashing.domain.auth.dto.response.TokenReissueResponse
 import org.appjam.smashing.domain.auth.social.SocialAuthServiceManager
 import org.appjam.smashing.domain.sport.repository.SportRepository
 import org.appjam.smashing.domain.tier.repository.TierRepository
@@ -115,6 +116,17 @@ class AuthService(
         jwtRefreshStore.deleteAllForUser(userId)
 
         jwtBlacklistManager.add(accessToken)
+    }
+
+    @Transactional
+    fun tokenReissue(
+        userId: String,
+    ): TokenReissueResponse {
+
+        return TokenReissueResponse.from(
+            accessToken = "",
+            refreshToken = "",
+        )
     }
 
     private fun validateUser(requestCommand: SignUpRequestCommand) {
