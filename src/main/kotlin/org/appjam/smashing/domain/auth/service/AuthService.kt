@@ -120,6 +120,7 @@ class AuthService(
 
     @Transactional
     fun tokenReissue(
+        refreshToken: String,
         userId: String,
     ): TokenReissueResponse {
 

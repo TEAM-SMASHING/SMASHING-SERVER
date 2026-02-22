@@ -78,13 +78,15 @@ class AuthController(
 
     @Operation(
         summary = "토큰 재발급 API",
-        description = ""
+        description = "엑세스 토큰 만료시, 엑세스 토큰과 리프레시 토큰을 재발급 합니다."
     )
     @PostMapping("/reissue")
     fun tokenReissue(
+        @RequestHeader("Authorization") refreshToken: String,
         @AuthenticationPrincipal principal: CustomUserDetails,
     ): ResponseEntity<ApiResponse<TokenReissueResponse>> {
         val response = authService.tokenReissue(
+            refreshToken = refreshToken,
             userId = principal.username,
         )
 
