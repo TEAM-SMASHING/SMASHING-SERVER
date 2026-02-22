@@ -30,6 +30,24 @@ class JwtRefreshStore(
     }
 
     /**
+     * 리프레시 토큰이 존재하는지 확인
+     */
+    fun exists(refreshToken: String): Boolean = redis.hasKey(tokenKey(refreshToken))
+
+    /**
+     * 리프레시 토큰 단일 삭제
+     */
+    fun deleteToken(refreshToken: String) {
+        val userId = redis.opsForValue().get(tokenKey(refreshToken))
+
+        if (userId != null) {
+            redis.opsForSet().remove(userKey(userId), refreshToken)
+        }
+
+        redis.delete(tokenKey(refreshToken))
+    }
+
+    /**
      * 유저에게 저장된 모든 리프레시 토큰을 삭제
      */
     fun deleteAllForUser(userId: String) {
