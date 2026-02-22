@@ -128,9 +128,17 @@ class AuthService(
             userId = userId,
         )
 
+        if (!jwtRefreshStore.exists(refreshToken)) {
+            throw CustomException(ErrorCode.INVALID_REFRESH_TOKEN)
+        }
+
+        jwtRefreshStore.deleteToken(refreshToken)
+
+        val newToken = issueAndStoreTokens(userId)
+
         return TokenReissueResponse.from(
-            accessToken = "",
-            refreshToken = "",
+            accessToken = newToken.accessToken.token,
+            refreshToken = newToken.refreshToken.token,
         )
     }
 
