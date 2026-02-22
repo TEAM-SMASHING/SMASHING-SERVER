@@ -64,6 +64,7 @@ class AuthService(
     @Transactional
     fun signUp(requestCommand: SignUpRequestCommand): SignUpResponse {
         validateUser(requestCommand)
+
         val sport = sportRepository.findByCode(requestCommand.sportCode)
             ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
 
@@ -73,19 +74,15 @@ class AuthService(
             lp = initLp,
         ) ?: throw CustomException(ErrorCode.INVALID_INITIAL_TIER)
 
-        val trimmedUrl = requestCommand.openChatUrl.trim()
-        validateOpenChatUrl(trimmedUrl)
-
-        val trimmedRegion = requestCommand.region.trim()
-        validateRegion(trimmedRegion)
+        validateCommand(requestCommand)
 
         val user = userRepository.save(
             User.create(
                 kakaoId = requestCommand.kakaoId,
                 nickname = requestCommand.nickname,
                 gender = requestCommand.gender,
-                openchatUrl = trimmedUrl,
-                region = trimmedRegion,
+                openchatUrl = requestCommand.openChatUrl.trim(),
+                region = requestCommand.region.trim(),
             )
         )
 
@@ -137,14 +134,14 @@ class AuthService(
         }
     }
 
-    private fun validateOpenChatUrl(trimmedUrl: String) {
+    private fun validateCommand(requestCommand: SignUpRequestCommand) {
+        val trimmedUrl = requestCommand.openChatUrl.trim()
         if (!OPEN_CHAT_URL_REGEX.matches(trimmedUrl)) {
             throw CustomException(ErrorCode.INVALID_OPENCHAT_FORMAT)
         }
-    }
 
-    private fun validateRegion(region: String) {
-        if (!region.endsWith(DISTRICT_SUFFIX)) {
+        val trimmedRegion = requestCommand.region.trim()
+        if (!trimmedRegion.endsWith(DISTRICT_SUFFIX)) {
             throw CustomException(ErrorCode.INVALID_REGION)
         }
     }
