@@ -14,6 +14,7 @@ import org.appjam.smashing.domain.user.repository.UserSportProfileRepository
 import org.appjam.smashing.domain.user.service.UserService.Companion.DISTRICT_SUFFIX
 import org.appjam.smashing.domain.user.service.UserService.Companion.OPEN_CHAT_URL_REGEX
 import org.appjam.smashing.global.auth.jwt.components.JwtProvider
+import org.appjam.smashing.global.auth.jwt.dto.TokenDto
 import org.appjam.smashing.global.auth.jwt.filter.JwtBlacklistManager
 import org.appjam.smashing.global.auth.jwt.filter.JwtRefreshStore
 import org.appjam.smashing.global.exception.CustomException
@@ -43,14 +44,7 @@ class AuthService(
 
         val userId = user.id ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
-        val token = jwtProvider.issueToken(userId)
-
-        // Redis에 리프레시 토큰 저장
-        jwtRefreshStore.save(
-            userId = userId,
-            refreshToken = token.refreshToken.token,
-            ttlMillis = jwtProvider.getRefreshTtlMillis(token.refreshToken.token)
-        )
+        val token = issueAndStoreTokens(userId)
 
         return SignInResponse.from(
             accessToken = token.accessToken.token,
@@ -98,14 +92,7 @@ class AuthService(
         // 처음 가입한 프로필로 활성 프로필 업데이트
         user.updateActiveProfile(profileId = profile.id!!)
 
-        val token = jwtProvider.issueToken(user.id!!)
-
-        // Redis에 리프레시 토큰 저장
-        jwtRefreshStore.save(
-            userId = user.id!!,
-            refreshToken = token.refreshToken.token,
-            ttlMillis = jwtProvider.getRefreshTtlMillis(token.refreshToken.token)
-        )
+        val token = issueAndStoreTokens(user.id!!)
 
         return SignUpResponse.from(
             accessToken = token.accessToken.token,
@@ -145,5 +132,18 @@ class AuthService(
         if (!trimmedRegion.endsWith(DISTRICT_SUFFIX)) {
             throw CustomException(ErrorCode.INVALID_REGION)
         }
+    }
+
+    private fun issueAndStoreTokens(userId: String): TokenDto {
+        val token = jwtProvider.issueToken(userId)
+
+        // Redis에 리프레시 토큰 저장
+        jwtRefreshStore.save(
+            userId = userId,
+            refreshToken = token.refreshToken.token,
+            ttlMillis = jwtProvider.getRefreshTtlMillis(token.refreshToken.token)
+        )
+
+        return token
     }
 }
