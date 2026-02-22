@@ -3,6 +3,7 @@ package org.appjam.smashing.global.config
 import org.appjam.smashing.global.auth.jwt.filter.JwtAuthenticationFilter
 import org.appjam.smashing.global.auth.jwt.handler.JwtAccessDeniedHandler
 import org.appjam.smashing.global.auth.jwt.handler.JwtAuthenticationEntryPoint
+import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
@@ -55,6 +56,14 @@ class SecurityConfig(
 
     @Bean
     fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
+
+    @Bean
+    fun jwtAuthenticationFilterRegistration(
+        filter: JwtAuthenticationFilter
+    ): FilterRegistrationBean<JwtAuthenticationFilter> =
+        FilterRegistrationBean(filter).apply {
+            isEnabled = false
+        }
 
     companion object {
         private val PERMIT_ALL = arrayOf(
