@@ -107,8 +107,10 @@ class AuthService(
         accessToken: String,
         userId: String,
     ) {
+        // 유저에게 저장된 모든 리프레시 토큰을 삭제
         jwtRefreshStore.deleteAllForUser(userId)
 
+        // 블랙리스트에 엑세스 토큰을 추가하여 무효화
         jwtBlacklistManager.add(accessToken)
     }
 
