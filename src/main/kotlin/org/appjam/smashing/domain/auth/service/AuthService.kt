@@ -107,10 +107,15 @@ class AuthService(
         accessToken: String,
         userId: String,
     ) {
+        validateAccessTokenSubject(
+            accessToken = accessToken,
+            userId = userId,
+        )
+
         // 유저에게 저장된 모든 리프레시 토큰을 삭제
         jwtRefreshStore.deleteAllForUser(userId)
 
-        // 블랙리스트에 엑세스 토큰을 추가하여 무효화
+        // 블랙리스트에 엑세스 토큰을 추가하여 토큰 무효화
         jwtBlacklistManager.add(accessToken)
     }
 
@@ -147,5 +152,15 @@ class AuthService(
         )
 
         return token
+    }
+
+    private fun validateAccessTokenSubject(
+        accessToken: String,
+        userId: String,
+    ) {
+        val subject = jwtProvider.extractSubject(accessToken)
+        if (subject != userId) {
+            throw CustomException(ErrorCode.ACCESS_TOKEN_SUBJECT_MISMATCH)
+        }
     }
 }

@@ -77,6 +77,19 @@ class JwtProvider(
         return (expirationMillis - System.currentTimeMillis()).coerceAtLeast(0)
     }
 
+    fun extractSubject(token: String): String {
+        val claims = jwtValidator.parseAccessToken(token)
+
+        val type = claims[TYPE_KEY] as? String
+        if (type != TokenType.ACCESS_TOKEN.name) {
+            throw CustomException(ErrorCode.INVALID_ACCESS_TOKEN_TYPE)
+        }
+
+        val subject = claims.subject ?: throw CustomException(ErrorCode.INVALID_ACCESS_TOKEN_SUBJECT)
+
+        return subject
+    }
+
     companion object {
         private const val ROLE = "ROLE_"
     }
