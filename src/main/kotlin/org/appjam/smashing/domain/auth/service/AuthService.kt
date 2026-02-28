@@ -34,7 +34,9 @@ class AuthService(
     private val jwtBlacklistManager: JwtBlacklistManager,
 ) {
     @Transactional
-    fun signIn(requestCommand: SignInRequestCommand): SignInResponse {
+    fun signIn(
+        requestCommand: SignInRequestCommand,
+    ): SignInResponse {
         val kakaoId = socialAuthServiceManager.getKakaoId(requestCommand.accessToken)
 
         val user = userRepository.findByKakaoId(kakaoId)
@@ -56,7 +58,9 @@ class AuthService(
     }
 
     @Transactional
-    fun signUp(requestCommand: SignUpRequestCommand): SignUpResponse {
+    fun signUp(
+        requestCommand: SignUpRequestCommand,
+    ): SignUpResponse {
         validateUser(requestCommand)
 
         val sport = sportRepository.findByCode(requestCommand.sportCode)
