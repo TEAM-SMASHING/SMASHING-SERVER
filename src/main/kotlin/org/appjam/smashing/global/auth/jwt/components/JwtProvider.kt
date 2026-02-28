@@ -63,21 +63,27 @@ class JwtProvider(
         )
     }
 
-    fun getAccessTtlMillis(token: String): Long {
+    fun getAccessTtlMillis(
+        token: String,
+    ): Long {
         val claims = jwtValidator.parseAccessToken(token)
         val expirationMillis = claims.expiration.time
 
         return (expirationMillis - System.currentTimeMillis()).coerceAtLeast(0)
     }
 
-    fun getRefreshTtlMillis(token: String): Long {
+    fun getRefreshTtlMillis(
+        token: String,
+    ): Long {
         val claims = jwtValidator.parseRefreshToken(token)
         val expirationMillis = claims.expiration.time
 
         return (expirationMillis - System.currentTimeMillis()).coerceAtLeast(0)
     }
 
-    fun extractSubject(token: String): String {
+    fun extractSubject(
+        token: String,
+    ): String {
         val claims = jwtValidator.parseAccessToken(token)
 
         val type = claims[TYPE_KEY] as? String
