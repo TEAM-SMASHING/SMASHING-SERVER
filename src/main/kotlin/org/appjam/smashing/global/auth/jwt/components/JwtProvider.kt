@@ -99,7 +99,9 @@ class JwtProvider(
      * @param token 엑세스 토큰
      * @return  subject 추출하여 반환
      */
-    fun extractAccessSubject(token: String): String {
+    fun extractAccessSubject(
+        token: String,
+    ): String {
         val claims = jwtValidator.parseAccessToken(token)
 
         val type = claims[TYPE_KEY] as? String
@@ -118,7 +120,9 @@ class JwtProvider(
      * @param token 리프레시 토큰
      * @return  subject 추출하여 반환
      */
-    fun extractRefreshSubject(token: String): String {
+    fun extractRefreshSubject(
+        token: String,
+    ): String {
         val claims = jwtValidator.parseRefreshToken(token)
 
         val type = claims[TYPE_KEY] as? String
