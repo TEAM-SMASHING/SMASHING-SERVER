@@ -83,11 +83,9 @@ class AuthController(
     @PostMapping("/reissue")
     fun tokenReissue(
         @RequestHeader("Authorization") refreshToken: String,
-        @AuthenticationPrincipal principal: CustomUserDetails,
     ): ResponseEntity<ApiResponse<TokenReissueResponse>> {
         val response = authService.tokenReissue(
             refreshToken = refreshToken,
-            userId = principal.username,
         )
 
         return ApiResponse.success(

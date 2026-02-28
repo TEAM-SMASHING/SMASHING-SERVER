@@ -125,18 +125,15 @@ class AuthService(
     @Transactional
     fun tokenReissue(
         refreshToken: String,
-        userId: String,
     ): TokenReissueResponse {
-        validateRefreshTokenSubject(
-            refreshToken = refreshToken,
-            userId = userId,
-        )
+        val token = refreshToken.removePrefix("Bearer ").trim()
+        val userId = jwtProvider.extractRefreshSubject(token)
 
-        if (!jwtRefreshStore.exists(refreshToken)) {
+        if (!jwtRefreshStore.exists(token)) {
             throw CustomException(ErrorCode.INVALID_REFRESH_TOKEN)
         }
 
-        jwtRefreshStore.deleteToken(refreshToken)
+        jwtRefreshStore.deleteToken(token)
 
         val newToken = issueAndStoreTokens(userId)
 
@@ -188,17 +185,6 @@ class AuthService(
         val subject = jwtProvider.extractAccessSubject(token)
         if (subject != userId) {
             throw CustomException(ErrorCode.ACCESS_TOKEN_SUBJECT_MISMATCH)
-        }
-    }
-
-    private fun validateRefreshTokenSubject(
-        refreshToken: String,
-        userId: String,
-    ) {
-        val token = refreshToken.removePrefix("Bearer ").trim()
-        val subject = jwtProvider.extractRefreshSubject(token)
-        if (subject != userId) {
-            throw CustomException(ErrorCode.REFRESH_TOKEN_SUBJECT_MISMATCH)
         }
     }
 }
