@@ -63,20 +63,42 @@ class JwtProvider(
         )
     }
 
-    fun getAccessTtlMillis(token: String): Long {
+    /**
+     * 엑세스 토큰의 TTL(Time-To-Live)
+     *
+     * @param token 엑세스 토큰
+     * @return 만료 시각에서 현재 시각을 뺀 유효 시간 반환 (만료된 경우 0 반환)
+     */
+    fun getAccessTtlMillis(
+        token: String,
+    ): Long {
         val claims = jwtValidator.parseAccessToken(token)
         val expirationMillis = claims.expiration.time
 
         return (expirationMillis - System.currentTimeMillis()).coerceAtLeast(0)
     }
 
-    fun getRefreshTtlMillis(token: String): Long {
+    /**
+     * 리프레시 토큰의 TTL(Time-To-Live)
+     *
+     * @param token 리프레시 토큰
+     * @return 만료 시각에서 현재 시각을 뺀 유효 시간 반환 (만료된 경우 0 반환)
+     */
+    fun getRefreshTtlMillis(
+        token: String,
+    ): Long {
         val claims = jwtValidator.parseRefreshToken(token)
         val expirationMillis = claims.expiration.time
 
         return (expirationMillis - System.currentTimeMillis()).coerceAtLeast(0)
     }
 
+    /**
+     * 엑세스 토큰에서 subject 추출
+     *
+     * @param token 엑세스 토큰
+     * @return  subject 추출하여 반환
+     */
     fun extractAccessSubject(token: String): String {
         val claims = jwtValidator.parseAccessToken(token)
 
@@ -90,6 +112,12 @@ class JwtProvider(
         return subject
     }
 
+    /**
+     * 리프레시 토큰에서 subject 추출
+     *
+     * @param token 리프레시 토큰
+     * @return  subject 추출하여 반환
+     */
     fun extractRefreshSubject(token: String): String {
         val claims = jwtValidator.parseRefreshToken(token)
 

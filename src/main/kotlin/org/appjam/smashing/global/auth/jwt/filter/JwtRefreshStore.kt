@@ -50,7 +50,9 @@ class JwtRefreshStore(
     /**
      * 유저에게 저장된 모든 리프레시 토큰을 삭제
      */
-    fun deleteAllForUser(userId: String) {
+    fun deleteAllForUser(
+        userId: String,
+    ) {
         val userRefreshTokens = userKey(userId)
 
         val tokens: Set<String>? = redis.opsForSet().members(userRefreshTokens)

@@ -13,7 +13,9 @@ class JwtBlacklistManager(
     /**
      * 블랙리스트에 엑세스 토큰 추가하여 즉시 무효화
      */
-    fun add(authorizationOrToken: String) {
+    fun add(
+        authorizationOrToken: String,
+    ) {
         val token = normalize(authorizationOrToken)
         if (token.isBlank()) return
 
@@ -28,7 +30,9 @@ class JwtBlacklistManager(
     /**
      * 블랙리스트에 해당 엑세스 토큰이 존재하는지 확인
      */
-    fun contains(authorizationOrToken: String): Boolean {
+    fun contains(
+        authorizationOrToken: String,
+    ): Boolean {
         val token = normalize(authorizationOrToken)
         if (token.isBlank()) return false
 
