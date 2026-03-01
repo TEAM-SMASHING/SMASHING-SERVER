@@ -92,4 +92,15 @@ class AuthController(
             data = response
         )
     }
+
+    @Operation(
+        summary = "탈퇴 API",
+        description = "회원을 탈퇴합니다."
+    )
+    @PostMapping("/withdraw")
+    fun withdraw(
+        @AuthenticationPrincipal principal: CustomUserDetails,
+    ) {
+        
+    }
 }
