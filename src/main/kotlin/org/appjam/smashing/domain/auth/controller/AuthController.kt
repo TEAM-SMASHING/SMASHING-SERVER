@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.appjam.smashing.domain.auth.dto.request.SignInRequest
 import org.appjam.smashing.domain.auth.dto.request.SignUpRequest
+import org.appjam.smashing.domain.auth.dto.request.TokenReissueRequest
 import org.appjam.smashing.domain.auth.dto.response.SignInResponse
 import org.appjam.smashing.domain.auth.dto.response.SignUpResponse
 import org.appjam.smashing.domain.auth.dto.response.TokenReissueResponse
@@ -82,10 +83,10 @@ class AuthController(
     )
     @PostMapping("/reissue")
     fun tokenReissue(
-        @RequestHeader("Authorization") refreshToken: String,
+        @Valid @RequestBody tokenReissueRequest: TokenReissueRequest,
     ): ResponseEntity<ApiResponse<TokenReissueResponse>> {
         val response = authService.tokenReissue(
-            refreshToken = refreshToken,
+            reqeustCommand = tokenReissueRequest.toCommand(),
         )
 
         return ApiResponse.success(

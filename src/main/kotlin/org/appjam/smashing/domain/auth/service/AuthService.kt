@@ -2,6 +2,7 @@ package org.appjam.smashing.domain.auth.service
 
 import org.appjam.smashing.domain.auth.dto.command.SignInRequestCommand
 import org.appjam.smashing.domain.auth.dto.command.SignUpRequestCommand
+import org.appjam.smashing.domain.auth.dto.command.TokenReissueCommand
 import org.appjam.smashing.domain.auth.dto.response.SignInResponse
 import org.appjam.smashing.domain.auth.dto.response.SignUpResponse
 import org.appjam.smashing.domain.auth.dto.response.TokenReissueResponse
@@ -124,9 +125,9 @@ class AuthService(
 
     @Transactional
     fun tokenReissue(
-        refreshToken: String,
+        reqeustCommand: TokenReissueCommand,
     ): TokenReissueResponse {
-        val token = refreshToken.removePrefix("Bearer ").trim()
+        val token = reqeustCommand.refreshToken.removePrefix("Bearer ").trim()
         val userId = jwtProvider.extractRefreshSubject(token)
 
         if (!jwtRefreshStore.exists(token)) {
