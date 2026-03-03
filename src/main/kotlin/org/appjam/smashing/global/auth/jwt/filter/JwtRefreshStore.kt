@@ -42,13 +42,14 @@ class JwtRefreshStore(
     fun deleteToken(
         refreshToken: String,
     ) {
-        val userId = redis.opsForValue().get(tokenKey(refreshToken))
+        val tokenKey = tokenKey(refreshToken)
+        val userId = redis.opsForValue().get(tokenKey)
 
         if (userId != null) {
             redis.opsForSet().remove(userKey(userId), refreshToken)
         }
 
-        redis.delete(tokenKey(refreshToken))
+        redis.delete(tokenKey)
     }
 
     /**
