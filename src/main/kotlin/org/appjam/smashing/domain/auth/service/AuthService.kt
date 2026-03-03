@@ -16,6 +16,7 @@ import org.appjam.smashing.domain.user.repository.UserSportProfileRepository
 import org.appjam.smashing.domain.user.service.UserService.Companion.DISTRICT_SUFFIX
 import org.appjam.smashing.domain.user.service.UserService.Companion.OPEN_CHAT_URL_REGEX
 import org.appjam.smashing.global.auth.jwt.components.JwtProvider
+import org.appjam.smashing.global.auth.jwt.components.JwtValidator
 import org.appjam.smashing.global.auth.jwt.dto.TokenDto
 import org.appjam.smashing.global.auth.jwt.filter.JwtBlacklistManager
 import org.appjam.smashing.global.auth.jwt.filter.JwtRefreshStore
@@ -34,6 +35,7 @@ class AuthService(
     private val userSportProfileRepository: UserSportProfileRepository,
     private val jwtRefreshStore: JwtRefreshStore,
     private val jwtBlacklistManager: JwtBlacklistManager,
+    private val jwtValidator: JwtValidator,
 ) {
     @Transactional
     fun signIn(
@@ -128,14 +130,20 @@ class AuthService(
         reqeustCommand: TokenReissueCommand,
     ): TokenReissueResponse {
         val token = reqeustCommand.refreshToken.removePrefix("Bearer ").trim()
-        val userId = jwtProvider.extractRefreshSubject(token)
 
+        // 토큰 검증
+        jwtValidator.verifyToken(token)
+
+        // store 존재 여부 확인
         if (!jwtRefreshStore.exists(token)) {
             throw CustomException(ErrorCode.INVALID_REFRESH_TOKEN)
         }
 
+        // 리프레시 토큰 삭제
         jwtRefreshStore.deleteToken(token)
 
+        // 유저 조회
+        val userId = jwtProvider.extractRefreshSubject(token)
         val newToken = issueAndStoreTokens(userId)
 
         return TokenReissueResponse.from(
