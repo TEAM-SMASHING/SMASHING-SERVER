@@ -1,7 +1,3 @@
 FROM eclipse-temurin:21
-
-# Spring Boot Application JAR
-COPY build/libs/*SNAPSHOT.jar smashing-app.jar
-
-# Run Application
+COPY build/libs/*.jar smashing-app.jar
 ENTRYPOINT ["java", "-jar", "/smashing-app.jar"]
