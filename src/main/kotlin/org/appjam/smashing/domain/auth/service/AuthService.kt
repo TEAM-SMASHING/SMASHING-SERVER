@@ -134,12 +134,12 @@ class AuthService(
         // 토큰 검증
         jwtValidator.verifyToken(token)
 
-        // store 존재 여부 확인
+        // 토큰이 기존에 존재하지 않을 경우 예외 발생
         if (!jwtRefreshStore.exists(token)) {
             throw CustomException(ErrorCode.INVALID_REFRESH_TOKEN)
         }
 
-        // 리프레시 토큰 삭제
+        // redis 저장소에서 token 삭제
         jwtRefreshStore.deleteToken(token)
 
         // 유저 조회
