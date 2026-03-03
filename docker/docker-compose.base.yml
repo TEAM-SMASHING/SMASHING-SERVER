@@ -1,0 +1,45 @@
+services:
+  smashing-server:
+    image: ${IMAGE}
+    container_name: ${CONTAINER_NAME}
+    ports:
+      - "${APP_PORT}:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - TZ=Asia/Seoul
+      - JAVA_OPTS=-Xms512m -Xmx1024m -XX:+UseG1GC -XX:MaxGCPauseMillis=200
+    entrypoint: ["sh","-c","java $JAVA_OPTS -Duser.timezone=Asia/Seoul -jar /smashing-app.jar"]
+    networks:
+      - app-network
+    restart: always
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    depends_on:
+      redis:
+        condition: service_started
+
+  redis:
+    image: redis:7-alpine
+    container_name: smashing-dev-redis
+    networks:
+      - app-network
+    restart: always
+
+  dozzle:
+    image: amir20/dozzle:latest
+    container_name: dozzle
+    ports:
+      - "9999:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - app-network
+    restart: always
+
+networks:
+  app-network:
+    driver: bridge
