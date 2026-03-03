@@ -59,12 +59,10 @@ class MatchingService(
         val requesterProfile = findRequesterProfileBySport(requesterUserId, sportId)
 
         // 하루 (00:00 ~) 최대 3회 게임 가능
-        /* TODO: 앱잼 기간내 하루 3회 제한 해제
         validateDailyLimit(
             requesterUserId = requesterUserId,
             receiverUserId = receiverProfile.user.id!!,
         )
-        */
 
         // 24시간 내 진행되지 않은 매칭 요청 이력이 남아있는 경우, 동일 상대방에 대해 중복 매칭 요청 불가
         validateNoMatchingWithin24h(
@@ -570,6 +568,7 @@ class MatchingService(
         )
     }
 
+    // 삭제 예정
     companion object {
         val DEFAULT_ZONE_ID = ZoneId.of("Asia/Seoul")
     }
