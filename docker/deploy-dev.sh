@@ -3,13 +3,13 @@ set -e
 
 cd /home/ubuntu/smashing
 
-docker compose \
+docker-compose \
   -f docker/docker-compose.base.yml \
   -f docker/docker-compose.dev.yml \
   --env-file .env.dev \
   pull
 
-docker compose \
+docker-compose \
   -f docker/docker-compose.base.yml \
   -f docker/docker-compose.dev.yml \
   --env-file .env.dev \
