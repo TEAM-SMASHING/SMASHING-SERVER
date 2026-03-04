@@ -129,7 +129,7 @@ class AuthService(
     fun tokenReissue(
         reqeustCommand: TokenReissueCommand,
     ): TokenReissueResponse {
-        val token = reqeustCommand.refreshToken.removePrefix("Bearer ").trim()
+        val token = reqeustCommand.refreshToken
 
         // 토큰 검증
         jwtValidator.verifyToken(token)
@@ -139,11 +139,12 @@ class AuthService(
             throw CustomException(ErrorCode.INVALID_REFRESH_TOKEN)
         }
 
+        // 유저 조회
+        val userId = jwtProvider.extractRefreshSubject(token)
+
         // redis 저장소에서 token 삭제
         jwtRefreshStore.deleteToken(token)
 
-        // 유저 조회
-        val userId = jwtProvider.extractRefreshSubject(token)
         val newToken = issueAndStoreTokens(userId)
 
         return TokenReissueResponse.from(
