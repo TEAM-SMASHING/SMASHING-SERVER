@@ -23,11 +23,11 @@ abstract class BaseEntity {
     lateinit var createdAt: LocalDateTime
         protected set
 
-//    @CreatedBy
-//    @Column(name = "created_by", nullable = false, updatable = false, length = 50)
-//    @Comment("등록자")
-//    lateinit var createdBy: String
-//        protected set TODO: 인증/인가 구현 후 주석 해제
+    @CreatedBy
+    @Column(name = "created_by", nullable = false, updatable = false, length = 50)
+    @Comment("등록자")
+    lateinit var createdBy: String
+        protected set
 
     @LastModifiedDate
     @Column(name = "updated_at", nullable = false, columnDefinition = "DATETIME")
@@ -36,11 +36,11 @@ abstract class BaseEntity {
     lateinit var updatedAt: LocalDateTime
         protected set
 
-//    @LastModifiedBy
-//    @Column(name = "updated_by", nullable = false, length = 50)
-//    @Comment("수정자")
-//    lateinit var updatedBy: String
-//        protected set TODO: 인증/인가 구현 후 주석 해제
+    @LastModifiedBy
+    @Column(name = "updated_by", nullable = false, length = 50)
+    @Comment("수정자")
+    lateinit var updatedBy: String
+        protected set
 
     @Column(name = "deleted_at", insertable = false, updatable = false, columnDefinition = "DATETIME")
     @Comment("삭제일자")

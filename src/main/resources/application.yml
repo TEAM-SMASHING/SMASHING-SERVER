@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: smashing
+
+timezone:
+  default-time-zone: Asia/Seoul

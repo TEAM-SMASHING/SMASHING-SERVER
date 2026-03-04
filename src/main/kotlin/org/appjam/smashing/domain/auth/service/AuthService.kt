@@ -2,6 +2,7 @@ package org.appjam.smashing.domain.auth.service
 
 import org.appjam.smashing.domain.auth.dto.command.SignInRequestCommand
 import org.appjam.smashing.domain.auth.dto.command.SignUpRequestCommand
+import org.appjam.smashing.domain.auth.dto.command.TokenReissueCommand
 import org.appjam.smashing.domain.auth.dto.response.SignInResponse
 import org.appjam.smashing.domain.auth.dto.response.SignUpResponse
 import org.appjam.smashing.domain.auth.dto.response.TokenReissueResponse
@@ -15,6 +16,7 @@ import org.appjam.smashing.domain.user.repository.UserSportProfileRepository
 import org.appjam.smashing.domain.user.service.UserService.Companion.DISTRICT_SUFFIX
 import org.appjam.smashing.domain.user.service.UserService.Companion.OPEN_CHAT_URL_REGEX
 import org.appjam.smashing.global.auth.jwt.components.JwtProvider
+import org.appjam.smashing.global.auth.jwt.components.JwtValidator
 import org.appjam.smashing.global.auth.jwt.dto.TokenDto
 import org.appjam.smashing.global.auth.jwt.filter.JwtBlacklistManager
 import org.appjam.smashing.global.auth.jwt.filter.JwtRefreshStore
@@ -33,6 +35,7 @@ class AuthService(
     private val userSportProfileRepository: UserSportProfileRepository,
     private val jwtRefreshStore: JwtRefreshStore,
     private val jwtBlacklistManager: JwtBlacklistManager,
+    private val jwtValidator: JwtValidator,
 ) {
     @Transactional
     fun signIn(
@@ -124,15 +127,22 @@ class AuthService(
 
     @Transactional
     fun tokenReissue(
-        refreshToken: String,
+        reqeustCommand: TokenReissueCommand,
     ): TokenReissueResponse {
-        val token = refreshToken.removePrefix("Bearer ").trim()
-        val userId = jwtProvider.extractRefreshSubject(token)
+        val token = reqeustCommand.refreshToken
 
+        // 토큰 검증
+        jwtValidator.verifyToken(token)
+
+        // 토큰이 기존에 존재하지 않을 경우 예외 발생
         if (!jwtRefreshStore.exists(token)) {
             throw CustomException(ErrorCode.INVALID_REFRESH_TOKEN)
         }
 
+        // 유저 조회
+        val userId = jwtProvider.extractRefreshSubject(token)
+
+        // redis 저장소에서 token 삭제
         jwtRefreshStore.deleteToken(token)
 
         val newToken = issueAndStoreTokens(userId)

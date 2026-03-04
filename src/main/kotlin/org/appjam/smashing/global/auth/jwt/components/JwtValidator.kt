@@ -1,6 +1,8 @@
 package org.appjam.smashing.global.auth.jwt.components
 
 import io.jsonwebtoken.*
+import org.appjam.smashing.global.auth.jwt.components.JwtGenerator.Companion.TYPE_KEY
+import org.appjam.smashing.global.auth.jwt.enums.TokenType
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
 import org.springframework.stereotype.Component
@@ -9,6 +11,15 @@ import org.springframework.stereotype.Component
 class JwtValidator(
     private val keyProvider: KeyProvider
 ) {
+    fun verifyToken(refreshToken: String) {
+        val claims = parseRefreshToken(refreshToken)
+
+        val type = claims[TYPE_KEY] as? String
+        if (type != TokenType.REFRESH_TOKEN.name) {
+            throw CustomException(ErrorCode.INVALID_REFRESH_TOKEN_TYPE)
+        }
+    }
+
     fun parseRefreshToken(token: String): Claims =
         try {
             getJwtParser().parseClaimsJws(token).body
