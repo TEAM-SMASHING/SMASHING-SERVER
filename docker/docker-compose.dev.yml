@@ -1,0 +1,4 @@
+services:
+  smashing-server:
+    env_file:
+      - ../.env.dev
