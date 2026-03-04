@@ -36,7 +36,7 @@ class JwtProvider(
         token: String,
         timeZone: String
     ): Authentication {
-        val claims = jwtValidator.validateAndParseAccessToken(token)
+        val claims = jwtValidator.parseAccessToken(token)
 
         val roles = claims[ROLES_KEY] as? List<*> ?: throw CustomException(ErrorCode.INVALID_ACCESS_TOKEN_CLAIM)
         val authorities = roles.map {
@@ -61,6 +61,57 @@ class JwtProvider(
             null,
             userDetails.authorities
         )
+    }
+
+    /**
+     * 엑세스 토큰의 TTL(Time-To-Live)
+     *
+     * @param token 엑세스 토큰
+     * @return 만료 시각에서 현재 시각을 뺀 유효 시간 반환 (만료된 경우 0 반환)
+     */
+    fun getAccessTtlMillis(
+        token: String,
+    ): Long {
+        val claims = jwtValidator.parseAccessToken(token)
+        val expirationMillis = claims.expiration.time
+
+        return (expirationMillis - System.currentTimeMillis()).coerceAtLeast(0)
+    }
+
+    /**
+     * 리프레시 토큰의 TTL(Time-To-Live)
+     *
+     * @param token 리프레시 토큰
+     * @return 만료 시각에서 현재 시각을 뺀 유효 시간 반환 (만료된 경우 0 반환)
+     */
+    fun getRefreshTtlMillis(
+        token: String,
+    ): Long {
+        val claims = jwtValidator.parseRefreshToken(token)
+        val expirationMillis = claims.expiration.time
+
+        return (expirationMillis - System.currentTimeMillis()).coerceAtLeast(0)
+    }
+
+    /**
+     * 엑세스 토큰에서 subject 추출
+     *
+     * @param token 엑세스 토큰
+     * @return  subject 추출하여 반환
+     */
+    fun extractSubject(
+        token: String,
+    ): String {
+        val claims = jwtValidator.parseAccessToken(token)
+
+        val type = claims[TYPE_KEY] as? String
+        if (type != TokenType.ACCESS_TOKEN.name) {
+            throw CustomException(ErrorCode.INVALID_ACCESS_TOKEN_TYPE)
+        }
+
+        val subject = claims.subject ?: throw CustomException(ErrorCode.INVALID_ACCESS_TOKEN_SUBJECT)
+
+        return subject
     }
 
     companion object {

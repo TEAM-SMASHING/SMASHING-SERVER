@@ -28,21 +28,23 @@ enum class ErrorCode(
     INVALID_ACCESS_TOKEN_SUBJECT(HttpStatus.UNAUTHORIZED, "AUTH-007", "엑세스 토큰의 유저 정보가 올바르지 않습니다."),
     INVALID_ACCESS_TOKEN_CONTENTS(HttpStatus.UNAUTHORIZED, "AUTH-008", "유효하지 않은 정보가 담긴 엑세스 토큰입니다."),
     INVALID_ACCESS_TOKEN_CLAIM(HttpStatus.UNAUTHORIZED, "AUTH-009", "유효하지 않은 권한이 담긴 엑세스 토큰입니다."),
+    BLACKLISTED_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-010", "이미 무효화된 인증 토큰입니다."),
+    ACCESS_TOKEN_SUBJECT_MISMATCH(HttpStatus.UNAUTHORIZED, "AUTH-011", "엑세스 토큰 정보가 일치하지 않습니다."),
 
     // Auth - Refresh Token
-    INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-010", "유효하지 않은 리프레시 토큰입니다."),
-    EXPIRED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-011", "만료된 리프레시 토큰입니다."),
-    REFRESH_TOKEN_MISMATCH(HttpStatus.UNAUTHORIZED, "AUTH-012", "저장된 리프레시 토큰과 일치하지 않습니다."),
-    INVALID_REFRESH_SIGNATURE(HttpStatus.UNAUTHORIZED, "AUTH-013", "변조된 리프레시 토큰입니다."),
-    MALFORMED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-014", "리프레시 토큰의 형식이 잘못되었습니다."),
-    UNSUPPORTED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-015", "지원되지 않는 리프레시 토큰 형식입니다."),
-    INVALID_REFRESH_TOKEN_TYPE(HttpStatus.UNAUTHORIZED, "AUTH-016", "리프레시 토큰의 타입이 올바르지 않습니다."),
-    INVALID_REFRESH_TOKEN_CONTENTS(HttpStatus.UNAUTHORIZED, "AUTH-017", "유효하지 않은 정보가 담긴 리프레시 토큰입니다."),
+    INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-012", "유효하지 않은 리프레시 토큰입니다."),
+    EXPIRED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-013", "만료된 리프레시 토큰입니다."),
+    REFRESH_TOKEN_MISMATCH(HttpStatus.UNAUTHORIZED, "AUTH-014", "저장된 리프레시 토큰과 일치하지 않습니다."),
+    INVALID_REFRESH_SIGNATURE(HttpStatus.UNAUTHORIZED, "AUTH-015", "변조된 리프레시 토큰입니다."),
+    MALFORMED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-016", "리프레시 토큰의 형식이 잘못되었습니다."),
+    UNSUPPORTED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-017", "지원되지 않는 리프레시 토큰 형식입니다."),
+    INVALID_REFRESH_TOKEN_TYPE(HttpStatus.UNAUTHORIZED, "AUTH-018", "리프레시 토큰의 타입이 올바르지 않습니다."),
+    INVALID_REFRESH_TOKEN_CONTENTS(HttpStatus.UNAUTHORIZED, "AUTH-019", "유효하지 않은 정보가 담긴 리프레시 토큰입니다."),
 
     // Auth - Kakao Token
-    INVALID_KAKAO_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-018", "유효하지 않은 카카오 액세스 토큰입니다."),
-    DUPLICATE_KAKAO_ID(HttpStatus.CONFLICT, "AUTH-019", "이미 존재하는 유저입니다."),
-    DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "AUTH-020", "이미 사용 중인 닉네임입니다."),
+    INVALID_KAKAO_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-020", "유효하지 않은 카카오 액세스 토큰입니다."),
+    DUPLICATE_KAKAO_ID(HttpStatus.CONFLICT, "AUTH-021", "이미 존재하는 유저입니다."),
+    DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "AUTH-022", "이미 사용 중인 닉네임입니다."),
 
     // Domain - User / Profile
     USER_SPORT_PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND, "USER-001", "유저 스포츠 프로필을 찾을 수 없습니다."),
@@ -86,7 +88,7 @@ enum class ErrorCode(
     GAME_SUBMISSION_CONFIRMER_MISMATCH(HttpStatus.FORBIDDEN, "GAME-015", "해당 제출안을 확정할 권한이 없습니다."),
     GAME_RESULT_ALREADY_CONFIRMED(HttpStatus.BAD_REQUEST, "GAME-016", "확정된 경기는 삭제할 수 없습니다."),
     GAME_RESULT_RESUBMIT_ONLY_PREVIOUS_SUBMITTER(HttpStatus.FORBIDDEN, "GAME-017", "재제출은 기존에 결과를 제출했던 사용자만 가능합니다."),
-    GAME_RESULT_REJECT_REASON_REQUIRED_ON_FIRST_REJECT(HttpStatus.BAD_REQUEST, "GAME-018", "첫 번째 반려에는 반려 사유가 필수입니다.",),
+    GAME_RESULT_REJECT_REASON_REQUIRED_ON_FIRST_REJECT(HttpStatus.BAD_REQUEST, "GAME-018", "첫 번째 반려에는 반려 사유가 필수입니다."),
 
     // Domain - Game Review
     REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "GAMEREVIEW-001", "해당 리뷰를 찾을 수 없습니다."),

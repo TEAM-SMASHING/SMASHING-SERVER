@@ -1,9 +1,9 @@
 package org.appjam.smashing.global.config
 
-import org.appjam.smashing.global.auth.jwt.components.JwtProvider
 import org.appjam.smashing.global.auth.jwt.filter.JwtAuthenticationFilter
 import org.appjam.smashing.global.auth.jwt.handler.JwtAccessDeniedHandler
 import org.appjam.smashing.global.auth.jwt.handler.JwtAuthenticationEntryPoint
+import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
@@ -19,10 +19,9 @@ import org.springframework.web.cors.CorsUtils
 @Configuration
 @EnableMethodSecurity
 class SecurityConfig(
-    private val jwtProvider: JwtProvider,
     private val jwtAuthenticationEntryPoint: JwtAuthenticationEntryPoint,
     private val jwtAccessDeniedHandler: JwtAccessDeniedHandler,
-    private val timeZoneProperties: TimeZoneProperties,
+    private val jwtAuthenticationFilter: JwtAuthenticationFilter,
 ) {
 
     @Bean
@@ -49,7 +48,7 @@ class SecurityConfig(
                 accessDeniedHandler = jwtAccessDeniedHandler
             }
 
-            addFilterBefore<UsernamePasswordAuthenticationFilter>(JwtAuthenticationFilter(jwtProvider, timeZoneProperties))
+            addFilterBefore<UsernamePasswordAuthenticationFilter>(jwtAuthenticationFilter)
         }
 
         return http.build()
@@ -57,6 +56,14 @@ class SecurityConfig(
 
     @Bean
     fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
+
+    @Bean
+    fun jwtAuthenticationFilterRegistration(
+        filter: JwtAuthenticationFilter
+    ): FilterRegistrationBean<JwtAuthenticationFilter> =
+        FilterRegistrationBean(filter).apply {
+            isEnabled = false
+        }
 
     companion object {
         private val PERMIT_ALL = arrayOf(

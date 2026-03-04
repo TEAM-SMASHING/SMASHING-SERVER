@@ -6,14 +6,23 @@ import jakarta.servlet.http.HttpServletResponse
 import org.appjam.smashing.global.auth.jwt.components.JwtProvider
 import org.appjam.smashing.global.auth.jwt.handler.JwtAuthenticationEntryPoint.Companion.EXCEPTION_KEY
 import org.appjam.smashing.global.config.TimeZoneProperties
+import org.appjam.smashing.global.exception.CustomException
+import org.appjam.smashing.global.exception.ErrorCode
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpHeaders
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
+import org.springframework.web.servlet.HandlerExceptionResolver
 import java.time.ZoneId
 
+@Component
 class JwtAuthenticationFilter(
     private val jwtProvider: JwtProvider,
+    private val jwtBlacklistManager: JwtBlacklistManager,
     private val timeZoneProperties: TimeZoneProperties,
+    @Qualifier("handlerExceptionResolver")
+    private val resolver: HandlerExceptionResolver,
 ) : OncePerRequestFilter() {
 
     override fun doFilterInternal(
@@ -25,6 +34,14 @@ class JwtAuthenticationFilter(
 
         if (!token.isNullOrBlank()) {
             try {
+                if (jwtBlacklistManager.contains(token)) {
+                    SecurityContextHolder.clearContext()
+                    resolver.resolveException(
+                        request, response, null, CustomException(ErrorCode.BLACKLISTED_ACCESS_TOKEN)
+                    )
+                    return
+                }
+
                 val timeZone = resolveTimeZone(request)
                 val authentication = jwtProvider.getAuthentication(token, timeZone)
                 SecurityContextHolder.getContext().authentication = authentication

@@ -8,13 +8,12 @@ import org.appjam.smashing.domain.auth.dto.request.SignUpRequest
 import org.appjam.smashing.domain.auth.dto.response.SignInResponse
 import org.appjam.smashing.domain.auth.dto.response.SignUpResponse
 import org.appjam.smashing.domain.auth.service.AuthService
+import org.appjam.smashing.global.auth.security.data.CustomUserDetails
 import org.appjam.smashing.global.common.dto.ApiResponse
 import org.appjam.smashing.global.common.enums.SuccessCode
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.web.bind.annotation.*
 
 @Tag(name = "Auth")
 @RestController
@@ -57,5 +56,22 @@ class AuthController(
         return ApiResponse.success(
             data = response
         )
+    }
+
+    @Operation(
+        summary = "로그아웃 API",
+        description = "로그아웃을 진행합니다."
+    )
+    @PostMapping("/logout")
+    fun logout(
+        @RequestHeader("Authorization") accessToken: String,
+        @AuthenticationPrincipal principal: CustomUserDetails,
+    ): ResponseEntity<ApiResponse<Unit>> {
+        authService.logout(
+            accessToken = accessToken,
+            userId = principal.username,
+        )
+
+        return ApiResponse.success()
     }
 }
