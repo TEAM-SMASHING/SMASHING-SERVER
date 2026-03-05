@@ -155,9 +155,21 @@ class AuthService(
 
     @Transactional
     fun withdraw(
+        accessToken: String,
         userId: String,
     ) {
+        validateAccessTokenSubject(
+            accessToken = accessToken,
+            userId = userId,
+        )
 
+        // 회원 정보 삭제
+        
+
+        // 토큰 무효화
+        jwtRefreshStore.deleteAllForUser(userId)
+
+        jwtBlacklistManager.add(accessToken)
     }
 
     private fun validateUser(requestCommand: SignUpRequestCommand) {

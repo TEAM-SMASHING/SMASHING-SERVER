@@ -100,9 +100,11 @@ class AuthController(
     )
     @PostMapping("/withdraw")
     fun withdraw(
+        @RequestHeader("Authorization") accessToken: String,
         @AuthenticationPrincipal principal: CustomUserDetails,
     ): ResponseEntity<ApiResponse<Unit>> {
         authService.withdraw(
+            accessToken = accessToken,
             userId = principal.username
         )
 
