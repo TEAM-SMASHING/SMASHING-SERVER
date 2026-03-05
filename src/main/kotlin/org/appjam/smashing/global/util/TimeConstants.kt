@@ -8,7 +8,7 @@ object TimeUtils {
     /*
      * 기본 타임존 상수
      */
-    val DEFAULT_ZONE_ID: ZoneId = ZoneId.of("Asia/Seoul") // TODO: 이후 사용자 기준 타임존으로 분리 예정
+    val DEFAULT_ZONE_ID: ZoneId = ZoneId.of("Asia/Seoul")
 
     /*
      * LocalDateTime -> OffsetDateTime 변환
