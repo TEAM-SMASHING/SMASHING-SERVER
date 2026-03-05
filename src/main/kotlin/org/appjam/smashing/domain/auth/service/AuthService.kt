@@ -153,6 +153,13 @@ class AuthService(
         )
     }
 
+    @Transactional
+    fun withdraw(
+        userId: String,
+    ) {
+
+    }
+
     private fun validateUser(requestCommand: SignUpRequestCommand) {
         if (userRepository.existsByKakaoId(requestCommand.kakaoId)) {
             throw CustomException(ErrorCode.DUPLICATE_KAKAO_ID)
