@@ -24,10 +24,12 @@ class MatchingController(
         summary = "매칭 신청 API",
         description = """
             상대 스포츠 프로필(receiverProfileId)에 대해 매칭을 신청합니다.
-            - 인증된 사용자 기준으로 매칭 요청을 생성합니다.
-            - 동일 유저 간 하루 최대 3회 신청 가능합니다. (앱잼 제외)
-            - 상대방에게 24시간 이내 결과까지 모두 확정되지 않은 이력이 존재할 경우 신청 불가합니다.
-            - 성공 시 상대 유저에게 알림 및 SSE 이벤트가 전송됩니다.
+            - 종목은 receiverProfile의 sport로 결정됩니다.
+            - 동일 종목/동일 상대 하루 3판 제한: "오늘 RESULT_CONFIRMED 게임 수" 기준
+            - 24시간 쿨다운: REQUESTED(createdAt), CANCELLED/REJECTED(respondedAt) 기준
+            - 성공 시:
+              1) 상대 유저에게 Notification 저장(실시간 반영 X)
+              2) SSE: receiver에게 matching.received, requester에게 matching.sent
         """
     )
     @PostMapping("/profiles/{receiverProfileId}")
