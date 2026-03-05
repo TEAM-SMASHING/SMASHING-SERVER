@@ -46,6 +46,11 @@ jobs:
           username: ${{ secrets.EC2_USER_DEV }}
           key: ${{ secrets.EC2_SSH_KEY_DEV }}
           script: |
+            set -e
             cd /home/ubuntu/smashing
-            git pull origin develop
+
+            git fetch origin develop
+            git checkout develop
+            git reset --hard origin/develop
+
             bash docker/deploy-dev.sh
