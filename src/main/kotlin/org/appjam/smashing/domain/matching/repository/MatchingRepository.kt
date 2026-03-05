@@ -1,15 +1,45 @@
 package org.appjam.smashing.domain.matching.repository
 
 import jakarta.persistence.LockModeType
+import org.appjam.smashing.domain.matching.dto.projection.LatestMatchingCooldownProjection
 import org.appjam.smashing.domain.matching.entity.Matching
 import org.appjam.smashing.domain.matching.enums.MatchingStatus
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Lock
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.query.Param
 import java.time.LocalDateTime
 
 interface MatchingRepository : JpaRepository<Matching, String>, MatchingRepositoryCustom {
+
+    /**
+     * 마지막 매칭(soft delete 포함) 1건 조회 (쿨다운 판단용)
+     * - cancelled/rejected는 responded_at 기준으로 24h
+     * - requested 상태는 created_at 기준으로 24h
+     */
+    @Query(
+        value = """
+        select 
+            m.status as status,
+            m.created_at as createdAt,
+            m.responded_at as respondedAt
+        from matching m
+        where m.sport_id = :sportId
+          and (
+                (m.requester_profile_id = :profileA and m.receiver_profile_id = :profileB)
+             or (m.requester_profile_id = :profileB and m.receiver_profile_id = :profileA)
+          )
+        order by m.created_at desc
+        limit 1
+        """,
+        nativeQuery = true
+    )
+    fun findLatestForCooldown(
+        @Param("profileA") profileA: String,
+        @Param("profileB") profileB: String,
+        @Param("sportId") sportId: Long,
+    ): LatestMatchingCooldownProjection?
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query(
@@ -57,46 +87,6 @@ interface MatchingRepository : JpaRepository<Matching, String>, MatchingReposito
         sportId: Long,
         status: MatchingStatus
     ): Matching?
-
-    @Query(
-        value = """
-     select exists(
-        select 1
-        from matching m
-        where m.created_at >= :startAt
-          and m.status not in ('ACCEPTED', 'COMPLETED')
-          and m.requester_user_id = :requesterUserId
-          and m.receiver_user_id = :receiverUserId
-    )
-    """,
-        nativeQuery = true
-    )
-    fun existsPendingRequestFromRequesterToReceiverSinceRaw(
-        startAt: LocalDateTime,
-        requesterUserId: String,
-        receiverUserId: String,
-    ): Long
-
-    @Query(
-        value = """
-        select exists(
-            select 1
-              from matching m
-              left join game g
-                     on g.matching_id = m.id
-             where m.created_at >= :startAt
-               and m.requester_user_id = :requesterUserId
-               and m.receiver_user_id = :receiverUserId
-               and (g.id is null or g.result_status <> 'RESULT_CONFIRMED')
-        )
-    """,
-        nativeQuery = true
-    )
-    fun existsUnconfirmedOutgoingMatchingSinceRaw(
-        startAt: LocalDateTime,
-        requesterUserId: String,
-        receiverUserId: String,
-    ): Long
 
     @Query(
         value = """
