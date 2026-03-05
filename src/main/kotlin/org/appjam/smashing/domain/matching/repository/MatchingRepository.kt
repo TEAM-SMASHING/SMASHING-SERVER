@@ -41,20 +41,24 @@ interface MatchingRepository : JpaRepository<Matching, String>, MatchingReposito
         @Param("sportId") sportId: Long,
     ): LatestMatchingCooldownProjection?
 
+    /**
+     * 매칭 row에 대해 락을 걸고 조회 (상태 전환이 한번만 일어나도록)
+     */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query(
         """
         select m
-        from Matching m
-        join fetch m.requester
-        join fetch m.receiver
-        join fetch m.sport
-        where m.id = :matchingId
-          and m.deletedAt is null
+          from Matching m
+          join fetch m.requesterProfile rp
+          join fetch rp.user rpu
+          join fetch m.receiverProfile rcp
+          join fetch rcp.user rcu
+          join fetch m.sport s
+         where m.id = :matchingId
         """
     )
     fun findByIdFetchAllForUpdate(
-        matchingId: String
+        matchingId: String,
     ): Matching?
 
     @Modifying

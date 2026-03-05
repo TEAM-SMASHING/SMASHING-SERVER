@@ -160,6 +160,33 @@ class MatchingService(
         )
     }
 
+    @Transactional
+    fun cancelMyMatchingRequest(
+        requesterUserId: String,
+        matchingId: String,
+    ) {
+        val matching = matchingRepository.findByIdFetchAllForUpdate(matchingId)
+            ?: throw CustomException(ErrorCode.MATCHING_NOT_FOUND)
+
+        validateCancellableByRequester(matching, requesterUserId)
+
+        // 취소 처리
+        matching.cancel(LocalDateTime.now(DEFAULT_ZONE_ID))
+        matchingRepository.flush()
+
+        // soft delete
+        matchingRepository.delete(matching)
+
+        // SSE - receiver 받은 매칭 탭에서 카드 제거
+        outboxEventPublisher.publish(
+            userId = matching.receiverProfile.user.id!!,
+            eventType = SseEventType.MATCHING_UPDATED,
+            payload = MatchingUpdatedPayload(
+                matchingId = matchingId,
+                status = MatchingUpdateStatus.CANCELLED,
+            )
+        )
+    }
 
     @Transactional
     fun acceptMatching(
@@ -249,30 +276,6 @@ class MatchingService(
         // SSE 이벤트 발행
         publishMatchingUpdatedRejected(
             requesterUserId = matching.requesterProfile.user.id!!,
-            matchingId = matchingId,
-        )
-    }
-
-    @Transactional
-    fun cancelMyMatchingRequest(
-        requesterUserId: String,
-        matchingId: String,
-    ) {
-        val matching = matchingRepository.findByIdFetchAllForUpdate(matchingId)
-            ?: throw CustomException(ErrorCode.MATCHING_NOT_FOUND)
-
-        validateCancellableByRequester(matching, requesterUserId)
-
-        // 상태 변경
-        matching.cancel(LocalDateTime.now(DEFAULT_ZONE_ID))
-        matchingRepository.flush()
-
-        // soft delete
-        matchingRepository.delete(matching)
-
-        // SSE 이벤트 발행
-        publishMatchingUpdatedCancelled(
-            receiverUserId = matching.receiverProfile.user.id!!,
             matchingId = matchingId,
         )
     }
@@ -402,6 +405,21 @@ class MatchingService(
         }
     }
 
+    private fun validateCancellableByRequester(
+        matching: Matching,
+        requesterUserId: String,
+    ) {
+        // requester만 취소 가능
+        if (matching.requesterProfile.user.id!! != requesterUserId) {
+            throw CustomException(ErrorCode.MATCHING_FORBIDDEN)
+        }
+
+        // REQUESTED 상태만 취소 가능
+        if (matching.status != MatchingStatus.REQUESTED) {
+            throw CustomException(ErrorCode.MATCHING_ALREADY_RESPONDED)
+        }
+    }
+
     private fun validateRejectable(
         matching: Matching,
         receiverUserId: String,
@@ -417,22 +435,6 @@ class MatchingService(
         }
     }
 
-    private fun validateCancellableByRequester(
-        matching: Matching,
-        requesterUserId: String,
-    ) {
-        // requester만 삭제 가능
-        if (matching.requesterProfile.user.id!! != requesterUserId) {
-            throw CustomException(ErrorCode.MATCHING_FORBIDDEN)
-        }
-
-        // REQUESTED 상태만 삭제 가능
-        if (matching.status != MatchingStatus.REQUESTED) {
-            throw CustomException(ErrorCode.MATCHING_ALREADY_RESPONDED)
-        }
-    }
-
-
     private fun publishMatchingUpdatedAccepted(
         requesterUserId: String,
         matchingId: String,
@@ -447,7 +449,6 @@ class MatchingService(
         )
     }
 
-
     private fun publishMatchingUpdatedRejected(
         requesterUserId: String,
         matchingId: String,
@@ -458,20 +459,6 @@ class MatchingService(
             payload = MatchingUpdatedPayload(
                 matchingId = matchingId,
                 status = MatchingUpdateStatus.REJECTED,
-            )
-        )
-    }
-
-    private fun publishMatchingUpdatedCancelled(
-        receiverUserId: String,
-        matchingId: String,
-    ) {
-        outboxEventPublisher.publish(
-            userId = receiverUserId,
-            eventType = SseEventType.MATCHING_UPDATED,
-            payload = MatchingUpdatedPayload(
-                matchingId = matchingId,
-                status = MatchingUpdateStatus.CANCELLED,
             )
         )
     }

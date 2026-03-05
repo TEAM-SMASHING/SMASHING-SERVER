@@ -46,6 +46,29 @@ class MatchingController(
     }
 
     @Operation(
+        summary = "보낸 매칭 요청 취소 API",
+        description = """
+            보낸 매칭 요청을 취소합니다.
+            - REQUESTED 상태에서만 취소 가능
+            - 취소 시 status=CANCELLED + respondedAt 기록
+            - soft delete 처리
+            - receiver에게 SSE(matching.updated: CANCELLED) 전송
+        """
+    )
+    @DeleteMapping("/{matchingId}")
+    fun cancelMyMatchingRequest(
+        @AuthenticationPrincipal principal: CustomUserDetails,
+        @PathVariable matchingId: String,
+    ): ResponseEntity<ApiResponse<Unit>> {
+        matchingService.cancelMyMatchingRequest(
+            requesterUserId = principal.username,
+            matchingId = matchingId,
+        )
+
+        return ApiResponse.success()
+    }
+
+    @Operation(
         summary = "매칭 요청 수락 API",
         description = """
             매칭 요청(matchingId)을 수락합니다.
@@ -82,29 +105,6 @@ class MatchingController(
     ): ResponseEntity<ApiResponse<Unit>> {
         matchingService.rejectMatching(
             receiverUserId = principal.username,
-            matchingId = matchingId,
-        )
-
-        return ApiResponse.success()
-    }
-
-    @Operation(
-        summary = "내가 보낸 매칭 요청 삭제 API",
-        description = """
-            내가 보낸 매칭 요청을 삭제합니다.
-            - REQUESTED 상태에서만 삭제 가능
-            - 삭제 시 soft delete 처리
-            - Notification 생성 없음
-            - receiver에게 SSE(matching.updated: CANCELLED) 전송
-        """
-    )
-    @DeleteMapping("/{matchingId}")
-    fun cancelMyMatchingRequest(
-        @AuthenticationPrincipal principal: CustomUserDetails,
-        @PathVariable matchingId: String,
-    ): ResponseEntity<ApiResponse<Unit>> {
-        matchingService.cancelMyMatchingRequest(
-            requesterUserId = principal.username,
             matchingId = matchingId,
         )
 

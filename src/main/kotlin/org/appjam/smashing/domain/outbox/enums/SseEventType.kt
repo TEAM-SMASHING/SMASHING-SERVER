@@ -10,9 +10,9 @@ enum class SseEventType(
     // 보낸 매칭 요청 카드 실시간 추가
     MATCHING_SENT("matching.sent"),
 
-
-    // 상대가 요청을 수락/거절/삭제
+    // 매칭 엔티티 상태 업데이트 실시간 반영 (삭제(취소))
     MATCHING_UPDATED("matching.updated"),
+
 
     // 알림 관련 생성 / 변경 사항
     NOTIFICATION_CREATED("notification.created"),
