@@ -15,8 +15,8 @@ data class ReviewDetailResponse(
             gr: GameReview,
         ) = ReviewDetailResponse(
             rating = gr.rating,
-            reviewerNickname = gr.reviewer.nickname,
-            revieweeNickname = gr.reviewee.nickname,
+            reviewerNickname = gr.reviewer?.nickname ?: "알 수 없음",
+            revieweeNickname = gr.reviewee?.nickname ?: "알 수 없음",
             tag = gr.tags.map { it.name },
             content = gr.content
         )

@@ -16,7 +16,14 @@ import org.hibernate.annotations.SQLRestriction
 )
 @Comment("유저 정보")
 @SQLRestriction("deleted_at is null")
-@SQLDelete(sql = "update user set deleted_at = now() where id = ?")
+@SQLDelete(
+    sql = """
+        update user 
+        set deleted_at = now(),
+            nickname = '알 수 없음'
+        where id = ?
+        """
+)
 class User(
     @Id
     @Tsid

@@ -22,6 +22,7 @@ import org.appjam.smashing.global.auth.jwt.filter.JwtBlacklistManager
 import org.appjam.smashing.global.auth.jwt.filter.JwtRefreshStore
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -158,13 +159,18 @@ class AuthService(
         accessToken: String,
         userId: String,
     ) {
+
+        // 유저 조회
         validateAccessTokenSubject(
             accessToken = accessToken,
             userId = userId,
         )
 
+        val user = userRepository.findByIdOrNull(userId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+
         // 회원 정보 삭제
-        
+        userRepository.delete(user)
 
         // 토큰 무효화
         jwtRefreshStore.deleteAllForUser(userId)

@@ -26,8 +26,8 @@ interface GameReviewRepository : JpaRepository<GameReview, String>, GameReviewRe
         """
             select gr
             from GameReview gr
-            join fetch gr.reviewer
-            join fetch gr.reviewee
+            left join fetch gr.reviewer
+            left join fetch gr.reviewee
             left join fetch gr.tags
             where gr.id = :reviewId
         """
@@ -67,13 +67,15 @@ interface GameReviewRepository : JpaRepository<GameReview, String>, GameReviewRe
         sportId: Long
     ): List<ReviewTagCount>
 
-    @Query("""
+    @Query(
+        """
     select gr.id
     from GameReview gr
     where gr.game.id = :gameId
       and gr.reviewer.id = :reviewerId
       and gr.reviewee.id = :revieweeId
-""")
+"""
+    )
     fun findIdByGameAndReviewerAndReviewee(
         gameId: String,
         reviewerId: String,
