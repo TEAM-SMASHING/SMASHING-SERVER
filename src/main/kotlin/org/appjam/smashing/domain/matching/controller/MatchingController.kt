@@ -69,6 +69,30 @@ class MatchingController(
     }
 
     @Operation(
+        summary = "매칭 요청 거절 API",
+        description = """
+        수신자가 받은 매칭 요청을 거절합니다.
+        - REQUESTED 상태에서만 거절 가능
+        - 거절 시 soft delete 처리
+        - SSE(matching.updated: REJECTED) 를
+          1) receiver(거절한 사람)에게 전송 → 받은 매칭 탭 카드 제거
+          2) requester(요청 보낸 사람)에게 전송 → 보낸 매칭 탭 카드 제거
+    """
+    )
+    @PostMapping("/{matchingId}/reject")
+    fun rejectMatching(
+        @AuthenticationPrincipal principal: CustomUserDetails,
+        @PathVariable matchingId: String,
+    ): ResponseEntity<ApiResponse<Unit>> {
+        matchingService.rejectMatching(
+            receiverUserId = principal.username,
+            matchingId = matchingId,
+        )
+
+        return ApiResponse.success()
+    }
+
+    @Operation(
         summary = "매칭 요청 수락 API",
         description = """
             매칭 요청(matchingId)을 수락합니다.
@@ -81,29 +105,6 @@ class MatchingController(
         @PathVariable matchingId: String,
     ): ResponseEntity<ApiResponse<Unit>> {
         matchingService.acceptMatching(
-            receiverUserId = principal.username,
-            matchingId = matchingId,
-        )
-
-        return ApiResponse.success()
-    }
-
-    @Operation(
-        summary = "매칭 요청 거절 API",
-        description = """
-            수신자가 받은 매칭 요청을 거절합니다.
-            - REQUESTED 상태에서만 거절 가능
-            - 거절 시 soft delete 처리
-            - Notification 생성 없음
-            - requester에게 SSE(matching.updated: REJECTED) 전송
-        """
-    )
-    @PostMapping("/{matchingId}/reject")
-    fun rejectMatching(
-        @AuthenticationPrincipal principal: CustomUserDetails,
-        @PathVariable matchingId: String,
-    ): ResponseEntity<ApiResponse<Unit>> {
-        matchingService.rejectMatching(
             receiverUserId = principal.username,
             matchingId = matchingId,
         )

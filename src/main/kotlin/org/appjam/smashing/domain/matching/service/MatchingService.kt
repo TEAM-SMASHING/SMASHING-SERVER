@@ -171,7 +171,7 @@ class MatchingService(
         validateCancellableByRequester(matching, requesterUserId)
 
         // 취소 처리
-        matching.cancel(LocalDateTime.now(DEFAULT_ZONE_ID))
+        matching.cancel(LocalDateTime.now(TimeUtils.DEFAULT_ZONE_ID))
         matchingRepository.flush()
 
         // soft delete
@@ -184,6 +184,44 @@ class MatchingService(
             payload = MatchingUpdatedPayload(
                 matchingId = matchingId,
                 status = MatchingUpdateStatus.CANCELLED,
+            )
+        )
+    }
+
+    @Transactional
+    fun rejectMatching(
+        receiverUserId: String,
+        matchingId: String,
+    ) {
+        val matching = matchingRepository.findByIdFetchAllForUpdate(matchingId)
+            ?: throw CustomException(ErrorCode.MATCHING_NOT_FOUND)
+
+        validateRejectable(matching, receiverUserId)
+
+        // 거절 처리
+        matching.reject(LocalDateTime.now(TimeUtils.DEFAULT_ZONE_ID))
+        matchingRepository.flush()
+
+        // soft delete
+        matchingRepository.delete(matching)
+
+        // SSE - receiver 받은 매칭 탭에서 카드 제거
+        outboxEventPublisher.publish(
+            userId = receiverUserId,
+            eventType = SseEventType.MATCHING_UPDATED,
+            payload = MatchingUpdatedPayload(
+                matchingId = matchingId,
+                status = MatchingUpdateStatus.REJECTED,
+            )
+        )
+
+        // SSE - requester 보낸 매칭 탭에서 카드 제거
+        outboxEventPublisher.publish(
+            userId = matching.requesterProfile.user.id!!,
+            eventType = SseEventType.MATCHING_UPDATED,
+            payload = MatchingUpdatedPayload(
+                matchingId = matchingId,
+                status = MatchingUpdateStatus.REJECTED,
             )
         )
     }
@@ -253,30 +291,6 @@ class MatchingService(
             receiverProfileId = receiverProfile.id!!,
             receiverUserId = receiverUserId,
             receiverProfile = receiverProfile,
-        )
-    }
-
-    @Transactional
-    fun rejectMatching(
-        receiverUserId: String,
-        matchingId: String,
-    ) {
-        val matching = matchingRepository.findByIdFetchAllForUpdate(matchingId)
-            ?: throw CustomException(ErrorCode.MATCHING_NOT_FOUND)
-
-        validateRejectable(matching, receiverUserId)
-
-        // 상태 변경
-        matching.reject(LocalDateTime.now(DEFAULT_ZONE_ID))
-        matchingRepository.flush()
-
-        // soft delete
-        matchingRepository.delete(matching)
-
-        // SSE 이벤트 발행
-        publishMatchingUpdatedRejected(
-            requesterUserId = matching.requesterProfile.user.id!!,
-            matchingId = matchingId,
         )
     }
 
@@ -355,8 +369,7 @@ class MatchingService(
         profileB: String,
         sportId: Long,
     ) {
-        val zone = TimeUtils.DEFAULT_ZONE_ID
-        val today = LocalDate.now(zone)
+        val today = LocalDate.now(TimeUtils.DEFAULT_ZONE_ID)
         val startOfDay = today.atStartOfDay()
         val endOfDay = today.plusDays(1).atStartOfDay()
 
@@ -445,20 +458,6 @@ class MatchingService(
             payload = MatchingUpdatedPayload(
                 matchingId = matchingId,
                 status = MatchingUpdateStatus.ACCEPTED,
-            )
-        )
-    }
-
-    private fun publishMatchingUpdatedRejected(
-        requesterUserId: String,
-        matchingId: String,
-    ) {
-        outboxEventPublisher.publish(
-            userId = requesterUserId,
-            eventType = SseEventType.MATCHING_UPDATED,
-            payload = MatchingUpdatedPayload(
-                matchingId = matchingId,
-                status = MatchingUpdateStatus.REJECTED,
             )
         )
     }
