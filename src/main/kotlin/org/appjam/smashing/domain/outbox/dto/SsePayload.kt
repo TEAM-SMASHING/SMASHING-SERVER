@@ -60,9 +60,7 @@ data class MatchingSentPayload(
 
 /**
  * 매칭 상태 변경
- * - 보낸 요청 / 매칭확정 / 요청삭제
- * - 상대가 내 요청을 ACCEPT/REJECT 하는 순간
- * - 상대가 보낸 요청을 CANCELLED 하는 순간
+ * - 매칭 요청 취소 / 매칭 요청 거절 시 카드 삭제 SSE 이벤트 발행
  */
 data class MatchingUpdatedPayload(
     override val type: String = SseEventType.MATCHING_UPDATED.eventName,
