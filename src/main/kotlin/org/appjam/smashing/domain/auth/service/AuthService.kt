@@ -159,7 +159,6 @@ class AuthService(
         accessToken: String,
         userId: String,
     ) {
-
         // 유저 조회
         validateAccessTokenSubject(
             accessToken = accessToken,
