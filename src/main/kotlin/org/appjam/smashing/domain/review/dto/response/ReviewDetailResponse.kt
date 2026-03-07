@@ -2,6 +2,7 @@ package org.appjam.smashing.domain.review.dto.response
 
 import org.appjam.smashing.domain.review.entity.GameReview
 import org.appjam.smashing.domain.review.enums.ReviewRating
+import org.appjam.smashing.domain.user.entity.User.Companion.DELETED_USER_NICKNAME
 
 data class ReviewDetailResponse(
     val rating: ReviewRating,
@@ -15,8 +16,8 @@ data class ReviewDetailResponse(
             gr: GameReview,
         ) = ReviewDetailResponse(
             rating = gr.rating,
-            reviewerNickname = gr.reviewer?.nickname ?: "알 수 없음",
-            revieweeNickname = gr.reviewee?.nickname ?: "알 수 없음",
+            reviewerNickname = gr.reviewer?.nickname ?: DELETED_USER_NICKNAME,
+            revieweeNickname = gr.reviewee?.nickname ?: DELETED_USER_NICKNAME,
             tag = gr.tags.map { it.name },
             content = gr.content
         )

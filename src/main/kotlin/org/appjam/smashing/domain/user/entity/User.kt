@@ -70,6 +70,8 @@ class User(
     }
 
     companion object {
+        const val DELETED_USER_NICKNAME = "알 수 없음"
+
         fun create(
             kakaoId: String,
             nickname: String,

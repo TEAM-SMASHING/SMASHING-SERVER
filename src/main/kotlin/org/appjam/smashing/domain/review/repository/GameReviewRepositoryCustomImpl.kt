@@ -5,6 +5,8 @@ import com.querydsl.jpa.impl.JPAQueryFactory
 import org.appjam.smashing.domain.review.dto.projection.QUserRecentGameProjection
 import org.appjam.smashing.domain.review.dto.projection.UserRecentGameProjection
 import org.appjam.smashing.domain.review.entity.QGameReview
+import org.appjam.smashing.domain.user.entity.QUser
+import org.appjam.smashing.domain.user.entity.User.Companion.DELETED_USER_NICKNAME
 import org.appjam.smashing.global.common.dto.CommonCursorRequest
 import org.appjam.smashing.global.common.dto.CursorPageResponse
 import org.appjam.smashing.global.util.CursorCodec
@@ -35,16 +37,19 @@ class GameReviewRepositoryCustomImpl(
             where.and(gr.id.lt(cursor.id))
         }
 
+        val reviewer = QUser.user
+
         val projections = queryFactory
             .select(
                 QUserRecentGameProjection(
                     gr.id,
-                    gr.reviewer.nickname,
+                    reviewer.nickname.coalesce(DELETED_USER_NICKNAME),
                     gr.createdAt,
                     gr.content,
                 )
             )
             .from(gr)
+            .leftJoin(gr.reviewer, reviewer)
             .where(where)
             .orderBy(gr.id.desc())
             .limit((size + 1).toLong())
