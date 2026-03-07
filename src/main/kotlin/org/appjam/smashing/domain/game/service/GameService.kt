@@ -76,8 +76,8 @@ class GameService(
         }
 
         // 제출자/상대 결정
-        val requester = game.matching.requester
-        val receiver = game.matching.receiver
+        val requester = game.matching.requesterProfile.user
+        val receiver = game.matching.receiverProfile.user
         val (submitter, confirmer) = determineSubmitterAndConfirmer(submitterUserId, requester, receiver)
 
         val submitterProfile = userSportProfileRepository.findByUserIdAndSportIdFetch(
@@ -393,8 +393,8 @@ class GameService(
 
         // 상대방 userId 조회
         val opponentUserId = resolveOpponentUserId(
-            requesterId = game.matching.requester.id!!,
-            receiverId = game.matching.receiver.id!!,
+            requesterId = game.matching.requesterProfile.user.id!!,
+            receiverId = game.matching.receiverProfile.user.id!!,
             userId = userId,
         )
 
@@ -574,8 +574,8 @@ class GameService(
         winnerUserId: String,
         loserUserId: String,
     ): Pair<User, User> {
-        val requester = game.matching.requester
-        val receiver = game.matching.receiver
+        val requester = game.matching.requesterProfile.user
+        val receiver = game.matching.receiverProfile.user
 
         val winner = if (winnerUserId == requester.id!!) requester else receiver
         val loser = if (loserUserId == requester.id!!) requester else receiver
@@ -622,8 +622,8 @@ class GameService(
         val now = LocalDateTime.now(DEFAULT_ZONE_ID)
         val startOfDay = now.toLocalDate().atStartOfDay()
 
-        val requesterId = game.matching.requester.id!!
-        val receiverId = game.matching.receiver.id!!
+        val requesterId = game.matching.requesterProfile.user.id!!
+        val receiverId = game.matching.receiverProfile.user.id!!
 
         val todayConfirmedCount = gameRepository.countTodayConfirmedGamesBetweenUsers(
             startAt = startOfDay,
