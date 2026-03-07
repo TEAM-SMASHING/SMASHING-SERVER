@@ -96,7 +96,12 @@ class AuthController(
 
     @Operation(
         summary = "탈퇴 API",
-        description = "회원을 탈퇴합니다."
+        description = """
+           회원을 탈퇴합니다.
+            
+            탈퇴한 회원의 경우, 탐색/검색/추천/랭킹에서 조회되지 않음
+            단, 탈퇴한 사용자가 남긴 리뷰는 닉네임 "알 수 없음"으로 조회 가능
+        """
     )
     @PostMapping("/withdraw")
     fun withdraw(
