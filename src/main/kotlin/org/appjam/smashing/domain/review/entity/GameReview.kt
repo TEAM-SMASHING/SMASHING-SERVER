@@ -67,7 +67,7 @@ class GameReview(
     )
     @NotFound(action = NotFoundAction.IGNORE)
     @Comment("후기 대상")
-    var reviewee: User?,
+    var reviewee: User,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(

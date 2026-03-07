@@ -17,7 +17,7 @@ data class ReviewDetailResponse(
         ) = ReviewDetailResponse(
             rating = gr.rating,
             reviewerNickname = gr.reviewer?.nickname ?: DELETED_USER_NICKNAME,
-            revieweeNickname = gr.reviewee?.nickname ?: DELETED_USER_NICKNAME,
+            revieweeNickname = gr.reviewee.nickname,
             tag = gr.tags.map { it.name },
             content = gr.content
         )
