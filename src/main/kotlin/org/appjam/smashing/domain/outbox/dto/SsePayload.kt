@@ -13,31 +13,19 @@ sealed interface SsePayload {
 }
 
 /**
- * 매칭 상태 변경
- * - 보낸 요청 / 매칭확정 / 요청삭제
- * - 상대가 내 요청을 ACCEPT/REJECT 하는 순간
- * - 상대가 보낸 요청을 CANCELLED 하는 순간
- */
-data class MatchingUpdatedPayload(
-    override val type: String = SseEventType.MATCHING_UPDATED.eventName,
-    val matchingId: String,
-    val status: MatchingUpdateStatus,
-) : SsePayload
-
-/**
- * 매칭관리 - 받은 요청
- * - 상대가 나에게 매칭을 신청한 순간
+ * 매칭 관리 - 받은 요청
+ * - 내가 상대에게 매칭을 신청한 순간 상대에게 카드 추가 SSE 이벤트 발행
  */
 data class MatchingReceivedPayload(
     override val type: String = SseEventType.MATCHING_RECEIVED.eventName,
     val matchingId: String,
-    val sportId: Long,
+    val sportCode: String,
     val receiverProfileId: String,
     val requester: MatchingRequesterSummary,
 ) : SsePayload {
 
     data class MatchingRequesterSummary(
-        val userId: String,
+        val requesterProfileId: String, // TODO: 유저 정보 조회시 profileid 값 논의 필요
         val nickname: String,
         val gender: Gender,
         val tierCode: TierCode,
@@ -48,26 +36,37 @@ data class MatchingReceivedPayload(
 }
 
 /**
- * 매칭 신청 알림 생성
- * - 상대가 나에게 매칭을 신청한 순간 알림 생성
+ * 매칭 관리 - 보낸 요청
+ * - 내가 상대에게 매칭을 신청한 순간 나에게 카드 추가 SSE 이벤트 발행
  */
-data class MatchingRequestNotificationCreatedPayload(
-    override val type: String = SseEventType.MATCHING_REQUEST_NOTIFICATION_CREATED.eventName,
-    val notificationId: String,
-    val notificationType: NotificationType,
-    val notificationCreatedAt: String,
+data class MatchingSentPayload(
+    override val type: String = SseEventType.MATCHING_SENT.eventName,
     val matchingId: String,
-    val sportId: Long,
+    val sportCode: String,
     val receiverProfileId: String,
-    val requester: RequesterSummary,
+    val receiver: MatchingReceiverSummary,
 ) : SsePayload {
 
-    data class RequesterSummary(
-        val userId: String,
+    data class MatchingReceiverSummary(
+        val receiverProfileId: String,
         val nickname: String,
+        val gender: Gender,
         val tierCode: TierCode,
+        val wins: Int,
+        val losses: Int,
+        val reviewCount: Long,
     )
 }
+
+/**
+ * 매칭 상태 변경
+ * - 매칭 요청 취소 / 매칭 요청 거절 시 카드 삭제 SSE 이벤트 발행
+ */
+data class MatchingUpdatedPayload(
+    override val type: String = SseEventType.MATCHING_UPDATED.eventName,
+    val matchingId: String,
+    val status: MatchingUpdateStatus,
+) : SsePayload
 
 /**
  * 매칭 수락 알림 생성

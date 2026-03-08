@@ -9,6 +9,35 @@ import org.springframework.data.repository.query.Param
 import java.time.LocalDateTime
 
 interface GameRepository : JpaRepository<Game, String>, GameRepositoryCustom {
+
+    /**
+     * 하루 3판 제한(종목별 동일 상대) 판단용
+     * - 오늘 RESULT_CONFIRMED 된 게임 수 카운트 (양방향 합산)
+     */
+    @Query(
+        value = """
+        select count(*)
+        from game g
+        join matching m on m.id = g.matching_id
+        where g.sport_id = :sportId
+          and g.result_status = 'RESULT_CONFIRMED'
+          and g.confirmed_at >= :startOfDay
+          and g.confirmed_at < :endOfDay
+          and (
+                (m.requester_profile_id = :profileA and m.receiver_profile_id = :profileB)
+             or (m.requester_profile_id = :profileB and m.receiver_profile_id = :profileA)
+          )
+        """,
+        nativeQuery = true
+    )
+    fun countConfirmedGamesTodayBetweenProfiles(
+        @Param("profileA") profileA: String,
+        @Param("profileB") profileB: String,
+        @Param("sportId") sportId: Long,
+        @Param("startOfDay") startOfDay: LocalDateTime,
+        @Param("endOfDay") endOfDay: LocalDateTime,
+    ): Long
+
     fun existsByMatchingId(
         matchingId: String
     ): Boolean

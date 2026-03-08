@@ -6,7 +6,7 @@ import org.hibernate.annotations.Comment
 
 @Entity
 @Comment("알림 템플릿 정보")
-class NotificationTemplate(
+class NotificationTemplate( // TODO: 알림 전체 리팩토링 후 엔티티 삭제 예정
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Comment("템플릿 IDX")
