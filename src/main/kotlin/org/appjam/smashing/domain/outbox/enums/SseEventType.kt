@@ -3,17 +3,16 @@ package org.appjam.smashing.domain.outbox.enums
 enum class SseEventType(
     val eventName: String
 ) {
-    // 내가 요청 받음
+
+    // 받은 매칭 요청 카드 실시간 추가
     MATCHING_RECEIVED("matching.received"),
 
-    // 상대가 요청을 수락/거절/삭제
+    // 보낸 매칭 요청 카드 실시간 추가
+    MATCHING_SENT("matching.sent"),
+
+    // 매칭 엔티티 상태 업데이트 실시간 반영 (삭제(취소))
     MATCHING_UPDATED("matching.updated"),
 
-    // 알림 관련 생성 / 변경 사항
-    NOTIFICATION_CREATED("notification.created"),
-
-    // 매칭 요청 알림 생성
-    MATCHING_REQUEST_NOTIFICATION_CREATED("matching.request.notification.created"),
 
     // 매칭 수락 알림 생성
     MATCHING_ACCEPT_NOTIFICATION_CREATED("matching.accept.notification.created"),

@@ -22,7 +22,7 @@ class JwtProvider(
         roles: List<String> = emptyList()
     ): TokenDto {
         val access = jwtGenerator.generateAccessToken(userId = userId, roles = roles)
-        val refresh = jwtGenerator.generateRefreshToken()
+        val refresh = jwtGenerator.generateRefreshToken(userId = userId)
 
         return TokenDto.of(
             accessToken = access.token,

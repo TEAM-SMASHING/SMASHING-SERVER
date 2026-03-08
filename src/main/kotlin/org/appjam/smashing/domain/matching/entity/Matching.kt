@@ -6,6 +6,7 @@ import org.appjam.smashing.domain.common.entity.BaseEntity
 import org.appjam.smashing.domain.matching.enums.MatchingStatus
 import org.appjam.smashing.domain.sport.entity.Sport
 import org.appjam.smashing.domain.user.entity.User
+import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.hibernate.annotations.Comment
 import org.hibernate.annotations.SQLDelete
 import org.hibernate.annotations.SQLRestriction
@@ -14,9 +15,10 @@ import java.time.LocalDateTime
 @Entity
 @Table(
     indexes = [
-        Index(name = "idx_matching_requester_user_id", columnList = "requester_user_id"),
-        Index(name = "idx_matching_receiver_user_id", columnList = "receiver_user_id"),
+        Index(name = "idx_matching_requester_profile_id", columnList = "requester_profile_id"),
+        Index(name = "idx_matching_receiver_profile_id", columnList = "receiver_profile_id"),
         Index(name = "idx_matching_sport_id", columnList = "sport_id"),
+        Index(name = "idx_matching_sport_req_recv", columnList = "sport_id, requester_profile_id, receiver_profile_id"),
     ]
 )
 @Comment("매칭 정보")
@@ -44,21 +46,37 @@ class Matching(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
-        name = "requester_user_id",
+        name = "requester_profile_id",
         nullable = false,
         foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT)
     )
-    @Comment("발신자 유저 IDX")
-    val requester: User,
+    @Comment("발신자 유저-스포츠 프로필 IDX")
+    val requesterProfile: UserSportProfile,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
-        name = "receiver_user_id",
+        name = "requester_id",
+        foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT)
+    )
+    @Comment("발신자 유저 IDX")
+    val requester: User ?=null,// TODO: 매칭 관련 리팩토링 완료 후 삭제 예정
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+        name = "receiver_profile_id",
         nullable = false,
         foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT)
     )
+    @Comment("수신자 유저-스포츠 프로필 IDX")
+    val receiverProfile: UserSportProfile,
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+        name = "receiver_id",
+        foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT)
+    )
     @Comment("수신자 유저 IDX")
-    val receiver: User,
+    val receiver: User ?=null,// TODO: 매칭 관련 리팩토링 완료 후 삭제 예정
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
@@ -72,12 +90,12 @@ class Matching(
 
     companion object {
         fun createRequested(
-            requester: User,
-            receiver: User,
+            requesterProfile: UserSportProfile,
+            receiverProfile: UserSportProfile,
             sport: Sport,
         ): Matching = Matching(
-            requester = requester,
-            receiver = receiver,
+            requesterProfile = requesterProfile,
+            receiverProfile = receiverProfile,
             sport = sport,
         )
     }
