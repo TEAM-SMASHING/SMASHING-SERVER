@@ -38,14 +38,16 @@ class JwtGenerator(
         )
     }
 
-    fun generateRefreshToken(): TokenDto.Token {
+    fun generateRefreshToken(
+        userId: String,
+    ): TokenDto.Token {
         val now = Date()
         val expireTime = now.time + jwtProperties.refreshTokenExpireTime
         val expiration = Date(expireTime)
 
         val refreshToken = Jwts.builder()
             .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
-            .setSubject(UUID.randomUUID().toString())
+            .setSubject(userId)
             .claim(TYPE_KEY, TokenType.REFRESH_TOKEN.name)
             .setIssuedAt(now)
             .setExpiration(expiration)
