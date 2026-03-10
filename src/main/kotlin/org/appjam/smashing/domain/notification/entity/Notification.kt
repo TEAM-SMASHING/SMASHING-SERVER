@@ -120,27 +120,37 @@ class Notification(
                 sportCode = sportCode,
                 senderUserId = requesterProfile.user.id!!,
                 senderProfileId = requesterProfile.id!!,
-                isRead = false,
                 receiverProfileId = receiverProfile.id!!,
                 user = receiver,
             )
         }
 
-        fun createMatchingRequestAccepted(
+        /**
+         * 매칭 수락 알림 생성
+         */
+        fun createMatchingAccepted(
             receiver: User,
             receiverProfile: UserSportProfile,
-            template: NotificationTemplate,
             acceptorProfile: UserSportProfile,
-        ) = Notification(
-                params = """{"sportName":"${receiverProfile.sport.name}","acceptorNickname":"${acceptorProfile.user.nickname}","acceptorTierName":"${acceptorProfile.tier.name}"}""",
-                isRead = false,
-                linkUrl = "/api/v1/users/me/games/pending-results",
+        ): Notification {
+            val sportName = receiverProfile.sport.name
+            val sportCode = receiverProfile.sport.code
+            val acceptorNickname = acceptorProfile.user.nickname
+
+            val title = "[$sportName] 매칭이 수락되었어요."
+            val content = "${acceptorNickname}님이 내가 보낸 매칭을 수락했어요! 지금 확인해볼까요?"
+
+            return Notification(
+                type = NotificationType.MATCHING_ACCEPTED,
+                title = title,
+                content = content,
+                sportCode = sportCode,
+                senderUserId = acceptorProfile.user.id!!,
+                senderProfileId = acceptorProfile.id!!,
                 receiverProfileId = receiverProfile.id!!,
-                senderNickname = acceptorProfile.user.nickname,
-                receiverSportId = receiverProfile.sport.id!!,
                 user = receiver,
-                notificationTemplate = template,
             )
+        }
 
         fun createMatchingResultSubmitted(
             receiver: User,

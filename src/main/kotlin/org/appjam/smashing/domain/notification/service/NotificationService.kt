@@ -43,15 +43,11 @@ class NotificationService(
         receiver: User,
         receiverProfile: UserSportProfile,
         acceptorProfile: UserSportProfile,
-    ): Notification {
-        val template = notificationTemplateRepository.findByType(NotificationType.MATCHING_ACCEPTED)
-            ?: throw CustomException(ErrorCode.NOTIFICATION_TEMPLATE_NOT_FOUND)
-
-        return notificationRepository.save(
-            Notification.createMatchingRequestAccepted(
+    ) {
+        notificationRepository.save(
+            Notification.createMatchingAccepted(
                 receiver = receiver,
                 receiverProfile = receiverProfile,
-                template = template,
                 acceptorProfile = acceptorProfile,
             )
         )
