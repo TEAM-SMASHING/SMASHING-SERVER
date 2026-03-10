@@ -1,18 +1,13 @@
 package org.appjam.smashing.domain.game.service
 
-import org.appjam.smashing.domain.game.dto.command.GameResultConfirmCommand
-import org.appjam.smashing.domain.game.dto.command.GameResultRejectCommand
 import org.appjam.smashing.domain.game.dto.command.GameResultSubmitCommand
-import org.appjam.smashing.domain.game.dto.response.GameResultConfirmResponse
-import org.appjam.smashing.domain.game.dto.response.GameResultSubmissionDetailResponse
 import org.appjam.smashing.domain.game.dto.response.GameResultSubmitLockResponse
 import org.appjam.smashing.domain.game.dto.response.GameResultSubmitResponse
 import org.appjam.smashing.domain.game.dto.response.PendingResultAcceptedGameSummaryResponse
 import org.appjam.smashing.domain.game.entity.Game
 import org.appjam.smashing.domain.game.entity.GameResultSubmission
-import org.appjam.smashing.domain.game.enums.GameResultRejectReason
-import org.appjam.smashing.domain.game.enums.GameResultStatus
-import org.appjam.smashing.domain.game.enums.SubmissionStatus
+import org.appjam.smashing.domain.game.enums.GameSubmissionRejectReason
+import org.appjam.smashing.domain.game.enums.GameStatus
 import org.appjam.smashing.domain.game.repository.GameRepository
 import org.appjam.smashing.domain.game.repository.GameResultSubmissionRepository
 import org.appjam.smashing.domain.lp.entity.LpHistory
@@ -24,7 +19,6 @@ import org.appjam.smashing.domain.outbox.dto.GameResultRejectedNotificationCreat
 import org.appjam.smashing.domain.outbox.dto.GameUpdatedPayload
 import org.appjam.smashing.domain.outbox.dto.ReviewReceivedNotificationCreatedPayload
 import org.appjam.smashing.domain.outbox.enums.SseEventType
-import org.appjam.smashing.domain.review.repository.GameReviewRepository
 import org.appjam.smashing.domain.review.service.GameReviewService
 import org.appjam.smashing.domain.tier.entity.Tier
 import org.appjam.smashing.domain.tier.enums.TierCode
@@ -68,7 +62,7 @@ class GameService(
             ?: throw CustomException(ErrorCode.GAME_NOT_FOUND)
 
         // 결과 제출 가능한 상태인지 검증
-        if (game.resultStatus != GameResultStatus.PENDING_RESULT && game.resultStatus != GameResultStatus.RESULT_REJECTED) {
+        if (game.resultStatus != GameStatus.PENDING_RESULT && game.resultStatus != GameStatus.RESULT_REJECTED) {
             throw CustomException(ErrorCode.GAME_RESULT_ALREADY_SUBMITTED)
         }
 
@@ -535,9 +529,9 @@ class GameService(
     }
 
     private fun validateDeletable(
-        resultStatus: GameResultStatus
+        resultStatus: GameStatus
     ) {
-        if (resultStatus == GameResultStatus.RESULT_CONFIRMED) {
+        if (resultStatus == GameStatus.RESULT_CONFIRMED) {
             throw CustomException(ErrorCode.GAME_RESULT_ALREADY_CONFIRMED)
         }
     }
@@ -839,7 +833,7 @@ class GameService(
         gameId: String,
         submissionId: String,
         submissionAttemptNo: Int,
-        resultStatus: GameResultStatus,
+        resultStatus: GameStatus,
     ) {
         outboxEventPublisher.publish(
             userId = receiverUserId,
@@ -860,13 +854,13 @@ class GameService(
         rejectorTierCode: TierCode,
         gameId: String,
         submissionId: String,
-        reason: GameResultRejectReason,
+        reason: GameSubmissionRejectReason,
     ) {
         val notificationType = when (reason) {
-            GameResultRejectReason.SCORE_MISMATCH -> NotificationType.RESULT_REJECTED_SCORE_MISMATCH
-            GameResultRejectReason.WIN_LOSE_REVERSED -> NotificationType.RESULT_REJECTED_WIN_LOSE_REVERSED
-            GameResultRejectReason.SCORE_AND_WIN_LOSE_MISMATCH -> NotificationType.RESULT_REJECTED_SCORE_AND_WIN_LOSE_MISMATCH
-            GameResultRejectReason.GAME_NOT_PLAYED_YET -> NotificationType.RESULT_REJECTED_GAME_NOT_PLAYED_YET
+            GameSubmissionRejectReason.SCORE_MISMATCH -> NotificationType.RESULT_REJECTED_SCORE_MISMATCH
+            GameSubmissionRejectReason.WIN_LOSE_REVERSED -> NotificationType.RESULT_REJECTED_WIN_LOSE_REVERSED
+            GameSubmissionRejectReason.SCORE_AND_WIN_LOSE_MISMATCH -> NotificationType.RESULT_REJECTED_SCORE_AND_WIN_LOSE_MISMATCH
+            GameSubmissionRejectReason.GAME_NOT_PLAYED_YET -> NotificationType.RESULT_REJECTED_GAME_NOT_PLAYED_YET
         }
 
         val notification = notificationService.createResultRejected(

@@ -1,7 +1,7 @@
 package org.appjam.smashing.domain.game.dto.command
 
-import org.appjam.smashing.domain.game.enums.GameResultRejectReason
+import org.appjam.smashing.domain.game.enums.GameSubmissionRejectReason
 
 data class GameResultRejectCommand(
-    val reason: GameResultRejectReason?,
+    val reason: GameSubmissionRejectReason?,
 )

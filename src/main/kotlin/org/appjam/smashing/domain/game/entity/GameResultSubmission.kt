@@ -14,8 +14,8 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import org.appjam.smashing.domain.common.entity.BaseEntity
-import org.appjam.smashing.domain.game.enums.GameResultRejectReason
-import org.appjam.smashing.domain.game.enums.SubmissionStatus
+import org.appjam.smashing.domain.game.enums.GameSubmissionRejectReason
+import org.appjam.smashing.domain.game.enums.GameSubmissionStatus
 import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.hibernate.annotations.Comment
@@ -54,12 +54,12 @@ class GameResultSubmission(
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "VARCHAR(20)")
     @Comment("제출 상태")
-    var status: SubmissionStatus = SubmissionStatus.SUBMITTED,
+    var status: GameSubmissionStatus = GameSubmissionStatus.SUBMITTED,
 
     @Enumerated(EnumType.STRING)
     @Column(name = "reject_reason", columnDefinition = "VARCHAR(30)")
     @Comment("거절 사유")
-    var gameResultRejectReason: GameResultRejectReason? = null,
+    var gameSubmissionRejectReason: GameSubmissionRejectReason? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
@@ -137,16 +137,16 @@ class GameResultSubmission(
     fun accept(
         actedAt: LocalDateTime
     ) {
-        status = SubmissionStatus.ACCEPTED
+        status = GameSubmissionStatus.ACCEPTED
         this.actedAt = actedAt
     }
 
     fun rejectWithReason(
-        reason: GameResultRejectReason,
+        reason: GameSubmissionRejectReason,
         actedAt: LocalDateTime,
     ) {
-        status = SubmissionStatus.REJECTED
-        gameResultRejectReason = reason
+        status = GameSubmissionStatus.REJECTED
+        gameSubmissionRejectReason = reason
         this.actedAt = actedAt
     }
 }

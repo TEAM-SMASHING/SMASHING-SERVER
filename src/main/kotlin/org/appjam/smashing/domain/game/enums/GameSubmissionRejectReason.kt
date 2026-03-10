@@ -1,6 +1,6 @@
 package org.appjam.smashing.domain.game.enums
 
-enum class GameResultRejectReason {
+enum class GameSubmissionRejectReason {
     SCORE_MISMATCH,               // 점수 오류
     WIN_LOSE_REVERSED,            // 승패 반전
     SCORE_AND_WIN_LOSE_MISMATCH,  // 승패 반전 + 점수 오류

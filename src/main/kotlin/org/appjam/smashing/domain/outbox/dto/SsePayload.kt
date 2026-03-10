@@ -1,7 +1,7 @@
 package org.appjam.smashing.domain.outbox.dto
 
-import org.appjam.smashing.domain.game.enums.GameResultRejectReason
-import org.appjam.smashing.domain.game.enums.GameResultStatus
+import org.appjam.smashing.domain.game.enums.GameSubmissionRejectReason
+import org.appjam.smashing.domain.game.enums.GameStatus
 import org.appjam.smashing.domain.notification.enums.NotificationType
 import org.appjam.smashing.domain.outbox.enums.MatchingUpdateStatus
 import org.appjam.smashing.domain.outbox.enums.SseEventType
@@ -77,7 +77,7 @@ data class GameUpdatedPayload(
     val gameId: String,
     val submissionId: String,
     val submissionAttemptNo: Int,
-    val resultStatus: GameResultStatus,
+    val resultStatus: GameStatus,
 ) : SsePayload
 
 /**
@@ -116,7 +116,7 @@ data class GameResultRejectedNotificationCreatedPayload(
     val receiverProfileId: String,
     val gameId: String,
     val submissionId: String,
-    val reason: GameResultRejectReason,
+    val reason: GameSubmissionRejectReason,
     val rejector: RejectorSummary,
 ) : SsePayload {
 

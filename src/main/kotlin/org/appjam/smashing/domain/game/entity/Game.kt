@@ -16,7 +16,7 @@ import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 import org.appjam.smashing.domain.common.entity.BaseEntity
-import org.appjam.smashing.domain.game.enums.GameResultStatus
+import org.appjam.smashing.domain.game.enums.GameStatus
 import org.appjam.smashing.domain.matching.entity.Matching
 import org.appjam.smashing.domain.sport.entity.Sport
 import org.appjam.smashing.domain.user.entity.User
@@ -52,7 +52,7 @@ class Game(
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "VARCHAR(30)")
     @Comment("경기 결과 처리 상태")
-    var resultStatus: GameResultStatus,
+    var resultStatus: GameStatus,
 
     @Column
     @Comment("결과 확정 시각")
@@ -117,18 +117,18 @@ class Game(
         fun createFromMatching(
             matching: Matching
         ) = Game(
-            resultStatus = GameResultStatus.PENDING_RESULT,
+            resultStatus = GameStatus.PENDING_RESULT,
             matching = matching,
             sport = matching.sport,
         )
     }
 
     fun markWaitingConfirmation() {
-        resultStatus = GameResultStatus.WAITING_CONFIRMATION
+        resultStatus = GameStatus.WAITING_CONFIRMATION
     }
 
     fun markRejected() {
-        resultStatus = GameResultStatus.RESULT_REJECTED
+        resultStatus = GameStatus.RESULT_REJECTED
     }
 
     fun confirmResult(
@@ -137,7 +137,7 @@ class Game(
         loserProfile: UserSportProfile,
         confirmedAt: LocalDateTime,
     ) {
-        resultStatus = GameResultStatus.RESULT_CONFIRMED
+        resultStatus = GameStatus.RESULT_CONFIRMED
         confirmedSubmissionId = submissionId
         this.winnerProfile = winnerProfile
         this.loserProfile = loserProfile
@@ -147,6 +147,6 @@ class Game(
     }
 
     fun cancel() {
-        resultStatus = GameResultStatus.CANCELED
+        resultStatus = GameStatus.CANCELED
     }
 }
