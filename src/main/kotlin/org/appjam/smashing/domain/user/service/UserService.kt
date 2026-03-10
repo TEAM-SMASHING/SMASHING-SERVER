@@ -250,7 +250,7 @@ class UserService(
         userA: String,
         userB: String,
     ): Boolean {
-        val now = LocalDateTime.now(MatchingService.DEFAULT_ZONE_ID)
+        val now = LocalDateTime.now(TimeUtils.DEFAULT_ZONE_ID)
         val since = now.minusHours(24)
 
         val exists = matchingRepository.existsUnconfirmedMatchingBetweenUsersSinceRaw(
