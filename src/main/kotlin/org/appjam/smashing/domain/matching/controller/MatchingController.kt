@@ -95,9 +95,14 @@ class MatchingController(
     @Operation(
         summary = "매칭 요청 수락 API",
         description = """
-            매칭 요청(matchingId)을 수락합니다.
-            - 성공 시 상대(requester)에게 알림 생성 + SSE 이벤트가 전송됩니다.
-        """
+        받은 매칭 요청을 수락합니다.
+        - receiver만 수락 가능
+        - REQUESTED 상태에서만 수락 가능
+        - 수락 시 매칭이 성사되며 Game이 생성됩니다.
+        - 성공 시:
+          1) 상대방(requester)에게 MATCHING_ACCEPTED 알림 저장. (실시간 반영 X)
+          2) SSE: 상대방(requester)에게 matching.updated(ACCEPTED) SSE를 전송
+    """
     )
     @PostMapping("/{matchingId}/accept")
     fun acceptMatching(
