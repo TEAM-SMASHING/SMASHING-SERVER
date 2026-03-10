@@ -60,7 +60,7 @@ data class MatchingSentPayload(
 
 /**
  * 매칭 상태 변경
- * - 매칭 요청 취소 / 매칭 요청 거절 시 카드 삭제 SSE 이벤트 발행
+ * - 매칭 요청 취소 / 매칭 요청 거절 / 매칭 요청 수락 시 카드 삭제 SSE 이벤트 발행
  */
 data class MatchingUpdatedPayload(
     override val type: String = SseEventType.MATCHING_UPDATED.eventName,
@@ -69,30 +69,8 @@ data class MatchingUpdatedPayload(
 ) : SsePayload
 
 /**
- * 매칭 수락 알림 생성
- * - 상대가 나의 매칭을 수락한 순간 알림 생성
- */
-data class MatchingAcceptNotificationCreatedPayload(
-    override val type: String = SseEventType.MATCHING_ACCEPT_NOTIFICATION_CREATED.eventName,
-    val notificationId: String,
-    val notificationType: NotificationType,
-    val notificationCreatedAt: String,
-    val matchingId: String,
-    val sportId: Long,
-    val receiverProfileId: String,
-    val acceptor: AcceptorSummary,
-) : SsePayload {
-
-    data class AcceptorSummary(
-        val userId: String,
-        val nickname: String,
-        val tierCode: TierCode,
-    )
-}
-
-/**
  * 게임 상태 변경
- * - 게임 결과 상태(resultStatus)가 변경된 순간
+ * - 게임 결과 전송 시 게임 상태 변경 SSE 이벤트 발행
  */
 data class GameUpdatedPayload(
     override val type: String = SseEventType.GAME_UPDATED.eventName,
@@ -101,29 +79,6 @@ data class GameUpdatedPayload(
     val submissionAttemptNo: Int,
     val resultStatus: GameResultStatus,
 ) : SsePayload
-
-/**
- * 게임 결과 제출 알림 생성
- * - 상대가 경기 결과를 제출한 순간 알림 생성
- */
-data class GameResultSubmittedNotificationCreatedPayload(
-    override val type: String = SseEventType.GAME_RESULT_SUBMITTED_NOTIFICATION_CREATED.eventName,
-    val notificationId: String,
-    val notificationType: NotificationType,
-    val notificationCreatedAt: String,
-    val sportId: Long,
-    val receiverProfileId: String,
-    val gameId: String,
-    val submissionId: String,
-    val submitter: SubmitterSummary,
-) : SsePayload {
-
-    data class SubmitterSummary(
-        val userId: String,
-        val nickname: String,
-        val tierCode: TierCode,
-    )
-}
 
 /**
  * 리뷰(후기) 제출 알림 생성
