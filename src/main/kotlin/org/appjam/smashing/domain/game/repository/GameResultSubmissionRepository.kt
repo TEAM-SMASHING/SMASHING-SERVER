@@ -4,16 +4,10 @@ import jakarta.persistence.LockModeType
 import org.appjam.smashing.domain.game.entity.GameResultSubmission
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Lock
-import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 
 interface GameResultSubmissionRepository : JpaRepository<GameResultSubmission, String> {
     fun countByGame_Id(gameId: String): Long
-
-    fun countByGame_IdAndSubmitter_Id(
-        gameId: String,
-        submitterUserId: String,
-    ): Long
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query(
@@ -33,10 +27,16 @@ interface GameResultSubmissionRepository : JpaRepository<GameResultSubmission, S
         """
         select s
           from GameResultSubmission s
-          join fetch s.submitter
-          join fetch s.confirmer
-          join fetch s.winner
-          join fetch s.loser
+          join fetch s.submitterProfile sp
+          join fetch sp.user
+          join fetch sp.tier
+          join fetch s.confirmerProfile cp
+          join fetch cp.user
+          join fetch cp.tier
+          join fetch s.winnerProfile wp
+          join fetch wp.user
+          join fetch s.loserProfile lp
+          join fetch lp.user
          where s.id = :submissionId
            and s.game.id = :gameId
         """
@@ -45,16 +45,4 @@ interface GameResultSubmissionRepository : JpaRepository<GameResultSubmission, S
         submissionId: String,
         gameId: String,
     ): GameResultSubmission?
-
-    @Modifying
-    @Query(
-        """
-        update GameResultSubmission s
-           set s.deletedAt = CURRENT_TIMESTAMP
-         where s.game.id = :gameId
-        """
-    )
-    fun softDeleteAllByGameId(
-        gameId: String
-    ): Int
 }
