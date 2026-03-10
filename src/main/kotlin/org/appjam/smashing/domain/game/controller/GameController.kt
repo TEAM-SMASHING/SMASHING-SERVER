@@ -27,22 +27,20 @@ class GameController(
         summary = "경기 결과 제출 API",
         description = """
             경기 결과를 제출합니다.
-            - 경기 생성 후 1시간 동안 제출 불가
-            - 동일 유저와 전체 2~3번째 경기인데 첫 경기로부터 30분 이내에 잡힌 경기면, 해당 경기는 생성 후 10분 동안 제출 불가
-            - review는 최초 제출(attemptNo=1)에서만 허용 (attemptNo=1이면 review 필수)
-            - 제출 성공 시 상대에게 결과 확인 알림 + 알림 SSE 전송
-            - review 포함이면 +(후기 알림 + 알림 SSE 전송)
-            - 게임 상태 WAITING_CONFIRMATION 전환 이후 SSE는 상대에게 전송
+            - Host(requester)만 결과 작성 가능
+            - 승패는 profileid 기준으로 입력.
+            - 경기 생성 후 첫 경기면 1시간, 같은 날 연속 경기면 조건부 10분 동안 제출 불가.
+            - 제출 성공 시 상대방에게 결과 확인 알림이 저장, 경기 상태 변경 SSE가 전송.
         """
     )
     @PostMapping("/{gameId}/submissions")
     fun submitGameResult(
-        @AuthenticationPrincipal principal: CustomUserDetails,
+        @RequestHeader principal: String,
         @PathVariable gameId: String,
         @Valid @RequestBody request: GameResultSubmitRequest,
     ): ResponseEntity<ApiResponse<GameResultSubmitResponse>> {
         val response = gameService.submitResult(
-            submitterUserId = principal.username,
+            submitterUserId = principal,
             gameId = gameId,
             command = request.toCommand(),
         )
@@ -50,71 +48,71 @@ class GameController(
         return ApiResponse.success(response)
     }
 
-    @Operation(
-        summary = "경기 결과 수락/확정 API",
-        description = """
-            상대가 제출한 경기 결과를 수락(확정)합니다.
-
-            [정책]
-            - game.resultStatus 는 WAITING_CONFIRMATION 이어야 합니다.
-            - submission.status 는 SUBMITTED 이어야 합니다.
-            - confirmerUserId 는 해당 submission.confirmer 와 일치해야 합니다.
-
-            [확정 시 처리]
-            - Game.resultStatus = RESULT_CONFIRMED 로 변경
-            - Game.scoreWinner/scoreLoser/confirmedAt/winner/loser/confirmedSubmissionId 세팅
-            - GameResultSubmission.status = ACCEPTED, actedAt 세팅
-            - 승/패에 따라 양쪽 UserSportProfile.wins/losses, lp 업데이트
-              - 총 경기수(기존 wins+losses 기준) 1~3판: 승 +90 / 패 -20
-              - 4~8판: 승 +45 / 패 -15
-              - 9판~: 승 +30 / 패 -20
-              - lp 는 0 미만으로 내려가지 않음
-            - lp 변경 후 Tier 테이블(minLp/maxLp) 기준으로 tier 갱신
-
-            [SSE/알림]
-            - game.updated SSE: 상대에게 발송
-            - review 포함 시:
-              - 리뷰 저장(확정자 -> 제출자)
-              - REVIEW_RECEIVED 알림 + review.received.notification.created SSE (제출자에게)
-        """
-    )
-    @PostMapping("/{gameId}/submissions/{submissionId}/confirm")
-    fun confirmGameResult(
-        @AuthenticationPrincipal principal: CustomUserDetails,
-        @PathVariable gameId: String,
-        @PathVariable submissionId: String,
-        @Valid @RequestBody request: GameResultConfirmRequest,
-    ): ResponseEntity<ApiResponse<GameResultConfirmResponse>> {
-        val response =gameService.confirmResult(
-            confirmerUserId = principal.username,
-            gameId = gameId,
-            submissionId = submissionId,
-            command = request.toCommand(),
-        )
-
-        return ApiResponse.success(response)
-    }
-
-    @Operation(
-        summary = "경기 결과 제출안 단건 조회 API",
-        description = """
-            경기 결과 제출안(submission) 단건을 조회합니다.
-            - 제출 회차(attemptNo) / 제출자(submitter) / 제출안 기준 승자/패자 + 점수 반환
-        """
-    )
-    @GetMapping("/{gameId}/submissions/{submissionId}")
-    fun getSubmissionDetail(
-        @AuthenticationPrincipal principal: CustomUserDetails,
-        @PathVariable gameId: String,
-        @PathVariable submissionId: String,
-    ): ResponseEntity<ApiResponse<GameResultSubmissionDetailResponse>> {
-        val response = gameService.getSubmissionDetail(
-            gameId = gameId,
-            submissionId = submissionId,
-        )
-
-        return ApiResponse.success(response)
-    }
+//    @Operation(
+//        summary = "경기 결과 수락/확정 API",
+//        description = """
+//            상대가 제출한 경기 결과를 수락(확정)합니다.
+//
+//            [정책]
+//            - game.resultStatus 는 WAITING_CONFIRMATION 이어야 합니다.
+//            - submission.status 는 SUBMITTED 이어야 합니다.
+//            - confirmerUserId 는 해당 submission.confirmer 와 일치해야 합니다.
+//
+//            [확정 시 처리]
+//            - Game.resultStatus = RESULT_CONFIRMED 로 변경
+//            - Game.scoreWinner/scoreLoser/confirmedAt/winner/loser/confirmedSubmissionId 세팅
+//            - GameResultSubmission.status = ACCEPTED, actedAt 세팅
+//            - 승/패에 따라 양쪽 UserSportProfile.wins/losses, lp 업데이트
+//              - 총 경기수(기존 wins+losses 기준) 1~3판: 승 +90 / 패 -20
+//              - 4~8판: 승 +45 / 패 -15
+//              - 9판~: 승 +30 / 패 -20
+//              - lp 는 0 미만으로 내려가지 않음
+//            - lp 변경 후 Tier 테이블(minLp/maxLp) 기준으로 tier 갱신
+//
+//            [SSE/알림]
+//            - game.updated SSE: 상대에게 발송
+//            - review 포함 시:
+//              - 리뷰 저장(확정자 -> 제출자)
+//              - REVIEW_RECEIVED 알림 + review.received.notification.created SSE (제출자에게)
+//        """
+//    )
+//    @PostMapping("/{gameId}/submissions/{submissionId}/confirm")
+//    fun confirmGameResult(
+//        @AuthenticationPrincipal principal: CustomUserDetails,
+//        @PathVariable gameId: String,
+//        @PathVariable submissionId: String,
+//        @Valid @RequestBody request: GameResultConfirmRequest,
+//    ): ResponseEntity<ApiResponse<GameResultConfirmResponse>> {
+//        val response =gameService.confirmResult(
+//            confirmerUserId = principal.username,
+//            gameId = gameId,
+//            submissionId = submissionId,
+//            command = request.toCommand(),
+//        )
+//
+//        return ApiResponse.success(response)
+//    }
+//
+//    @Operation(
+//        summary = "경기 결과 제출안 단건 조회 API",
+//        description = """
+//            경기 결과 제출안(submission) 단건을 조회합니다.
+//            - 제출 회차(attemptNo) / 제출자(submitter) / 제출안 기준 승자/패자 + 점수 반환
+//        """
+//    )
+//    @GetMapping("/{gameId}/submissions/{submissionId}")
+//    fun getSubmissionDetail(
+//        @AuthenticationPrincipal principal: CustomUserDetails,
+//        @PathVariable gameId: String,
+//        @PathVariable submissionId: String,
+//    ): ResponseEntity<ApiResponse<GameResultSubmissionDetailResponse>> {
+//        val response = gameService.getSubmissionDetail(
+//            gameId = gameId,
+//            submissionId = submissionId,
+//        )
+//
+//        return ApiResponse.success(response)
+//    }
 
     @Operation(
         summary = "경기 결과 거절 API",
@@ -132,12 +130,12 @@ class GameController(
         @PathVariable submissionId: String,
         @Valid @RequestBody request: GameResultRejectRequest,
     ): ResponseEntity<ApiResponse<Unit>> {
-        gameService.rejectResult(
-            confirmerUserId = principal.username,
-            gameId = gameId,
-            submissionId = submissionId,
-            command = request.toCommand(),
-        )
+//        gameService.rejectResult(
+//            confirmerUserId = principal.username,
+//            gameId = gameId,
+//            submissionId = submissionId,
+//            command = request.toCommand(),
+//        )
 
         return ApiResponse.success()
     }
