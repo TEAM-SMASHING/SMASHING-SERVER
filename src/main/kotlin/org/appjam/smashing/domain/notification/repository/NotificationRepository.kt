@@ -10,7 +10,7 @@ interface NotificationRepository : JpaRepository<Notification, String>, Notifica
         """
         select n
         from Notification n
-        join fetch n.user u
+        join fetch n.receiverUser u
         where n.id = :notificationId
         """
     )

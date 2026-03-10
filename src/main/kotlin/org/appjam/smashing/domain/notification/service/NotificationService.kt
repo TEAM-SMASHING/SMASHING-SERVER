@@ -53,22 +53,18 @@ class NotificationService(
         )
     }
 
-    fun createMatchingResultSubmitted(
+    fun createGameResultSubmitted(
         receiver: User,
         receiverProfile: UserSportProfile,
-        submitterNickname: String,
-        game : Game,
-        submission : GameResultSubmission,
+        submitterProfile: UserSportProfile,
+        game: Game,
+        submission: GameResultSubmission,
     ): Notification {
-        val template = notificationTemplateRepository.findByType(NotificationType.MATCHING_RESULT_SUBMITTED)
-            ?: throw CustomException(ErrorCode.NOTIFICATION_TEMPLATE_NOT_FOUND)
-
         return notificationRepository.save(
-            Notification.createMatchingResultSubmitted(
+            Notification.createGameResultSubmitted(
                 receiver = receiver,
                 receiverProfile = receiverProfile,
-                template = template,
-                submitterNickname = submitterNickname,
+                submitterProfile = submitterProfile,
                 game = game,
                 submission = submission,
             )
@@ -152,7 +148,7 @@ class NotificationService(
             ?: throw CustomException(ErrorCode.NOTIFICATION_NOT_FOUND)
 
         // 본인 알림인지 검증
-        if (notification.user.id != userId) {
+        if (notification.receiverUser.id != userId) {
             throw CustomException(ErrorCode.NOTIFICATION_FORBIDDEN)
         }
 

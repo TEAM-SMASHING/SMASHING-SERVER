@@ -49,13 +49,26 @@ class Notification(
     @Comment("스포츠 코드")
     val sportCode: String? = null,
 
-    @Column(name = "sender_user_id", length = 13)
+    @Column(length = 13)
     @Comment("발신자 유저 IDX")
     val senderUserId: String? = null,
 
-    @Column(name = "sender_profile_id", length = 13)
+    @Column(length = 13)
     @Comment("발신자 유저-스포츠 프로필 IDX")
     val senderProfileId: String? = null,
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+        name = "receiver_user_id",
+        nullable = false,
+        foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT)
+    )
+    @Comment("수신자 유저 IDX")
+    val receiverUser: User,
+
+    @Column(nullable = false, length = 13)
+    @Comment("수신자 유저-스포츠 프로필 IDX")
+    val receiverUserProfileId: String,
 
     @Column(length = 500)
     @Comment("알림 치환 파라미터(JSON)")
@@ -67,11 +80,7 @@ class Notification(
 
     @Column(length = 500)
     @Comment("알림 연결 URL")
-    val linkUrl: String? = null, // TODO: 추후 알림 모두 리팩토링 시 삭제
-
-    @Column(nullable = false, length = 13)
-    @Comment("수신자 유저-스포츠 프로필 IDX")
-    val receiverProfileId: String,
+    val linkUrl: String? = null,
 
     @Column(length = 10)
     @Comment("발신자 유저 닉네임")
@@ -79,15 +88,6 @@ class Notification(
 
     @Comment("수신 스포츠 IDX")
     val receiverSportId: Long? = null, // TODO: 모두 리팩토링시 제거 예정
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-        name = "user_id",
-        nullable = false,
-        foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT)
-    )
-    @Comment("수신자 유저 IDX")
-    val user: User,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "notification_template_id", foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT))
@@ -120,8 +120,8 @@ class Notification(
                 sportCode = sportCode,
                 senderUserId = requesterProfile.user.id!!,
                 senderProfileId = requesterProfile.id!!,
-                receiverProfileId = receiverProfile.id!!,
-                user = receiver,
+                receiverUserProfileId = receiverProfile.id!!,
+                receiverUser = receiver,
             )
         }
 
@@ -147,28 +147,40 @@ class Notification(
                 sportCode = sportCode,
                 senderUserId = acceptorProfile.user.id!!,
                 senderProfileId = acceptorProfile.id!!,
-                receiverProfileId = receiverProfile.id!!,
-                user = receiver,
+                receiverUserProfileId = receiverProfile.id!!,
+                receiverUser = receiver,
             )
         }
 
-        fun createMatchingResultSubmitted(
+        /**
+         * 게임 결과 제출 알림 생성
+         */
+        fun createGameResultSubmitted(
             receiver: User,
             receiverProfile: UserSportProfile,
-            template: NotificationTemplate,
-            submitterNickname: String,
-            game : Game,
-            submission : GameResultSubmission,
-        ) = Notification(
-            params = """{"sportName":"${receiverProfile.sport.name}","submitterNickname":"$submitterNickname"}""",
-            isRead = false,
-            linkUrl = "/api/v1/games/${game.id}/submissions/${submission.id}",
-            user = receiver,
-            senderNickname = submitterNickname,
-            receiverProfileId = receiverProfile.id!!, // TODO: 발신자 프로필 ID 추가
-            receiverSportId = receiverProfile.sport.id!!,
-            notificationTemplate = template,
-        )
+            submitterProfile: UserSportProfile,
+            game: Game,
+            submission: GameResultSubmission,
+        ): Notification {
+            val sportName = receiverProfile.sport.name
+            val sportCode = receiverProfile.sport.code
+            val submitterNickname = submitterProfile.user.nickname
+
+            val title = "[$sportName] 매칭 결과가 도착했어요"
+            val content = "${submitterNickname}님이 매칭 결과를 보내주셨어요! 지금 확인해볼까요?"
+
+            return Notification(
+                type = NotificationType.MATCHING_RESULT_SUBMITTED,
+                title = title,
+                content = content,
+                sportCode = sportCode,
+                senderUserId = submitterProfile.user.id!!,
+                senderProfileId = submitterProfile.id!!,
+                linkUrl = "/api/v1/games/${game.id}/submissions/${submission.id}",
+                receiverUserProfileId = receiverProfile.id!!,
+                receiverUser = receiver,
+            )
+        }
 
         fun createReviewReceived(
             receiver: User,
@@ -180,9 +192,9 @@ class Notification(
             params = """{"reviewerNickname":"$reviewerNickname"}""",
             isRead = false,
             linkUrl = "/api/v1/reviews/$reviewId",
-            user = receiver,
+            receiverUser = receiver,
             senderNickname = reviewerNickname,
-            receiverProfileId = receiverProfile.id!!, // TODO: 발신자 프로필 ID 추가
+            receiverUserProfileId = receiverProfile.id!!, // TODO: 발신자 프로필 ID 추가
             receiverSportId = receiverProfile.sport.id!!,
             notificationTemplate = template,
         )
@@ -196,9 +208,9 @@ class Notification(
             params = """{"sportName":"${receiverProfile.sport.name}","rejectorNickname":"$rejectorNickname"}""",
             isRead = false,
             linkUrl = "/api/v1/users/me/games/pending-results",
-            user = receiver,
+            receiverUser = receiver,
             senderNickname = rejectorNickname,
-            receiverProfileId = receiverProfile.id!!, // TODO: 발신자 프로필 ID 추가
+            receiverUserProfileId = receiverProfile.id!!, // TODO: 발신자 프로필 ID 추가
             receiverSportId = receiverProfile.sport.id!!,
             notificationTemplate = template,
         )
@@ -212,9 +224,9 @@ class Notification(
             params = """{"sportName":"${receiverProfile.sport.name}","rejectorNickname":"$rejectorNickname"}""",
             isRead = false,
             linkUrl = "/api/v1/users/me/games/pending-results",
-            user = receiver,
+            receiverUser = receiver,
             senderNickname = rejectorNickname,
-            receiverProfileId = receiverProfile.id!!,
+            receiverUserProfileId = receiverProfile.id!!,
             receiverSportId = receiverProfile.sport.id!!, // TODO: 발신자 프로필 ID 추가
             notificationTemplate = template,
         )
@@ -228,9 +240,9 @@ class Notification(
             params = """{"sportName":"${receiverProfile.sport.name}","rejectorNickname":"$rejectorNickname"}""",
             isRead = false,
             linkUrl = "/api/v1/users/me/games/pending-results",
-            user = receiver,
+            receiverUser = receiver,
             senderNickname = rejectorNickname,
-            receiverProfileId = receiverProfile.id!!,
+            receiverUserProfileId = receiverProfile.id!!,
             receiverSportId = receiverProfile.sport.id!!,
             notificationTemplate = template,
         )
@@ -244,9 +256,9 @@ class Notification(
             params = """{"sportName":"${receiverProfile.sport.name}","rejectorNickname":"$rejectorNickname"}""",
             isRead = false,
             linkUrl = "/api/v1/users/me/games/pending-results",
-            user = receiver,
+            receiverUser = receiver,
             senderNickname = rejectorNickname,
-            receiverProfileId = receiverProfile.id!!,
+            receiverUserProfileId = receiverProfile.id!!,
             receiverSportId = receiverProfile.sport.id!!,
             notificationTemplate = template,
         )

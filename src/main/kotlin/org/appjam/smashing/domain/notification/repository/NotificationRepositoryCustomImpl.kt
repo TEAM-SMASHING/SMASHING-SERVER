@@ -26,7 +26,7 @@ class NotificationRepositoryCustomImpl(
         val cursor = cursorCodec.decode(request.cursor)
 
         val where = BooleanBuilder()
-            .and(notification.user.id.eq(userId))
+            .and(notification.receiverUser.id.eq(userId))
             .and(notification.createdAt.loe(snapshotAt.toLocalDateTime()))
 
         if (cursor != null) {
@@ -45,7 +45,7 @@ class NotificationRepositoryCustomImpl(
                     notification.isRead,
                     notification.createdAt,
                     notification.senderNickname,
-                    notification.receiverProfileId,
+                    notification.receiverUserProfileId,
                     notification.receiverSportId,
 
                 )
