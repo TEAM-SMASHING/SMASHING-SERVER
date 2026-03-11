@@ -24,13 +24,15 @@ class GameController(
 ) {
 
     @Operation(
-        summary = "경기 결과 제출 API",
+        summary = "경기 결과 제출/재제출 API",
         description = """
-            경기 결과를 제출합니다.
+            경기 결과를 제출하거나, 반려된 결과를 1회 재제출합니다.
             - Host(requester)만 결과 작성 가능
-            - 승패는 profileid 기준으로 입력.
-            - 경기 생성 후 첫 경기면 1시간, 같은 날 연속 경기면 조건부 10분 동안 제출 불가.
-            - 제출 성공 시 상대방에게 결과 확인 알림이 저장, 경기 상태 변경 SSE가 전송.
+            - 승패는 profileId 기준으로 입력
+            - 최초 제출: 경기 생성 후 첫 경기면 1시간, 같은 날 연속 경기면 조건부 10분 동안 제출 불가
+            - 재제출: 경기가 RESULT_REJECTED 상태에서만 가능
+            - 결과는 최대 2회(최초 제출 1회 + 재제출 1회)까지 허용
+            - 성공 시 상대방에게 game.updated SSE가 발행.
         """
     )
     @PostMapping("/{gameId}/submissions")

@@ -8,6 +8,7 @@ import org.appjam.smashing.domain.game.entity.Game
 import org.appjam.smashing.domain.game.entity.GameResultSubmission
 import org.appjam.smashing.domain.game.enums.GameSubmissionRejectReason
 import org.appjam.smashing.domain.game.enums.GameStatus
+import org.appjam.smashing.domain.game.enums.GameSubmissionStatus
 import org.appjam.smashing.domain.game.repository.GameRepository
 import org.appjam.smashing.domain.game.repository.GameResultSubmissionRepository
 import org.appjam.smashing.domain.lp.entity.LpHistory
@@ -61,55 +62,84 @@ class GameService(
         val game = gameRepository.findByIdFetchAllForUpdate(gameId)
             ?: throw CustomException(ErrorCode.GAME_NOT_FOUND)
 
-        // 결과 제출 가능한 상태인지 검증
-        if (game.resultStatus != GameStatus.PENDING_RESULT && game.resultStatus != GameStatus.RESULT_REJECTED) {
-            throw CustomException(ErrorCode.GAME_RESULT_ALREADY_SUBMITTED)
-        }
-
         val requesterProfile = game.matching.requesterProfile
         val receiverProfile = game.matching.receiverProfile
 
-        // Host(requesterProfile)만 결과 작성 가능 // TODO: 현재 host 기준 기획 모호함. 이부분 확인 이후 수정 예정
-        if (requesterProfile.user.id != submitterUserId) {
+        // Host는 매칭을 수락한 사람(receiverProfile)
+        if (receiverProfile.user.id != submitterUserId) {
             throw CustomException(ErrorCode.GAME_RESULT_SUBMIT_ALLOW_ONLY_HOST)
         }
 
         val now = LocalDateTime.now(TimeUtils.DEFAULT_ZONE_ID)
         val startOfDay = now.toLocalDate().atStartOfDay()
 
-        // 동일 상대 프로필과 오늘 확정된 경기 수 조회
-        val todayConfirmedCount = gameRepository.countTodayConfirmedGamesBetweenProfiles(
-            startAt = startOfDay,
-            profileA = requesterProfile.id!!,
-            profileB = receiverProfile.id!!,
-        )
-
-        // 오늘 첫 경기면 생성 후 1시간 동안 결과 제출 불가
-        if (todayConfirmedCount == 0L) {
-            if (ChronoUnit.MINUTES.between(game.createdAt, now) < 60) {
-                throw CustomException(ErrorCode.GAME_RESULT_SUBMIT_BLOCKED_1H)
-            }
-        }
-
-        // 오늘 2~3번째 경기면 10분 동안 결과 제출 불가
-        if (todayConfirmedCount in 1L..2L) {
-            val prevConfirmedAt = gameRepository.findTodayLatestConfirmedAtBetweenProfiles(
-                startAt = startOfDay,
-                profileA = requesterProfile.id!!,
-                profileB = receiverProfile.id!!,
-            )
-
-            if (prevConfirmedAt != null && ChronoUnit.MINUTES.between(prevConfirmedAt, now) <= 30 && ChronoUnit.MINUTES.between(game.createdAt, now) < 10) {
-                throw CustomException(ErrorCode.GAME_RESULT_SUBMIT_BLOCKED_10M)
-            }
-        }
-
-        // TODO: 이후 재제출 리팩토링시 함께 리팩토링
+        // 이번 제출이 몇 번째 제출인지 계산
         val totalSubmissionCount = submissionRepository.countByGame_Id(gameId)
         val attemptNo = (totalSubmissionCount + 1).toInt()
 
-        if (attemptNo != 1) {
+        // 결과 제출은 최대 2회까지만 허용 (최초 제출 1회 + 재제출 1회)
+        if (attemptNo > 2) {
             throw CustomException(ErrorCode.GAME_RESULT_SUBMISSION_LIMIT_EXCEEDED)
+        }
+
+        // 최초 제출 / 재제출 분기 검증
+        when (attemptNo) {
+            1 -> {
+                // 최초 제출은 PENDING_RESULT 상태에서만 가능
+                if (game.resultStatus != GameStatus.PENDING_RESULT) {
+                    throw CustomException(ErrorCode.GAME_RESULT_ALREADY_SUBMITTED)
+                }
+
+                val todayConfirmedCount = gameRepository.countTodayConfirmedGamesBetweenProfiles(
+                    startAt = startOfDay,
+                    profileA = requesterProfile.id!!,
+                    profileB = receiverProfile.id!!,
+                )
+
+                // 오늘 첫 경기면 생성 후 1시간 동안 결과 제출 불가
+                if (todayConfirmedCount == 0L && ChronoUnit.MINUTES.between(game.createdAt, now) < 60) {
+                    throw CustomException(ErrorCode.GAME_RESULT_SUBMIT_BLOCKED_1H)
+                }
+
+                // 오늘 2~3번째 경기면 10분 제한
+                if (todayConfirmedCount in 1L..2L) {
+                    val prevConfirmedAt = gameRepository.findTodayLatestConfirmedAtBetweenProfiles(
+                        startAt = startOfDay,
+                        profileA = requesterProfile.id!!,
+                        profileB = receiverProfile.id!!,
+                    )
+
+                    if (prevConfirmedAt != null && ChronoUnit.MINUTES.between(prevConfirmedAt, now) <= 30 && ChronoUnit.MINUTES.between(game.createdAt, now) < 10) {
+                        throw CustomException(ErrorCode.GAME_RESULT_SUBMIT_BLOCKED_10M)
+                    }
+                }
+
+                // 최초 제출에서는 review 필수
+                if (command.review == null) {
+                    throw CustomException(ErrorCode.GAME_REVIEW_REQUIRED_ON_FIRST_SUBMISSION)
+                }
+            }
+
+            2 -> {
+                // 재제출은 경기가 RESULT_REJECTED 상태에서만 가능
+                if (game.resultStatus != GameStatus.RESULT_REJECTED) {
+                    throw CustomException(ErrorCode.GAME_RESULT_RESUBMIT_NOT_ALLOWED)
+                }
+
+                // 가장 최근 제출안 조회
+                val latestSubmission = submissionRepository.findTopByGame_IdOrderByAttemptNoDesc(gameId)
+                    ?: throw CustomException(ErrorCode.GAME_SUBMISSION_NOT_FOUND)
+
+                // 재제출은 가장 최근 제출안이 REJECTED 상태일 때만 가능
+                if (latestSubmission.status != GameSubmissionStatus.REJECTED) {
+                    throw CustomException(ErrorCode.GAME_RESULT_RESUBMIT_NOT_ALLOWED)
+                }
+
+                // 재제출에서는 review 받지 않음
+                if (command.review != null) {
+                    throw CustomException(ErrorCode.GAME_REVIEW_ONLY_FIRST_SUBMISSION_ALLOWED)
+                }
+            }
         }
 
         // 승자/패자 프로필 검증
@@ -125,7 +155,6 @@ class GameService(
             else -> throw CustomException(ErrorCode.GAME_RESULT_INVALID_PLAYERS)
         }
 
-        // 승자와 패자가 같을 시 예외
         if (winnerProfile.id == loserProfile.id) {
             throw CustomException(ErrorCode.GAME_RESULT_SAME_PLAYER)
         }
@@ -137,36 +166,38 @@ class GameService(
         val submission = submissionRepository.save(
             GameResultSubmission.create(
                 game = game,
-                submitterProfile = requesterProfile,
-                confirmerProfile = receiverProfile,
+                submitterProfile = receiverProfile,
+                confirmerProfile = requesterProfile,
                 winnerProfile = winnerProfile,
                 loserProfile = loserProfile,
                 attemptNo = attemptNo,
             )
         )
 
-        // 리뷰 저장
-        gameReviewService.createReview(
-            game = game,
-            reviewerProfile = requesterProfile,
-            revieweeProfile = receiverProfile,
-            rating = command.review.rating,
-            content = command.review.content,
-            tags = command.review.tags,
-        )
+        // 최초 제출일 때만 리뷰 저장
+        if (attemptNo == 1) {
+            gameReviewService.createReview(
+                game = game,
+                reviewerProfile = receiverProfile,
+                revieweeProfile = requesterProfile,
+                rating = command.review!!.rating,
+                content = command.review.content,
+                tags = command.review.tags,
+            )
+        }
 
-        // 상대방 알림 DB 저장
+        // 상대방(requester) 알림 저장
         notificationService.createGameResultSubmitted(
-            receiver = receiverProfile.user,
-            receiverProfile = receiverProfile,
-            submitterProfile = requesterProfile,
+            receiver = requesterProfile.user,
+            receiverProfile = requesterProfile,
+            submitterProfile = receiverProfile,
             game = game,
             submission = submission,
         )
 
-        // SSE - 상대방에게 game.updated SSE 발행
+        // 상대방(requester)에게 game.updated SSE 발행
         outboxEventPublisher.publish(
-            userId = receiverProfile.user.id!!,
+            userId = requesterProfile.user.id!!,
             eventType = SseEventType.GAME_UPDATED,
             payload = GameUpdatedPayload(
                 gameId = game.id!!,

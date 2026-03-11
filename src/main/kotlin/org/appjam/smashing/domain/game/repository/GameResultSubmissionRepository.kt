@@ -9,6 +9,8 @@ import org.springframework.data.jpa.repository.Query
 interface GameResultSubmissionRepository : JpaRepository<GameResultSubmission, String> {
     fun countByGame_Id(gameId: String): Long
 
+    fun findTopByGame_IdOrderByAttemptNoDesc(gameId: String): GameResultSubmission?
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query(
         """

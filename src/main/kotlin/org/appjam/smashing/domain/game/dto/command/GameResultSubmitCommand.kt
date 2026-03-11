@@ -6,11 +6,11 @@ import org.appjam.smashing.domain.review.enums.ReviewTag
 data class GameResultSubmitCommand(
     val winnerProfileId: String,
     val loserProfileId: String,
-    val review: ReviewCommand,
+    val review: ReviewCommand?,
 ) {
     data class ReviewCommand(
         val rating: ReviewRating,
         val content: String?,
-        val tags: Set<ReviewTag> = emptySet(),
+        val tags: Set<ReviewTag>,
     )
 }
