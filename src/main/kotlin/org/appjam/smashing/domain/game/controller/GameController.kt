@@ -77,51 +77,35 @@ class GameController(
         return ApiResponse.success()
     }
 
-//    @Operation(
-//        summary = "경기 결과 수락/확정 API",
-//        description = """
-//            상대가 제출한 경기 결과를 수락(확정)합니다.
-//
-//            [정책]
-//            - game.resultStatus 는 WAITING_CONFIRMATION 이어야 합니다.
-//            - submission.status 는 SUBMITTED 이어야 합니다.
-//            - confirmerUserId 는 해당 submission.confirmer 와 일치해야 합니다.
-//
-//            [확정 시 처리]
-//            - Game.resultStatus = RESULT_CONFIRMED 로 변경
-//            - Game.scoreWinner/scoreLoser/confirmedAt/winner/loser/confirmedSubmissionId 세팅
-//            - GameResultSubmission.status = ACCEPTED, actedAt 세팅
-//            - 승/패에 따라 양쪽 UserSportProfile.wins/losses, lp 업데이트
-//              - 총 경기수(기존 wins+losses 기준) 1~3판: 승 +90 / 패 -20
-//              - 4~8판: 승 +45 / 패 -15
-//              - 9판~: 승 +30 / 패 -20
-//              - lp 는 0 미만으로 내려가지 않음
-//            - lp 변경 후 Tier 테이블(minLp/maxLp) 기준으로 tier 갱신
-//
-//            [SSE/알림]
-//            - game.updated SSE: 상대에게 발송
-//            - review 포함 시:
-//              - 리뷰 저장(확정자 -> 제출자)
-//              - REVIEW_RECEIVED 알림 + review.received.notification.created SSE (제출자에게)
-//        """
-//    )
-//    @PostMapping("/{gameId}/submissions/{submissionId}/confirm")
-//    fun confirmGameResult(
-//        @AuthenticationPrincipal principal: CustomUserDetails,
-//        @PathVariable gameId: String,
-//        @PathVariable submissionId: String,
-//        @Valid @RequestBody request: GameResultConfirmRequest,
-//    ): ResponseEntity<ApiResponse<GameResultConfirmResponse>> {
-//        val response =gameService.confirmResult(
-//            confirmerUserId = principal.username,
-//            gameId = gameId,
-//            submissionId = submissionId,
-//            command = request.toCommand(),
-//        )
-//
-//        return ApiResponse.success(response)
-//    }
-//
+    @Operation(
+        summary = "경기 결과 수락/확정 API",
+        description = """
+            상대가 제출한 경기 결과를 수락(확정)합니다.
+            - 결과 확인자(confirmer)만 승인할 수 있습니다.
+            - 1차 제출 승인 / 2차 재제출 승인 모두 동일한 API로 처리합니다.
+            - 승인 시 경기 결과가 최종 확정되며, 승자 +30 LP / 패자 -20 LP(최소 0)가 반영됩니다.
+            - LP 반영 후 티어를 재산정합니다.
+            - confirmer가 host에게 작성한 리뷰가 저장되고, host에게 후기 도착 알림이 생성됩니다.
+            - 성공 시 host에게 game.updated SSE가 발행됩니다.
+        """
+    )
+    @PostMapping("/{gameId}/submissions/{submissionId}/confirm")
+    fun confirmGameResult(
+        @AuthenticationPrincipal principal: CustomUserDetails,
+        @PathVariable gameId: String,
+        @PathVariable submissionId: String,
+        @Valid @RequestBody request: GameResultConfirmRequest,
+    ): ResponseEntity<ApiResponse<GameResultConfirmResponse>> {
+        val response = gameService.confirmResult(
+            confirmerUserId = principal.username,
+            gameId = gameId,
+            submissionId = submissionId,
+            command = request.toCommand(),
+        )
+
+        return ApiResponse.success(response)
+    }
+
 //    @Operation(
 //        summary = "경기 결과 제출안 단건 조회 API",
 //        description = """
