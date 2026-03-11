@@ -66,17 +66,4 @@ interface GameReviewRepository : JpaRepository<GameReview, String>, GameReviewRe
         revieweeId: String,
         sportId: Long
     ): List<ReviewTagCount>
-
-    @Query("""
-    select gr.id
-    from GameReview gr
-    where gr.game.id = :gameId
-      and gr.reviewer.id = :reviewerId
-      and gr.reviewee.id = :revieweeId
-""")
-    fun findIdByGameAndReviewerAndReviewee(
-        gameId: String,
-        reviewerId: String,
-        revieweeId: String,
-    ): String?
 }

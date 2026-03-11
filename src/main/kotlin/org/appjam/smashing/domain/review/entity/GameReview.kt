@@ -103,7 +103,6 @@ class GameReview(
             tags: Set<ReviewTag>,
         ) = GameReview(
             game = game,
-            reviewer = reviewerProfile.user,
             reviewerProfile = reviewerProfile,
             revieweeProfile = revieweeProfile,
             rating = rating,
