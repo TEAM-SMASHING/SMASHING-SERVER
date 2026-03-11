@@ -5,9 +5,9 @@ data class GameResultConfirmResponse(
 ) {
     companion object {
         fun from(
-            reviewId: String?
+            reviewId: String?,
         ) = GameResultConfirmResponse(
-            reviewId
+            reviewId = reviewId,
         )
     }
 }
