@@ -8,7 +8,7 @@ import org.appjam.smashing.domain.game.dto.projection.PendingResultAcceptedGameP
 import org.appjam.smashing.domain.game.dto.projection.QPendingResultAcceptedGameProjection
 import org.appjam.smashing.domain.game.entity.QGame.Companion.game
 import org.appjam.smashing.domain.game.entity.QGameResultSubmission
-import org.appjam.smashing.domain.game.enums.GameResultStatus
+import org.appjam.smashing.domain.game.enums.GameStatus
 import org.appjam.smashing.domain.matching.entity.QMatching.Companion.matching
 import org.appjam.smashing.domain.matching.enums.MatchingStatus
 import org.appjam.smashing.domain.tier.entity.QTier
@@ -79,10 +79,10 @@ class GameRepositoryCustomImpl(
             .and(game.createdAt.loe(snapshotLocal))
             .and(
                 game.resultStatus.`in`(
-                    GameResultStatus.PENDING_RESULT,
-                    GameResultStatus.WAITING_CONFIRMATION,
-                    GameResultStatus.RESULT_REJECTED,
-                    GameResultStatus.CANCELED
+                    GameStatus.PENDING_RESULT,
+                    GameStatus.WAITING_CONFIRMATION,
+                    GameStatus.RESULT_REJECTED,
+                    GameStatus.CANCELED
                 )
             )
 

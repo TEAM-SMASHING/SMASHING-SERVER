@@ -20,29 +20,29 @@ data class GameResultSubmissionDetailResponse(
         val score: Int,
     )
 
-    companion object {
-        fun from(
-            submission: GameResultSubmission,
-            winnerScore: Int,
-            loserScore: Int,
-        ): GameResultSubmissionDetailResponse {
-            return GameResultSubmissionDetailResponse(
-                attemptNo = submission.attemptNo,
-                submitter = SubmitterSummary(
-                    userId = submission.submitter.id!!,
-                    nickname = submission.submitter.nickname,
-                ),
-                winner = SideSummary(
-                    userId = submission.winner.id!!,
-                    nickname = submission.winner.nickname,
-                    score = winnerScore,
-                ),
-                loser = SideSummary(
-                    userId = submission.loser.id!!,
-                    nickname = submission.loser.nickname,
-                    score = loserScore,
-                ),
-            )
-        }
-    }
+//    companion object {
+//        fun from(
+//            submission: GameResultSubmission,
+//            winnerScore: Int,
+//            loserScore: Int,
+//        ): GameResultSubmissionDetailResponse {
+//            return GameResultSubmissionDetailResponse(
+//                attemptNo = submission.attemptNo,
+//                submitter = SubmitterSummary(
+//                    userId = submission.submitter.id!!,
+//                    nickname = submission.submitter.nickname,
+//                ),
+//                winner = SideSummary(
+//                    userId = submission.winner.id!!,
+//                    nickname = submission.winner.nickname,
+//                    score = winnerScore,
+//                ),
+//                loser = SideSummary(
+//                    userId = submission.loser.id!!,
+//                    nickname = submission.loser.nickname,
+//                    score = loserScore,
+//                ),
+//            )
+//        }
+//    }
 }
