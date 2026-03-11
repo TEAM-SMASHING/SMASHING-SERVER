@@ -2,6 +2,7 @@ package org.appjam.smashing.domain.notification.service
 
 import org.appjam.smashing.domain.game.entity.Game
 import org.appjam.smashing.domain.game.entity.GameResultSubmission
+import org.appjam.smashing.domain.game.enums.GameSubmissionRejectReason
 import org.appjam.smashing.domain.notification.dto.response.NotificationSummaryResponse
 import org.appjam.smashing.domain.notification.entity.Notification
 import org.appjam.smashing.domain.notification.enums.NotificationType
@@ -71,6 +72,22 @@ class NotificationService(
         )
     }
 
+    fun createGameResultRejected(
+        receiver: User,
+        receiverProfile: UserSportProfile,
+        rejectorProfile: UserSportProfile,
+        reason: GameSubmissionRejectReason,
+    ): Notification {
+        return notificationRepository.save(
+            Notification.createGameResultRejected(
+                receiver = receiver,
+                receiverProfile = receiverProfile,
+                rejectorProfile = rejectorProfile,
+                reason = reason,
+            )
+        )
+    }
+
     fun createReviewReceived(
         receiver: User,
         receiverProfile: UserSportProfile,
@@ -89,54 +106,6 @@ class NotificationService(
                 reviewerNickname = reviewerNickname,
             )
         )
-    }
-
-    fun createResultRejected(
-        receiver: User,
-        receiverProfile: UserSportProfile,
-        notificationType: NotificationType,
-        rejectorNickname: String,
-    ): Notification {
-        val template = notificationTemplateRepository.findByType(notificationType)
-            ?: throw CustomException(ErrorCode.NOTIFICATION_TEMPLATE_NOT_FOUND)
-
-        val notification = when (notificationType) {
-            NotificationType.RESULT_REJECTED_SCORE_MISMATCH ->
-                Notification.createResultRejectedScoreMismatch(
-                    receiver = receiver,
-                    receiverProfile = receiverProfile,
-                    template = template,
-                    rejectorNickname = rejectorNickname,
-                )
-
-            NotificationType.RESULT_REJECTED_WIN_LOSE_REVERSED ->
-                Notification.createResultRejectedWinLoseReversed(
-                    receiver = receiver,
-                    receiverProfile = receiverProfile,
-                    template = template,
-                    rejectorNickname = rejectorNickname,
-                )
-
-            NotificationType.RESULT_REJECTED_SCORE_AND_WIN_LOSE_MISMATCH ->
-                Notification.createResultRejectedScoreAndWinLoseMismatch(
-                    receiver = receiver,
-                    receiverProfile = receiverProfile,
-                    template = template,
-                    rejectorNickname = rejectorNickname,
-                )
-
-            NotificationType.RESULT_REJECTED_GAME_NOT_PLAYED_YET ->
-                Notification.createResultRejectedGameNotPlayedYet(
-                    receiver = receiver,
-                    receiverProfile = receiverProfile,
-                    template = template,
-                    rejectorNickname = rejectorNickname,
-                )
-
-            else -> throw CustomException(ErrorCode.NOTIFICATION_RESULT_REJECTED_TYPE_MISMATCH)
-        }
-
-        return notificationRepository.save(notification)
     }
 
     @Transactional
