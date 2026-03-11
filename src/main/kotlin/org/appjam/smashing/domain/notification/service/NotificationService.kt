@@ -5,9 +5,7 @@ import org.appjam.smashing.domain.game.entity.GameResultSubmission
 import org.appjam.smashing.domain.game.enums.GameSubmissionRejectReason
 import org.appjam.smashing.domain.notification.dto.response.NotificationSummaryResponse
 import org.appjam.smashing.domain.notification.entity.Notification
-import org.appjam.smashing.domain.notification.enums.NotificationType
 import org.appjam.smashing.domain.notification.repository.NotificationRepository
-import org.appjam.smashing.domain.notification.repository.NotificationTemplateRepository
 import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.appjam.smashing.global.common.components.NotificationContentRenderer
@@ -23,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional
 class NotificationService(
     private val notificationContentRenderer: NotificationContentRenderer,
     private val notificationRepository: NotificationRepository,
-    private val notificationTemplateRepository: NotificationTemplateRepository,
 ) {
 
     fun createMatchingRequested(
@@ -92,18 +89,14 @@ class NotificationService(
         receiver: User,
         receiverProfile: UserSportProfile,
         reviewId: String,
-        reviewerNickname: String,
+        reviewerProfile: UserSportProfile,
     ): Notification {
-        val template = notificationTemplateRepository.findByType(NotificationType.REVIEW_RECEIVED)
-            ?: throw CustomException(ErrorCode.NOTIFICATION_TEMPLATE_NOT_FOUND)
-
         return notificationRepository.save(
             Notification.createReviewReceived(
                 receiver = receiver,
                 receiverProfile = receiverProfile,
-                template = template,
                 reviewId = reviewId,
-                reviewerNickname = reviewerNickname,
+                reviewerProfile = reviewerProfile,
             )
         )
     }

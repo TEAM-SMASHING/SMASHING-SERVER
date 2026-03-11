@@ -213,19 +213,23 @@ class Notification(
         fun createReviewReceived(
             receiver: User,
             receiverProfile: UserSportProfile,
-            template: NotificationTemplate,
             reviewId: String,
-            reviewerNickname: String,
-        ) = Notification(
-            params = """{"reviewerNickname":"$reviewerNickname"}""",
-            isRead = false,
-            linkUrl = "/api/v1/reviews/$reviewId",
-            receiverUser = receiver,
-            senderNickname = reviewerNickname,
-            receiverUserProfileId = receiverProfile.id!!, // TODO: 발신자 프로필 ID 추가
-            receiverSportId = receiverProfile.sport.id!!,
-            notificationTemplate = template,
-        )
+            reviewerProfile: UserSportProfile,
+        ): Notification {
+            val reviewerNickname = reviewerProfile.user.nickname
+
+            return Notification(
+                type = NotificationType.REVIEW_RECEIVED,
+                title = "후기가 도착했어요",
+                content = "${reviewerNickname}님이 소중한 후기를 보내주셨어요! 지금 확인해볼까요?",
+                sportCode = receiverProfile.sport.code,
+                senderUserId = reviewerProfile.user.id!!,
+                senderProfileId = reviewerProfile.id!!,
+                receiverUser = receiver,
+                receiverUserProfileId = receiverProfile.id!!,
+                linkUrl = "/api/v1/reviews/$reviewId",
+            )
+        }
     }
 
     fun markAsRead() {
