@@ -411,54 +411,6 @@ class GameService(
 //        gameRepository.delete(game)
 //    }
 
-    @Transactional
-    fun deleteGame(
-        userId: String,
-        gameId: String,
-    ) {
-        // 게임 조회(잠금)
-        val game = gameRepository.findByIdFetchUsersForUpdate(gameId)
-            ?: throw CustomException(ErrorCode.GAME_NOT_FOUND)
-
-        // 삭제 가능 상태 검증
-        validateDeletable(game.resultStatus)
-
-        // 상대방 userId 조회
-        val opponentUserId = resolveOpponentUserId(
-            requesterId = game.matching.requesterProfile.user.id!!,
-            receiverId = game.matching.receiverProfile.user.id!!,
-            userId = userId,
-        )
-
-        // 게임 취소 처리
-        game.cancel()
-
-        publishGameUpdated(
-            receiverUserId = opponentUserId,
-            gameId = game.id!!,
-            submissionId = "no-submission-id", // TODO: 앱잼 기간 내 빠르게 canceled sse 발행 추가.
-            submissionAttemptNo = 123,
-            resultStatus = game.resultStatus,
-        )
-
-        /* 앱잼 기간 내 삭제 기능 제외
-        gameRepository.flush()
-
-        // submissions soft delete
-        submissionRepository.softDeleteAllByGameId(gameId)
-
-        // game soft delete
-        gameRepository.delete(game)
-
-        // 게임 상태 변경 SSE 발행
-        publishGameUpdated(
-            receiverUserId = opponentUserId,
-            gameId = game.id!!,
-            resultStatus = game.resultStatus,
-        )
-        */
-    }
-
     @Transactional(readOnly = true)
     fun getPendingResultAcceptedGames(
         userId: String,
