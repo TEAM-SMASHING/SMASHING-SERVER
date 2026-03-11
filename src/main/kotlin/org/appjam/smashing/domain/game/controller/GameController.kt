@@ -27,7 +27,7 @@ class GameController(
         summary = "경기 결과 제출/재제출 API",
         description = """
             경기 결과를 제출하거나, 반려된 결과를 1회 재제출합니다.
-            - Host(requester)만 결과 작성 가능
+            - Host(매칭의 receiverProfile)만 결과 작성 가능
             - 승패는 profileId 기준으로 입력
             - 최초 제출: 경기 생성 후 첫 경기면 1시간, 같은 날 연속 경기면 조건부 10분 동안 제출 불가
             - 재제출: 경기가 RESULT_REJECTED 상태에서만 가능
@@ -37,17 +37,44 @@ class GameController(
     )
     @PostMapping("/{gameId}/submissions")
     fun submitGameResult(
-        @RequestHeader principal: String,
+        @AuthenticationPrincipal principal: CustomUserDetails,
         @PathVariable gameId: String,
         @Valid @RequestBody request: GameResultSubmitRequest,
     ): ResponseEntity<ApiResponse<GameResultSubmitResponse>> {
         val response = gameService.submitResult(
-            submitterUserId = principal,
+            submitterUserId = principal.username,
             gameId = gameId,
             command = request.toCommand(),
         )
 
         return ApiResponse.success(response)
+    }
+
+    @Operation(
+        summary = "경기 결과 반려/재반려 API",
+        description = """
+        상대가 제출한 경기 결과를 반려합니다.
+        - 결과 확인자(confirmer)만 반려할 수 있습니다.
+        - 1차 반려 시 반려 사유는 필수이며, Host에게 결과 재작성 기회가 1회 주어집니다.
+        - 2차 반려 시 반려 사유 없이 반려하며, 해당 경기는 기록되지 않음 처리되어 취소됩니다.
+        - 성공 시 상대방에게 game.updated SSE가 발행.
+    """
+    )
+    @PostMapping("/{gameId}/submissions/{submissionId}/reject")
+    fun rejectGameResult(
+        @AuthenticationPrincipal principal: CustomUserDetails,
+        @PathVariable gameId: String,
+        @PathVariable submissionId: String,
+        @Valid @RequestBody request: GameResultRejectRequest,
+    ): ResponseEntity<ApiResponse<Unit>> {
+        gameService.rejectResult(
+            confirmerUserId = principal.username,
+            gameId = gameId,
+            submissionId = submissionId,
+            command = request.toCommand(),
+        )
+
+        return ApiResponse.success()
     }
 
 //    @Operation(
@@ -115,30 +142,4 @@ class GameController(
 //
 //        return ApiResponse.success(response)
 //    }
-
-    @Operation(
-        summary = "경기 결과 거절 API",
-        description = """
-            상대가 제출한 경기 결과 제출안(submission)을 거절합니다.
-            - 거절은 submission.confirmer(받은 사람)만 가능합니다.
-            - 상태 변경 sse가 발행됩니다.
-            - 거절 사유에 따라 NotificationType이 분리되어 전송됩니다. (알림+sse)
-        """
-    )
-    @PostMapping("/{gameId}/submissions/{submissionId}/reject")
-    fun rejectGameResult(
-        @AuthenticationPrincipal principal: CustomUserDetails,
-        @PathVariable gameId: String,
-        @PathVariable submissionId: String,
-        @Valid @RequestBody request: GameResultRejectRequest,
-    ): ResponseEntity<ApiResponse<Unit>> {
-//        gameService.rejectResult(
-//            confirmerUserId = principal.username,
-//            gameId = gameId,
-//            submissionId = submissionId,
-//            command = request.toCommand(),
-//        )
-
-        return ApiResponse.success()
-    }
 }
