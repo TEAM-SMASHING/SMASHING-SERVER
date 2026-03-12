@@ -4,6 +4,7 @@ import org.appjam.smashing.domain.game.dto.command.GameResultConfirmCommand
 import org.appjam.smashing.domain.game.dto.command.GameResultRejectCommand
 import org.appjam.smashing.domain.game.dto.command.GameResultSubmitCommand
 import org.appjam.smashing.domain.game.dto.response.GameResultConfirmResponse
+import org.appjam.smashing.domain.game.dto.response.GameResultSubmissionDetailResponse
 import org.appjam.smashing.domain.game.dto.response.GameResultSubmitLockResponse
 import org.appjam.smashing.domain.game.dto.response.GameResultSubmitResponse
 import org.appjam.smashing.domain.game.dto.response.PendingResultAcceptedGameSummaryResponse
@@ -413,26 +414,18 @@ class GameService(
         return GameResultConfirmResponse.from(savedReview.id!!)
     }
 
-//    @Transactional(readOnly = true)
-//    fun getSubmissionDetail(
-//        gameId: String,
-//        submissionId: String,
-//    ): GameResultSubmissionDetailResponse {
-//        val submission = submissionRepository.findDetailByIdAndGameId(
-//            submissionId = submissionId,
-//            gameId = gameId,
-//        ) ?: throw CustomException(ErrorCode.GAME_SUBMISSION_NOT_FOUND)
-//
-//        // 점수 매핑
-//        val winnerScore = scoreOf(submission, submission.winner.id!!)
-//        val loserScore = scoreOf(submission, submission.loser.id!!)
-//
-//        return GameResultSubmissionDetailResponse.from(
-//            submission = submission,
-//            winnerScore = winnerScore,
-//            loserScore = loserScore,
-//        )
-//    }
+    @Transactional(readOnly = true)
+    fun getSubmissionDetail(
+        gameId: String,
+        submissionId: String,
+    ): GameResultSubmissionDetailResponse {
+        val submission = submissionRepository.findDetailByIdAndGameId(
+            submissionId = submissionId,
+            gameId = gameId,
+        ) ?: throw CustomException(ErrorCode.GAME_SUBMISSION_NOT_FOUND)
+
+        return GameResultSubmissionDetailResponse.from(submission)
+    }
 
     @Transactional(readOnly = true)
     fun getPendingResultAcceptedGames(

@@ -106,24 +106,24 @@ class GameController(
         return ApiResponse.success(response)
     }
 
-//    @Operation(
-//        summary = "경기 결과 제출안 단건 조회 API",
-//        description = """
-//            경기 결과 제출안(submission) 단건을 조회합니다.
-//            - 제출 회차(attemptNo) / 제출자(submitter) / 제출안 기준 승자/패자 + 점수 반환
-//        """
-//    )
-//    @GetMapping("/{gameId}/submissions/{submissionId}")
-//    fun getSubmissionDetail(
-//        @AuthenticationPrincipal principal: CustomUserDetails,
-//        @PathVariable gameId: String,
-//        @PathVariable submissionId: String,
-//    ): ResponseEntity<ApiResponse<GameResultSubmissionDetailResponse>> {
-//        val response = gameService.getSubmissionDetail(
-//            gameId = gameId,
-//            submissionId = submissionId,
-//        )
-//
-//        return ApiResponse.success(response)
-//    }
+    @Operation(
+        summary = "경기 결과 제출안 단건 조회 API",
+        description = """
+        경기 결과 제출안(submission) 단건을 조회합니다.
+        - 제출 회차(attemptNo), 제출자, 제출안 기준 승자/패자를 조회합니다.
+    """
+    )
+    @GetMapping("/{gameId}/submissions/{submissionId}")
+    fun getSubmissionDetail(
+        @AuthenticationPrincipal principal: CustomUserDetails,
+        @PathVariable gameId: String,
+        @PathVariable submissionId: String,
+    ): ResponseEntity<ApiResponse<GameResultSubmissionDetailResponse>> {
+        val response = gameService.getSubmissionDetail(
+            gameId = gameId,
+            submissionId = submissionId,
+        )
+
+        return ApiResponse.success(response)
+    }
 }
