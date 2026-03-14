@@ -7,10 +7,10 @@ import java.time.OffsetDateTime
 
 interface GameRepositoryCustom {
 
-    fun fetchPendingResultAcceptedGamesPage(
-        userId: String,
-        sportId: Long,
-        request: CommonCursorRequest,
-        snapshotAt: OffsetDateTime,
-    ): CursorPageResponse<PendingResultAcceptedGameProjection>
+//    fun fetchPendingResultAcceptedGamesPage(
+//        userId: String,
+//        sportId: Long,
+//        request: CommonCursorRequest,
+//        snapshotAt: OffsetDateTime,
+//    ): CursorPageResponse<PendingResultAcceptedGameProjection>
 }

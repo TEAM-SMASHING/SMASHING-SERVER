@@ -7,9 +7,9 @@ import java.time.OffsetDateTime
 
 interface NotificationRepositoryCustom {
 
-    fun fetchMyNotificationPage(
-        userId: String,
-        request: CommonCursorRequest,
-        snapshotAt: OffsetDateTime,
-    ): CursorPageResponse<NotificationSummaryProjection>
+//    fun fetchMyNotificationPage(
+//        userId: String,
+//        request: CommonCursorRequest,
+//        snapshotAt: OffsetDateTime,
+//    ): CursorPageResponse<NotificationSummaryProjection>
 }

@@ -9,9 +9,12 @@ import org.appjam.smashing.domain.game.dto.request.GameResultSubmitRequest
 import org.appjam.smashing.domain.game.dto.response.GameResultConfirmResponse
 import org.appjam.smashing.domain.game.dto.response.GameResultSubmissionDetailResponse
 import org.appjam.smashing.domain.game.dto.response.GameResultSubmitResponse
+import org.appjam.smashing.domain.game.dto.response.PendingResultAcceptedGameSummaryResponse
 import org.appjam.smashing.domain.game.service.GameService
 import org.appjam.smashing.global.auth.security.data.CustomUserDetails
 import org.appjam.smashing.global.common.dto.ApiResponse
+import org.appjam.smashing.global.common.dto.CommonCursorRequest
+import org.appjam.smashing.global.common.dto.CursorResponse
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
@@ -24,15 +27,15 @@ class GameController(
 ) {
 
     @Operation(
-        summary = "경기 결과 제출 API",
+        summary = "경기 결과 제출/재제출 API",
         description = """
-            경기 결과를 제출합니다.
-            - 경기 생성 후 1시간 동안 제출 불가
-            - 동일 유저와 전체 2~3번째 경기인데 첫 경기로부터 30분 이내에 잡힌 경기면, 해당 경기는 생성 후 10분 동안 제출 불가
-            - review는 최초 제출(attemptNo=1)에서만 허용 (attemptNo=1이면 review 필수)
-            - 제출 성공 시 상대에게 결과 확인 알림 + 알림 SSE 전송
-            - review 포함이면 +(후기 알림 + 알림 SSE 전송)
-            - 게임 상태 WAITING_CONFIRMATION 전환 이후 SSE는 상대에게 전송
+            경기 결과를 제출하거나, 반려된 결과를 1회 재제출합니다.
+            - Host(매칭의 receiverProfile)만 결과 작성 가능
+            - 승패는 profileId 기준으로 입력
+            - 최초 제출: 경기 생성 후 첫 경기면 1시간, 같은 날 연속 경기면 조건부 10분 동안 제출 불가
+            - 재제출: 경기가 RESULT_REJECTED 상태에서만 가능
+            - 결과는 최대 2회(최초 제출 1회 + 재제출 1회)까지 허용
+            - 성공 시 상대방에게 game.updated SSE가 발행.
         """
     )
     @PostMapping("/{gameId}/submissions")
@@ -51,79 +54,14 @@ class GameController(
     }
 
     @Operation(
-        summary = "경기 결과 수락/확정 API",
+        summary = "경기 결과 반려/재반려 API",
         description = """
-            상대가 제출한 경기 결과를 수락(확정)합니다.
-
-            [정책]
-            - game.resultStatus 는 WAITING_CONFIRMATION 이어야 합니다.
-            - submission.status 는 SUBMITTED 이어야 합니다.
-            - confirmerUserId 는 해당 submission.confirmer 와 일치해야 합니다.
-
-            [확정 시 처리]
-            - Game.resultStatus = RESULT_CONFIRMED 로 변경
-            - Game.scoreWinner/scoreLoser/confirmedAt/winner/loser/confirmedSubmissionId 세팅
-            - GameResultSubmission.status = ACCEPTED, actedAt 세팅
-            - 승/패에 따라 양쪽 UserSportProfile.wins/losses, lp 업데이트
-              - 총 경기수(기존 wins+losses 기준) 1~3판: 승 +90 / 패 -20
-              - 4~8판: 승 +45 / 패 -15
-              - 9판~: 승 +30 / 패 -20
-              - lp 는 0 미만으로 내려가지 않음
-            - lp 변경 후 Tier 테이블(minLp/maxLp) 기준으로 tier 갱신
-
-            [SSE/알림]
-            - game.updated SSE: 상대에게 발송
-            - review 포함 시:
-              - 리뷰 저장(확정자 -> 제출자)
-              - REVIEW_RECEIVED 알림 + review.received.notification.created SSE (제출자에게)
-        """
-    )
-    @PostMapping("/{gameId}/submissions/{submissionId}/confirm")
-    fun confirmGameResult(
-        @AuthenticationPrincipal principal: CustomUserDetails,
-        @PathVariable gameId: String,
-        @PathVariable submissionId: String,
-        @Valid @RequestBody request: GameResultConfirmRequest,
-    ): ResponseEntity<ApiResponse<GameResultConfirmResponse>> {
-        val response =gameService.confirmResult(
-            confirmerUserId = principal.username,
-            gameId = gameId,
-            submissionId = submissionId,
-            command = request.toCommand(),
-        )
-
-        return ApiResponse.success(response)
-    }
-
-    @Operation(
-        summary = "경기 결과 제출안 단건 조회 API",
-        description = """
-            경기 결과 제출안(submission) 단건을 조회합니다.
-            - 제출 회차(attemptNo) / 제출자(submitter) / 제출안 기준 승자/패자 + 점수 반환
-        """
-    )
-    @GetMapping("/{gameId}/submissions/{submissionId}")
-    fun getSubmissionDetail(
-        @AuthenticationPrincipal principal: CustomUserDetails,
-        @PathVariable gameId: String,
-        @PathVariable submissionId: String,
-    ): ResponseEntity<ApiResponse<GameResultSubmissionDetailResponse>> {
-        val response = gameService.getSubmissionDetail(
-            gameId = gameId,
-            submissionId = submissionId,
-        )
-
-        return ApiResponse.success(response)
-    }
-
-    @Operation(
-        summary = "경기 결과 거절 API",
-        description = """
-            상대가 제출한 경기 결과 제출안(submission)을 거절합니다.
-            - 거절은 submission.confirmer(받은 사람)만 가능합니다.
-            - 상태 변경 sse가 발행됩니다.
-            - 거절 사유에 따라 NotificationType이 분리되어 전송됩니다. (알림+sse)
-        """
+        상대가 제출한 경기 결과를 반려합니다.
+        - 결과 확인자(confirmer)만 반려할 수 있습니다.
+        - 1차 반려 시 반려 사유는 필수이며, Host에게 결과 재작성 기회가 1회 주어집니다.
+        - 2차 반려 시 반려 사유 없이 반려하며, 해당 경기는 기록되지 않음 처리되어 취소됩니다.
+        - 성공 시 상대방에게 game.updated SSE가 발행.
+    """
     )
     @PostMapping("/{gameId}/submissions/{submissionId}/reject")
     fun rejectGameResult(
@@ -143,27 +81,93 @@ class GameController(
     }
 
     @Operation(
-        summary = "경기 삭제 API",
+        summary = "경기 결과 수락/확정 API",
         description = """
-            경기를 삭제(soft delete)합니다.
-            - 게임의 resultStatus를 CANCELED로 변경.
-            - 앱잼 기간 내 삭제 x. canceled로만 변경.
-            - 단, RESULT_CONFIRMED(확정) 상태면 삭제 불가
-            - 삭제 시 제출안(GameResultSubmission)도 함께 soft delete 처리.
-            - 경기 참여자(매칭 requester/receiver)만 삭제 가능
-            - 게임 상태 변경 SSE(game.updated)가 상대에게 발행. (resultStatus = CANCELED)
+            상대가 제출한 경기 결과를 수락(확정)합니다.
+            - 결과 확인자(confirmer)만 승인할 수 있습니다.
+            - 1차 제출 승인 / 2차 재제출 승인 모두 동일한 API로 처리합니다.
+            - 승인 시 경기 결과가 최종 확정되며, 승자 +30 LP / 패자 -20 LP(최소 0)가 반영됩니다.
+            - LP 반영 후 티어를 재산정합니다.
+            - confirmer가 host에게 작성한 리뷰가 저장되고, host에게 후기 도착 알림이 생성됩니다.
+            - 성공 시 host에게 game.updated SSE가 발행됩니다.
         """
     )
-    @PutMapping("/{gameId}")
-    fun deleteGame(
+    @PostMapping("/{gameId}/submissions/{submissionId}/confirm")
+    fun confirmGameResult(
         @AuthenticationPrincipal principal: CustomUserDetails,
         @PathVariable gameId: String,
-    ): ResponseEntity<ApiResponse<Unit>> {
-        gameService.deleteGame(
-            userId = principal.username,
+        @PathVariable submissionId: String,
+        @Valid @RequestBody request: GameResultConfirmRequest,
+    ): ResponseEntity<ApiResponse<GameResultConfirmResponse>> {
+        val response = gameService.confirmResult(
+            confirmerUserId = principal.username,
             gameId = gameId,
+            submissionId = submissionId,
+            command = request.toCommand(),
         )
 
-        return ApiResponse.success()
+        return ApiResponse.success(response)
     }
+
+    @Operation(
+        summary = "경기 결과 제출안 단건 조회 API",
+        description = """
+        경기 결과 제출안(submission) 단건을 조회합니다.
+        - 제출 회차(attemptNo), 제출자, 제출안 기준 승자/패자를 조회합니다.
+    """
+    )
+    @GetMapping("/{gameId}/submissions/{submissionId}")
+    fun getSubmissionDetail(
+        @AuthenticationPrincipal principal: CustomUserDetails,
+        @PathVariable gameId: String,
+        @PathVariable submissionId: String,
+    ): ResponseEntity<ApiResponse<GameResultSubmissionDetailResponse>> {
+        val response = gameService.getSubmissionDetail(
+            gameId = gameId,
+            submissionId = submissionId,
+        )
+
+        return ApiResponse.success(response)
+    }
+
+//    @Operation(
+//        summary = "결과 확정 전(수락된) 게임 목록 조회 API",
+//        description = """
+//            매칭 수락(ACCEPTED)되어 게임이 자동 생성된 이후, 아직 결과가 확정(RESULT_CONFIRMED)되지 않은 게임 목록을 조회합니다.
+//
+//            - 조회 대상(resultStatus):
+//              - PENDING_RESULT / WAITING_CONFIRMATION / RESULT_REJECTED (CONFIRMED, CANCELED 제외)
+//
+//            - 기준 스포츠:
+//              - 로그인 유저의 활성 프로필(activeUserSportProfileId)의 sport
+//
+//            - 정렬 : order 파라미터 기반 정렬
+//              - LATEST / latest / Latest 등 대소문자 무관
+//              - OLDEST / oldest / Oldest 등 대소문자 무관
+//              - 기본값(default) : order 미지정 또는 잘못된 값 → LATEST 적용
+//              - 정렬 기준 :
+//                - LATEST : gameId (TSID) DESC
+//                - OLDEST : gameId (TSID) ASC
+//
+//            - 페이징:
+//              - snapshotAt 이전 데이터만 조회(스냅샷 고정)
+//              - cursor = gameId (마지막 gameId)
+//
+//            - 잠금(결과 제출 가능 시각) 계산:
+//              - 목록은 전체(스냅샷 이전) 조회
+//              - 잠금 시간 계산만 '오늘 기준 정책'으로 계산해 내려줌
+//        """
+//    )
+//    @GetMapping("/pending-results")
+//    fun getPendingResultAcceptedGames(
+//        @AuthenticationPrincipal principal: CustomUserDetails,
+//        @Valid request: CommonCursorRequest,
+//    ): ResponseEntity<ApiResponse<CursorResponse<PendingResultAcceptedGameSummaryResponse>>> {
+//        val response = gameService.getPendingResultAcceptedGames(
+//            userId = principal.username,
+//            request = request,
+//        )
+//
+//        return ApiResponse.success(response)
+//    }
 }
