@@ -57,7 +57,7 @@ class GameReview(
     )
     @NotFound(action = NotFoundAction.IGNORE)
     @Comment("후기 작성자 유저-스포츠 프로필 IDX")
-    var reviewerProfile: UserSportProfile,
+    var reviewerProfile: UserSportProfile?,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
@@ -65,7 +65,6 @@ class GameReview(
         nullable = false,
         foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT)
     )
-    @NotFound(action = NotFoundAction.IGNORE)
     @Comment("후기 대상 유저-스포츠 프로필 IDX")
     var revieweeProfile: UserSportProfile,
 
