@@ -6,7 +6,6 @@ import org.appjam.smashing.domain.common.entity.BaseEntity
 import org.appjam.smashing.domain.game.entity.Game
 import org.appjam.smashing.domain.review.enums.ReviewRating
 import org.appjam.smashing.domain.review.enums.ReviewTag
-import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.hibernate.annotations.Comment
 import org.hibernate.annotations.SQLDelete
