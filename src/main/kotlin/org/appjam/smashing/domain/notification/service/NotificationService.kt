@@ -118,27 +118,27 @@ class NotificationService(
         notification.markAsRead()
     }
 
-    @Transactional(readOnly = true)
-    fun getMyNotifications(
-        userId: String,
-        request: CommonCursorRequest,
-    ): CursorResponse<NotificationSummaryResponse> {
-        // 스냅샷 시각 설정
-        val snapshotAt = request.snapshotAt ?: TimeUtils.nowOffsetDateTime()
-
-        // 알림 페이지 조회
-        val page = notificationRepository.fetchMyNotificationPage(
-            userId = userId,
-            request = request,
-            snapshotAt = snapshotAt,
-        )
-
-        // 응답 반환
-        return CursorResponse(
-            snapshotAt = page.snapshotAt,
-            results = NotificationSummaryResponse.from(page.results, notificationContentRenderer),
-            nextCursor = page.nextCursor,
-            hasNext = page.hasNext,
-        )
-    }
+//    @Transactional(readOnly = true)
+//    fun getMyNotifications(
+//        userId: String,
+//        request: CommonCursorRequest,
+//    ): CursorResponse<NotificationSummaryResponse> {
+//        // 스냅샷 시각 설정
+//        val snapshotAt = request.snapshotAt ?: TimeUtils.nowOffsetDateTime()
+//
+//        // 알림 페이지 조회
+//        val page = notificationRepository.fetchMyNotificationPage(
+//            userId = userId,
+//            request = request,
+//            snapshotAt = snapshotAt,
+//        )
+//
+//        // 응답 반환
+//        return CursorResponse(
+//            snapshotAt = page.snapshotAt,
+//            results = NotificationSummaryResponse.from(page.results, notificationContentRenderer),
+//            nextCursor = page.nextCursor,
+//            hasNext = page.hasNext,
+//        )
+//    }
 }

@@ -427,64 +427,64 @@ class GameService(
         return GameResultSubmissionDetailResponse.from(submission)
     }
 
-    @Transactional(readOnly = true)
-    fun getPendingResultAcceptedGames(
-        userId: String,
-        request: CommonCursorRequest,
-    ): CursorResponse<PendingResultAcceptedGameSummaryResponse> {
-        val user = userRepository.findByIdOrNull(userId)
-            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
-
-        val activeProfileId = user.activeUserSportProfileId
-            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
-
-        val activeProfile = userSportProfileRepository.findByIdOrNull(activeProfileId)
-            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
-
-        val sportId = activeProfile.sport.id
-            ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
-
-        val snapshotAt = request.snapshotAt ?: TimeUtils.nowOffsetDateTime()
-
-        val response = gameRepository.fetchPendingResultAcceptedGamesPage(
-            userId = userId,
-            sportId = sportId,
-            request = request,
-            snapshotAt = snapshotAt,
-        )
-
-        val now = LocalDateTime.now(TimeUtils.DEFAULT_ZONE_ID)
-        val startOfDay = now.toLocalDate().atStartOfDay()
-
-        val results = response.results.map { projection ->
-            val availableAt = calcSubmitAvailableAt(
-                now = now,
-                startOfDay = startOfDay,
-                gameCreatedAt = projection.createdAtLdt,
-                requesterId = projection.requesterUserId,
-                receiverId = projection.receiverUserId,
-            )
-
-            val lockResponse = GameResultSubmitLockResponse.from(
-                now = now,
-                availableAt = now, //availableAt, // TODO: 앱잼 기간 내 잠금 정책 제외
-            )
-
-            PendingResultAcceptedGameSummaryResponse.from(
-                projection = projection,
-                submitAvailableAt = lockResponse.submitAvailableAt,
-                remainingSeconds = lockResponse.remainingSeconds,
-                isSubmitLocked = lockResponse.isLocked,
-            )
-        }
-
-        return CursorResponse(
-            snapshotAt = response.snapshotAt,
-            results = results,
-            nextCursor = response.nextCursor,
-            hasNext = response.hasNext,
-        )
-    }
+//    @Transactional(readOnly = true)
+//    fun getPendingResultAcceptedGames(
+//        userId: String,
+//        request: CommonCursorRequest,
+//    ): CursorResponse<PendingResultAcceptedGameSummaryResponse> {
+//        val user = userRepository.findByIdOrNull(userId)
+//            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+//
+//        val activeProfileId = user.activeUserSportProfileId
+//            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+//
+//        val activeProfile = userSportProfileRepository.findByIdOrNull(activeProfileId)
+//            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+//
+//        val sportId = activeProfile.sport.id
+//            ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
+//
+//        val snapshotAt = request.snapshotAt ?: TimeUtils.nowOffsetDateTime()
+//
+//        val response = gameRepository.fetchPendingResultAcceptedGamesPage(
+//            userId = userId,
+//            sportId = sportId,
+//            request = request,
+//            snapshotAt = snapshotAt,
+//        )
+//
+//        val now = LocalDateTime.now(TimeUtils.DEFAULT_ZONE_ID)
+//        val startOfDay = now.toLocalDate().atStartOfDay()
+//
+//        val results = response.results.map { projection ->
+//            val availableAt = calcSubmitAvailableAt(
+//                now = now,
+//                startOfDay = startOfDay,
+//                gameCreatedAt = projection.createdAtLdt,
+//                requesterId = projection.requesterUserId,
+//                receiverId = projection.receiverUserId,
+//            )
+//
+//            val lockResponse = GameResultSubmitLockResponse.from(
+//                now = now,
+//                availableAt = now, //availableAt, // TODO: 앱잼 기간 내 잠금 정책 제외
+//            )
+//
+//            PendingResultAcceptedGameSummaryResponse.from(
+//                projection = projection,
+//                submitAvailableAt = lockResponse.submitAvailableAt,
+//                remainingSeconds = lockResponse.remainingSeconds,
+//                isSubmitLocked = lockResponse.isLocked,
+//            )
+//        }
+//
+//        return CursorResponse(
+//            snapshotAt = response.snapshotAt,
+//            results = results,
+//            nextCursor = response.nextCursor,
+//            hasNext = response.hasNext,
+//        )
+//    }
 
     /**
      * 오늘 기준(00:00~)
