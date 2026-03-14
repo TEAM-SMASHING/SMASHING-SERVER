@@ -2,7 +2,6 @@ package org.appjam.smashing.domain.game.dto.request
 
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
-import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import org.appjam.smashing.domain.game.dto.command.GameResultSubmitCommand
 import org.appjam.smashing.domain.review.enums.ReviewRating
@@ -18,14 +17,13 @@ data class GameResultSubmitRequest(
     @field:NotBlank(message = "loserProfileId는 필수입니다.")
     val loserProfileId: String?,
 
-    @field:NotNull(message = "review는 필수입니다.")
     @field:Valid
-    val review: ReviewRequest?,
+    val review: ReviewRequest? = null,
 ) {
     fun toCommand() = GameResultSubmitCommand(
         winnerProfileId = winnerProfileId!!,
         loserProfileId = loserProfileId!!,
-        review = review!!.toCommand(),
+        review = review?.toCommand(),
     )
 
     data class ReviewRequest(
@@ -38,14 +36,10 @@ data class GameResultSubmitRequest(
 
         val tags: Set<@ValidEnum(message = "잘못된 tag 값입니다.", enumClass = ReviewTag::class) String>? = emptySet(),
     ) {
-        fun toCommand(): GameResultSubmitCommand.ReviewCommand {
-            val normalizedContent = content?.trim()?.takeIf { it.isNotEmpty() }
-
-            return GameResultSubmitCommand.ReviewCommand(
-                rating = ofIgnoreCase<ReviewRating>(rating!!),
-                content = normalizedContent,
-                tags = tags?.mapNotNull { ofIgnoreCaseOrNull<ReviewTag>(it) }?.toSet() ?: emptySet(),
-            )
-        }
+        fun toCommand() = GameResultSubmitCommand.ReviewCommand(
+            rating = ofIgnoreCase<ReviewRating>(rating!!),
+            content = content?.trim()?.takeIf { it.isNotEmpty() },
+            tags = tags?.mapNotNull { ofIgnoreCaseOrNull<ReviewTag>(it) }?.toSet() ?: emptySet(),
+        )
     }
 }

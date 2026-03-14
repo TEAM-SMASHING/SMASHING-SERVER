@@ -141,8 +141,6 @@ class Game(
         confirmedSubmissionId = submissionId
         this.winnerProfile = winnerProfile
         this.loserProfile = loserProfile
-        this.winner = winnerProfile.user
-        this.loser = loserProfile.user
         this.confirmedAt = confirmedAt
     }
 

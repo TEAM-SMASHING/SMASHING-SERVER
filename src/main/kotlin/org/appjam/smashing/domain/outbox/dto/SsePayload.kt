@@ -70,7 +70,7 @@ data class MatchingUpdatedPayload(
 
 /**
  * 게임 상태 변경
- * - 게임 결과 전송 시 게임 상태 변경 SSE 이벤트 발행
+ * - 게임 결과 전송 / 게임 결과 반려 / 게임 결과 확정 / 게임 결과 2차 반려시 게임 상태 변경 SSE 이벤트 발행
  */
 data class GameUpdatedPayload(
     override val type: String = SseEventType.GAME_UPDATED.eventName,
@@ -79,50 +79,3 @@ data class GameUpdatedPayload(
     val submissionAttemptNo: Int,
     val resultStatus: GameStatus,
 ) : SsePayload
-
-/**
- * 리뷰(후기) 제출 알림 생성
- * - 상대가 나에게 후기를 남긴 순간 알림 생성
- */
-data class ReviewReceivedNotificationCreatedPayload(
-    override val type: String = SseEventType.REVIEW_RECEIVED_NOTIFICATION_CREATED.eventName,
-    val notificationId: String,
-    val notificationType: NotificationType,
-    val notificationCreatedAt: String,
-    val sportId: Long,
-    val receiverProfileId: String,
-    val gameId: String,
-    val reviewId: String,
-    val reviewer: ReviewerSummary,
-) : SsePayload {
-
-    data class ReviewerSummary(
-        val userId: String,
-        val nickname: String,
-        val tierCode: TierCode,
-    )
-}
-
-/**
- * 경기 결과 거절 알림 생성
- * - 상대가 나의 결과 제출을 거절한 순간 알림 생성
- */
-data class GameResultRejectedNotificationCreatedPayload(
-    override val type: String = SseEventType.GAME_RESULT_REJECTED_NOTIFICATION_CREATED.eventName,
-    val notificationId: String,
-    val notificationType: NotificationType,
-    val notificationCreatedAt: String,
-    val sportId: Long,
-    val receiverProfileId: String,
-    val gameId: String,
-    val submissionId: String,
-    val reason: GameSubmissionRejectReason,
-    val rejector: RejectorSummary,
-) : SsePayload {
-
-    data class RejectorSummary(
-        val userId: String,
-        val nickname: String,
-        val tierCode: TierCode,
-    )
-}

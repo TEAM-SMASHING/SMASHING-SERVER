@@ -5,6 +5,7 @@ import jakarta.persistence.*
 import org.appjam.smashing.domain.common.entity.BaseEntity
 import org.appjam.smashing.domain.game.entity.Game
 import org.appjam.smashing.domain.game.entity.GameResultSubmission
+import org.appjam.smashing.domain.game.enums.GameSubmissionRejectReason
 import org.appjam.smashing.domain.notification.enums.NotificationType
 import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.entity.UserSportProfile
@@ -182,86 +183,53 @@ class Notification(
             )
         }
 
+        fun createGameResultRejected(
+            receiver: User,
+            receiverProfile: UserSportProfile,
+            rejectorProfile: UserSportProfile,
+            reason: GameSubmissionRejectReason,
+        ): Notification {
+            val sportName = receiverProfile.sport.name
+            val sportCode = receiverProfile.sport.code
+            val rejectorNickname = rejectorProfile.user.nickname
+
+            val reasonText = when (reason) {
+                GameSubmissionRejectReason.WINNER_MISMATCH -> "승자가 잘못됐어요"
+                GameSubmissionRejectReason.GAME_NOT_PLAYED_YET -> "아직 진행하지 않은 경기에요"
+            }
+
+            return Notification(
+                type = NotificationType.MATCHING_RESULT_REJECTED,
+                title = "[$sportName] 매칭 결과가 반려되었어요",
+                content = "${rejectorNickname}님이 결과 입력을 거절했어요. (사유: $reasonText)",
+                sportCode = sportCode,
+                senderUserId = rejectorProfile.user.id!!,
+                senderProfileId = rejectorProfile.id!!,
+                receiverUserProfileId = receiverProfile.id!!,
+                receiverUser = receiver,
+            )
+        }
+
         fun createReviewReceived(
             receiver: User,
             receiverProfile: UserSportProfile,
-            template: NotificationTemplate,
             reviewId: String,
-            reviewerNickname: String,
-        ) = Notification(
-            params = """{"reviewerNickname":"$reviewerNickname"}""",
-            isRead = false,
-            linkUrl = "/api/v1/reviews/$reviewId",
-            receiverUser = receiver,
-            senderNickname = reviewerNickname,
-            receiverUserProfileId = receiverProfile.id!!, // TODO: 발신자 프로필 ID 추가
-            receiverSportId = receiverProfile.sport.id!!,
-            notificationTemplate = template,
-        )
+            reviewerProfile: UserSportProfile,
+        ): Notification {
+            val reviewerNickname = reviewerProfile.user.nickname
 
-        fun createResultRejectedScoreMismatch(
-            receiver: User,
-            receiverProfile: UserSportProfile,
-            template: NotificationTemplate,
-            rejectorNickname: String,
-        ) = Notification(
-            params = """{"sportName":"${receiverProfile.sport.name}","rejectorNickname":"$rejectorNickname"}""",
-            isRead = false,
-            linkUrl = "/api/v1/users/me/games/pending-results",
-            receiverUser = receiver,
-            senderNickname = rejectorNickname,
-            receiverUserProfileId = receiverProfile.id!!, // TODO: 발신자 프로필 ID 추가
-            receiverSportId = receiverProfile.sport.id!!,
-            notificationTemplate = template,
-        )
-
-        fun createResultRejectedWinLoseReversed(
-            receiver: User,
-            receiverProfile: UserSportProfile,
-            template: NotificationTemplate,
-            rejectorNickname: String,
-        ) = Notification(
-            params = """{"sportName":"${receiverProfile.sport.name}","rejectorNickname":"$rejectorNickname"}""",
-            isRead = false,
-            linkUrl = "/api/v1/users/me/games/pending-results",
-            receiverUser = receiver,
-            senderNickname = rejectorNickname,
-            receiverUserProfileId = receiverProfile.id!!,
-            receiverSportId = receiverProfile.sport.id!!, // TODO: 발신자 프로필 ID 추가
-            notificationTemplate = template,
-        )
-
-        fun createResultRejectedScoreAndWinLoseMismatch(
-            receiver: User,
-            receiverProfile: UserSportProfile,
-            template: NotificationTemplate,
-            rejectorNickname: String,
-        ) = Notification(
-            params = """{"sportName":"${receiverProfile.sport.name}","rejectorNickname":"$rejectorNickname"}""",
-            isRead = false,
-            linkUrl = "/api/v1/users/me/games/pending-results",
-            receiverUser = receiver,
-            senderNickname = rejectorNickname,
-            receiverUserProfileId = receiverProfile.id!!,
-            receiverSportId = receiverProfile.sport.id!!,
-            notificationTemplate = template,
-        )
-
-        fun createResultRejectedGameNotPlayedYet(
-            receiver: User,
-            receiverProfile: UserSportProfile,
-            template: NotificationTemplate,
-            rejectorNickname: String,
-        ) = Notification(
-            params = """{"sportName":"${receiverProfile.sport.name}","rejectorNickname":"$rejectorNickname"}""",
-            isRead = false,
-            linkUrl = "/api/v1/users/me/games/pending-results",
-            receiverUser = receiver,
-            senderNickname = rejectorNickname,
-            receiverUserProfileId = receiverProfile.id!!,
-            receiverSportId = receiverProfile.sport.id!!,
-            notificationTemplate = template,
-        )
+            return Notification(
+                type = NotificationType.REVIEW_RECEIVED,
+                title = "후기가 도착했어요",
+                content = "${reviewerNickname}님이 소중한 후기를 보내주셨어요! 지금 확인해볼까요?",
+                sportCode = receiverProfile.sport.code,
+                senderUserId = reviewerProfile.user.id!!,
+                senderProfileId = reviewerProfile.id!!,
+                receiverUser = receiver,
+                receiverUserProfileId = receiverProfile.id!!,
+                linkUrl = "/api/v1/reviews/$reviewId",
+            )
+        }
     }
 
     fun markAsRead() {

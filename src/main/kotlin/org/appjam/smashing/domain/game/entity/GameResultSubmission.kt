@@ -141,6 +141,13 @@ class GameResultSubmission(
         this.actedAt = actedAt
     }
 
+    fun reject(
+        actedAt: LocalDateTime,
+    ) {
+        status = GameSubmissionStatus.REJECTED
+        this.actedAt = actedAt
+    }
+
     fun rejectWithReason(
         reason: GameSubmissionRejectReason,
         actedAt: LocalDateTime,
