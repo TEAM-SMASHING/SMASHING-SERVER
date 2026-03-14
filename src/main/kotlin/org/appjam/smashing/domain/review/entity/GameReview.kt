@@ -51,22 +51,6 @@ class GameReview(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
-        name = "reviewer_user_id",
-        foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT)
-    )
-    @Comment("후기 작성자")
-    var reviewer: User? = null, // TODO: Review 리팩토링 완료 후 제거 예정
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-        name = "reviewee_user_id",
-        foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT)
-    )
-    @Comment("후기 작성자")
-    var reviewee: User? = null, // TODO: Review 리팩토링 완료 후 제거 예정
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
         name = "reviewer_profile_id",
         nullable = false,
         foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT)

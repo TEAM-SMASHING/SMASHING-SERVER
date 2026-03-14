@@ -143,31 +143,31 @@ class UserService(
         }
     }
 
-    @Transactional(readOnly = true)
-    fun getUserProfiles(
-        userId: String,
-    ): UserProfilesResponse {
-        val user = userRepository.findByIdOrNull(userId)
-            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
-
-        val allProfiles = userSportProfileRepository.findAllByUserIdOrderBySportName(userId)
-
-        val activeProfile = allProfiles.find { it.id == user.activeUserSportProfileId }
-            ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
-
-        val reviews = gameReviewRepository.countByRevieweeAndSport(
-            revieweeUserId = userId,
-            sportId = activeProfile.sport.id!!,
-        )
-
-        return UserProfilesResponse.from(
-            nickname = user.nickname,
-            gender = user.gender,
-            reviews = reviews,
-            activeProfile = activeProfile,
-            allProfiles = allProfiles,
-        )
-    }
+//    @Transactional(readOnly = true)
+//    fun getUserProfiles(
+//        userId: String,
+//    ): UserProfilesResponse {
+//        val user = userRepository.findByIdOrNull(userId)
+//            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+//
+//        val allProfiles = userSportProfileRepository.findAllByUserIdOrderBySportName(userId)
+//
+//        val activeProfile = allProfiles.find { it.id == user.activeUserSportProfileId }
+//            ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
+//
+//        val reviews = gameReviewRepository.countByRevieweeAndSport(
+//            revieweeUserId = userId,
+//            sportId = activeProfile.sport.id!!,
+//        )
+//
+//        return UserProfilesResponse.from(
+//            nickname = user.nickname,
+//            gender = user.gender,
+//            reviews = reviews,
+//            activeProfile = activeProfile,
+//            allProfiles = allProfiles,
+//        )
+//    }
 
 //    @Transactional(readOnly = true)
 //    fun getOtherUserProfiles(
@@ -295,24 +295,24 @@ class UserService(
 
         user.updateActiveProfile(requestCommand.profileId)
     }
-
-    @Transactional(readOnly = true)
-    fun getOtherUsersRecommendation(
-        userId: String,
-    ): OtherUsersRecommendationResponse {
-        val myInfo = getMyInfoAndActiveProfile(userId)
-
-        val recommendedProfiles = userSportProfileRepository.findRandomRecommendation(
-            region = myInfo.user.region,
-            sportId = myInfo.activeProfile.sport.id!!,
-            excludeUserId = myInfo.user.id!!,
-            myLp = myInfo.activeProfile.lp,
-            lpThreshold = LP_THRESHOLD,
-            limit = LIMIT_RECOMMEND
-        )
-
-        return OtherUsersRecommendationResponse.from(recommendedProfiles)
-    }
+//
+//    @Transactional(readOnly = true)
+//    fun getOtherUsersRecommendation(
+//        userId: String,
+//    ): OtherUsersRecommendationResponse {
+//        val myInfo = getMyInfoAndActiveProfile(userId)
+//
+//        val recommendedProfiles = userSportProfileRepository.findRandomRecommendation(
+//            region = myInfo.user.region,
+//            sportId = myInfo.activeProfile.sport.id!!,
+//            excludeUserId = myInfo.user.id!!,
+//            myLp = myInfo.activeProfile.lp,
+//            lpThreshold = LP_THRESHOLD,
+//            limit = LIMIT_RECOMMEND
+//        )
+//
+//        return OtherUsersRecommendationResponse.from(recommendedProfiles)
+//    }
 
     @Transactional(readOnly = true)
     fun getOtherUsersLeaderBoard(
@@ -333,127 +333,127 @@ class UserService(
         )
     }
 
-    @Transactional(readOnly = true)
-    fun getOtherUserSearch(
-        userId: String,
-        requestCommand: OtherUserSearchCommand,
-    ): OtherUserSearchResponse {
-        val myInfo = getMyInfoAndActiveProfile(userId)
+//    @Transactional(readOnly = true)
+//    fun getOtherUserSearch(
+//        userId: String,
+//        requestCommand: OtherUserSearchCommand,
+//    ): OtherUserSearchResponse {
+//        val myInfo = getMyInfoAndActiveProfile(userId)
+//
+//        val otherUsersSearch = userSportProfileRepository.findAllBySportOrderByNickname(
+//            nickname = requestCommand.nickname,
+//            sportId = myInfo.activeProfile.sport.id!!,
+//            excludeUserId = userId,
+//        )
+//
+//        return OtherUserSearchResponse.from(otherUsersSearch)
+//    }
 
-        val otherUsersSearch = userSportProfileRepository.findAllBySportOrderByNickname(
-            nickname = requestCommand.nickname,
-            sportId = myInfo.activeProfile.sport.id!!,
-            excludeUserId = userId,
-        )
+//    @Transactional(readOnly = true)
+//    fun getUserRecentReview(
+//        userId: String,
+//        request: CommonCursorRequest
+//    ): CursorResponse<UserRecentReviewResponse> {
+//        val myInfo = getMyInfoAndActiveProfile(userId)
+//        val snapshotAt = request.snapshotAt ?: OffsetDateTime.now()
+//        val sportId = myInfo.activeProfile.sport.id ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
+//
+//        val response = gameReviewRepository.findAllBySportIdOrderByDate(
+//            request = request,
+//            sportId = sportId,
+//            userId = userId,
+//            snapshotAt = snapshotAt,
+//        )
+//
+//        return CursorResponse(
+//            snapshotAt = response.snapshotAt,
+//            results = UserRecentReviewResponse.listForm(response.results),
+//            nextCursor = response.nextCursor,
+//            hasNext = response.hasNext,
+//        )
+//    }
 
-        return OtherUserSearchResponse.from(otherUsersSearch)
-    }
+//    @Transactional(readOnly = true)
+//    fun getUserRecentReviewSummary(
+//        userId: String,
+//    ): UserRecentReviewSummaryResponse {
+//        val myInfo = getMyInfoAndActiveProfile(userId)
+//
+//        val sportId = myInfo.activeProfile.sport.id!!
+//
+//        val counts = getCounts(
+//            userId = userId,
+//            sportId = sportId
+//        )
+//
+//        return UserRecentReviewSummaryResponse.from(
+//            ratingMap = counts.ratingMap,
+//            tagMap = counts.tagMap,
+//        )
+//    }
 
-    @Transactional(readOnly = true)
-    fun getUserRecentReview(
-        userId: String,
-        request: CommonCursorRequest
-    ): CursorResponse<UserRecentReviewResponse> {
-        val myInfo = getMyInfoAndActiveProfile(userId)
-        val snapshotAt = request.snapshotAt ?: OffsetDateTime.now()
-        val sportId = myInfo.activeProfile.sport.id ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
+//    @Transactional(readOnly = true)
+//    fun getOtherUserRecentReview(
+//        userId: String,
+//        otherUserId: String,
+//        sportCode: String?,
+//        request: CommonCursorRequest,
+//    ): CursorResponse<UserRecentReviewResponse> {
+//        val otherUser = userRepository.findByIdOrNull(otherUserId)
+//            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+//
+//        val selectedProfile = resolveProfile(
+//            userId = userId,
+//            otherUser = otherUser,
+//            sportCode = sportCode,
+//        )
+//
+//        val sportId = selectedProfile.sport.id!!
+//
+//        val snapshotAt = request.snapshotAt ?: OffsetDateTime.now()
+//
+//        val response = gameReviewRepository.findAllBySportIdOrderByDate(
+//            request = request,
+//            sportId = sportId,
+//            userId = otherUserId,
+//            snapshotAt = snapshotAt
+//        )
+//
+//        return CursorResponse(
+//            snapshotAt = snapshotAt,
+//            results = UserRecentReviewResponse.listForm(response.results),
+//            nextCursor = response.nextCursor,
+//            hasNext = response.hasNext
+//        )
+//    }
 
-        val response = gameReviewRepository.findAllBySportIdOrderByDate(
-            request = request,
-            sportId = sportId,
-            userId = userId,
-            snapshotAt = snapshotAt,
-        )
-
-        return CursorResponse(
-            snapshotAt = response.snapshotAt,
-            results = UserRecentReviewResponse.listForm(response.results),
-            nextCursor = response.nextCursor,
-            hasNext = response.hasNext,
-        )
-    }
-
-    @Transactional(readOnly = true)
-    fun getUserRecentReviewSummary(
-        userId: String,
-    ): UserRecentReviewSummaryResponse {
-        val myInfo = getMyInfoAndActiveProfile(userId)
-
-        val sportId = myInfo.activeProfile.sport.id!!
-
-        val counts = getCounts(
-            userId = userId,
-            sportId = sportId
-        )
-
-        return UserRecentReviewSummaryResponse.from(
-            ratingMap = counts.ratingMap,
-            tagMap = counts.tagMap,
-        )
-    }
-
-    @Transactional(readOnly = true)
-    fun getOtherUserRecentReview(
-        userId: String,
-        otherUserId: String,
-        sportCode: String?,
-        request: CommonCursorRequest,
-    ): CursorResponse<UserRecentReviewResponse> {
-        val otherUser = userRepository.findByIdOrNull(otherUserId)
-            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
-
-        val selectedProfile = resolveProfile(
-            userId = userId,
-            otherUser = otherUser,
-            sportCode = sportCode,
-        )
-
-        val sportId = selectedProfile.sport.id!!
-
-        val snapshotAt = request.snapshotAt ?: OffsetDateTime.now()
-
-        val response = gameReviewRepository.findAllBySportIdOrderByDate(
-            request = request,
-            sportId = sportId,
-            userId = otherUserId,
-            snapshotAt = snapshotAt
-        )
-
-        return CursorResponse(
-            snapshotAt = snapshotAt,
-            results = UserRecentReviewResponse.listForm(response.results),
-            nextCursor = response.nextCursor,
-            hasNext = response.hasNext
-        )
-    }
-
-    @Transactional(readOnly = true)
-    fun getOtherUserRecentReviewSummary(
-        userId: String,
-        otherUserId: String,
-        sportCode: String?,
-    ): UserRecentReviewSummaryResponse {
-        val otherUser = userRepository.findByIdOrNull(otherUserId)
-            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
-
-        val selectedProfile = resolveProfile(
-            userId = userId,
-            otherUser = otherUser,
-            sportCode = sportCode,
-        )
-
-        val sportId = selectedProfile.sport.id!!
-
-        val counts = getCounts(
-            userId = otherUserId,
-            sportId = sportId
-        )
-
-        return UserRecentReviewSummaryResponse.from(
-            ratingMap = counts.ratingMap,
-            tagMap = counts.tagMap,
-        )
-    }
+//    @Transactional(readOnly = true)
+//    fun getOtherUserRecentReviewSummary(
+//        userId: String,
+//        otherUserId: String,
+//        sportCode: String?,
+//    ): UserRecentReviewSummaryResponse {
+//        val otherUser = userRepository.findByIdOrNull(otherUserId)
+//            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+//
+//        val selectedProfile = resolveProfile(
+//            userId = userId,
+//            otherUser = otherUser,
+//            sportCode = sportCode,
+//        )
+//
+//        val sportId = selectedProfile.sport.id!!
+//
+//        val counts = getCounts(
+//            userId = otherUserId,
+//            sportId = sportId
+//        )
+//
+//        return UserRecentReviewSummaryResponse.from(
+//            ratingMap = counts.ratingMap,
+//            tagMap = counts.tagMap,
+//        )
+//    }
 
     private fun resolveProfile(
         userId: String,
@@ -472,60 +472,60 @@ class UserService(
         ) ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
     }
 
-    private fun getCounts(
-        userId: String,
-        sportId: Long
-    ): ReviewCountsResult {
-        val ratingResults = gameReviewRepository.countRatingsByRevieweeAndSport(
-            revieweeId = userId,
-            sportId = sportId,
-        )
-        val ratingMap = ratingResults.associate { data ->
-            data.reviewRating to data.counts
-        }
+//    private fun getCounts(
+//        userId: String,
+//        sportId: Long
+//    ): ReviewCountsResult {
+//        val ratingResults = gameReviewRepository.countRatingsByRevieweeAndSport(
+//            revieweeId = userId,
+//            sportId = sportId,
+//        )
+//        val ratingMap = ratingResults.associate { data ->
+//            data.reviewRating to data.counts
+//        }
+//
+//        val tagResults = gameReviewRepository.countTagsByRevieweeAndSport(
+//            revieweeId = userId,
+//            sportId = sportId,
+//        )
+//        val tagMap = tagResults.associate { data ->
+//            data.reviewTag to data.counts
+//        }
+//
+//        return ReviewCountsResult(
+//            ratingMap = ratingMap,
+//            tagMap = tagMap,
+//        )
+//    }
 
-        val tagResults = gameReviewRepository.countTagsByRevieweeAndSport(
-            revieweeId = userId,
-            sportId = sportId,
-        )
-        val tagMap = tagResults.associate { data ->
-            data.reviewTag to data.counts
-        }
-
-        return ReviewCountsResult(
-            ratingMap = ratingMap,
-            tagMap = tagMap,
-        )
-    }
-
-    @Transactional(readOnly = true)
-    fun getOtherUserRegion(
-        userId: String,
-        requestCommand: OtherUserRegionCommand,
-        requestCursor: CommonCursorRequest,
-    ): CursorResponse<OtherUserRegionResponse> {
-        val myInfo = getMyInfoAndActiveProfile(userId)
-        val sportId = myInfo.activeProfile.sport.id!!
-
-        val snapshotAt = requestCursor.snapshotAt ?: TimeUtils.nowOffsetDateTime()
-
-        val response = userSportProfileRepository.findAllBySportAndRegion(
-            userId = userId,
-            sportId = sportId,
-            region = myInfo.user.region,
-            request = requestCursor,
-            gender = requestCommand.gender,
-            tier = requestCommand.tier?.name,
-            snapshotAt = snapshotAt,
-        )
-
-        return CursorResponse(
-            snapshotAt = response.snapshotAt,
-            results = OtherUserRegionResponse.listForm(response.results),
-            nextCursor = response.nextCursor,
-            hasNext = response.hasNext,
-        )
-    }
+//    @Transactional(readOnly = true)
+//    fun getOtherUserRegion(
+//        userId: String,
+//        requestCommand: OtherUserRegionCommand,
+//        requestCursor: CommonCursorRequest,
+//    ): CursorResponse<OtherUserRegionResponse> {
+//        val myInfo = getMyInfoAndActiveProfile(userId)
+//        val sportId = myInfo.activeProfile.sport.id!!
+//
+//        val snapshotAt = requestCursor.snapshotAt ?: TimeUtils.nowOffsetDateTime()
+//
+//        val response = userSportProfileRepository.findAllBySportAndRegion(
+//            userId = userId,
+//            sportId = sportId,
+//            region = myInfo.user.region,
+//            request = requestCursor,
+//            gender = requestCommand.gender,
+//            tier = requestCommand.tier?.name,
+//            snapshotAt = snapshotAt,
+//        )
+//
+//        return CursorResponse(
+//            snapshotAt = response.snapshotAt,
+//            results = OtherUserRegionResponse.listForm(response.results),
+//            nextCursor = response.nextCursor,
+//            hasNext = response.hasNext,
+//        )
+//    }
 
     private fun getMyInfoAndActiveProfile(userId: String): UserWithActiveProfile {
         val user = userRepository.findByIdOrNull(userId)

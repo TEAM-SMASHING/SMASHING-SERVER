@@ -110,14 +110,18 @@ class MatchingService(
         /**
          * TODO: 프로필 기반 리뷰 카운트로 바꿀지 결정되면 교체 필요
          */
-        val requesterReviewCount = gameReviewRepository.countByRevieweeAndSport(
-            revieweeUserId = requesterUser.id!!,
-            sportId = sportId,
-        )
-        val receiverReviewCount = gameReviewRepository.countByRevieweeAndSport(
-            revieweeUserId = receiverUser.id!!,
-            sportId = sportId,
-        )
+        val requesterReviewCount = 123L
+
+//            gameReviewRepository.countByRevieweeAndSport(
+//            revieweeUserId = requesterUser.id!!,
+//            sportId = sportId,
+//        )
+        val receiverReviewCount = 123L // TODO: 이거 아직 논의 안됐음......
+
+//            gameReviewRepository.countByRevieweeAndSport(
+//            revieweeUserId = receiverUser.id!!,
+//            sportId = sportId,
+//        )
 
         // SSE - 상대방에게 받은 요청 실시간 반영 + 토스트
         outboxEventPublisher.publish(
