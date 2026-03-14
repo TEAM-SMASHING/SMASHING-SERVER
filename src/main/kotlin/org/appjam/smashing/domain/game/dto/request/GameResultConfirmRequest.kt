@@ -31,7 +31,7 @@ data class GameResultConfirmRequest(
         fun toCommand() = GameResultConfirmCommand.ReviewCommand(
             rating = ofIgnoreCase<ReviewRating>(rating!!),
             content = content,
-            tags = tags?.mapNotNull { ofIgnoreCaseOrNull<ReviewTag>(it) }?.toSet(),
+            tags = tags?.mapNotNull { ofIgnoreCaseOrNull<ReviewTag>(it) }?.toSet() ?: emptySet(),
         )
     }
 }

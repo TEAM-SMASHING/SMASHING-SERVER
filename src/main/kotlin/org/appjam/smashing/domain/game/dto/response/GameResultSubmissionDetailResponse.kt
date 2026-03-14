@@ -5,44 +5,38 @@ import org.appjam.smashing.domain.game.entity.GameResultSubmission
 data class GameResultSubmissionDetailResponse(
     val attemptNo: Int,
     val submitter: SubmitterSummary,
-    val winner: SideSummary,
-    val loser: SideSummary,
+    val winner: PlayerSummary,
+    val loser: PlayerSummary,
 ) {
-
     data class SubmitterSummary(
         val userId: String,
         val nickname: String,
+        val profileId: String,
     )
 
-    data class SideSummary(
-        val userId: String,
+    data class PlayerSummary(
+        val profileId: String,
         val nickname: String,
-        val score: Int,
     )
 
     companion object {
         fun from(
             submission: GameResultSubmission,
-            winnerScore: Int,
-            loserScore: Int,
-        ): GameResultSubmissionDetailResponse {
-            return GameResultSubmissionDetailResponse(
+        )= GameResultSubmissionDetailResponse(
                 attemptNo = submission.attemptNo,
                 submitter = SubmitterSummary(
-                    userId = submission.submitter.id!!,
-                    nickname = submission.submitter.nickname,
+                    userId = submission.submitterProfile.user.id!!,
+                    nickname = submission.submitterProfile.user.nickname,
+                    profileId = submission.submitterProfile.id!!,
                 ),
-                winner = SideSummary(
-                    userId = submission.winner.id!!,
-                    nickname = submission.winner.nickname,
-                    score = winnerScore,
+                winner = PlayerSummary(
+                    profileId = submission.winnerProfile.id!!,
+                    nickname = submission.winnerProfile.user.nickname,
                 ),
-                loser = SideSummary(
-                    userId = submission.loser.id!!,
-                    nickname = submission.loser.nickname,
-                    score = loserScore,
+                loser = PlayerSummary(
+                    profileId = submission.loserProfile.id!!,
+                    nickname = submission.loserProfile.user.nickname,
                 ),
             )
         }
-    }
 }

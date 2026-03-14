@@ -8,75 +8,62 @@ import org.springframework.data.jpa.repository.Query
 
 interface GameReviewRepository : JpaRepository<GameReview, String>, GameReviewRepositoryCustom {
 
-    @Query(
-        """
-        select count(gr)
-          from GameReview gr
-          join gr.game g
-         where gr.reviewee.id = :revieweeUserId
-           and g.sport.id = :sportId
-        """
-    )
-    fun countByRevieweeAndSport(
-        revieweeUserId: String,
-        sportId: Long,
-    ): Long
-
-    @Query(
-        """
-            select gr
-            from GameReview gr
-            join fetch gr.reviewer
-            join fetch gr.reviewee
-            left join fetch gr.tags
-            where gr.id = :reviewId
-        """
-    )
-    fun findByIdFetchAll(
-        reviewId: String,
-    ): GameReview?
-
-    @Query(
-        """
-            select gr.rating as reviewRating, 
-            count(gr.id) as counts
-            from GameReview gr
-            where gr.reviewee.id = :revieweeId
-            and gr.game.sport.id = :sportId
-            group by gr.rating
-        """
-    )
-    fun countRatingsByRevieweeAndSport(
-        revieweeId: String,
-        sportId: Long
-    ): List<ReviewRatingCount>
-
-    @Query(
-        """
-            select t as reviewTag, 
-            count(t) as counts
-            from GameReview gr
-            join gr.tags t
-            where gr.reviewee.id = :revieweeId
-            and gr.game.sport.id = :sportId
-            group by t
-        """
-    )
-    fun countTagsByRevieweeAndSport(
-        revieweeId: String,
-        sportId: Long
-    ): List<ReviewTagCount>
-
-    @Query("""
-    select gr.id
-    from GameReview gr
-    where gr.game.id = :gameId
-      and gr.reviewer.id = :reviewerId
-      and gr.reviewee.id = :revieweeId
-""")
-    fun findIdByGameAndReviewerAndReviewee(
-        gameId: String,
-        reviewerId: String,
-        revieweeId: String,
-    ): String?
+//    @Query(
+//        """
+//        select count(gr)
+//          from GameReview gr
+//          join gr.game g
+//         where gr.reviewee.id = :revieweeUserId
+//           and g.sport.id = :sportId
+//        """
+//    )
+//    fun countByRevieweeAndSport(
+//        revieweeUserId: String,
+//        sportId: Long,
+//    ): Long
+//
+//    @Query(
+//        """
+//            select gr
+//            from GameReview gr
+//            join fetch gr.reviewer
+//            join fetch gr.reviewee
+//            left join fetch gr.tags
+//            where gr.id = :reviewId
+//        """
+//    )
+//    fun findByIdFetchAll(
+//        reviewId: String,
+//    ): GameReview?
+//
+//    @Query(
+//        """
+//            select gr.rating as reviewRating,
+//            count(gr.id) as counts
+//            from GameReview gr
+//            where gr.reviewee.id = :revieweeId
+//            and gr.game.sport.id = :sportId
+//            group by gr.rating
+//        """
+//    )
+//    fun countRatingsByRevieweeAndSport(
+//        revieweeId: String,
+//        sportId: Long
+//    ): List<ReviewRatingCount>
+//
+//    @Query(
+//        """
+//            select t as reviewTag,
+//            count(t) as counts
+//            from GameReview gr
+//            join gr.tags t
+//            where gr.reviewee.id = :revieweeId
+//            and gr.game.sport.id = :sportId
+//            group by t
+//        """
+//    )
+//    fun countTagsByRevieweeAndSport(
+//        revieweeId: String,
+//        sportId: Long
+//    ): List<ReviewTagCount>
 }

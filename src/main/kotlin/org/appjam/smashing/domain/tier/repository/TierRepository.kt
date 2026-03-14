@@ -11,7 +11,8 @@ interface TierRepository : JpaRepository<Tier, Long> {
         select t
           from Tier t
          where t.sport.id = :sportId
-           and :lp between t.minLp and t.maxLp
+           and t.minLp <= :lp
+           and (t.maxLp is null or :lp <= t.maxLp)
         """
     )
     fun findBySportIdAndLpInRange(

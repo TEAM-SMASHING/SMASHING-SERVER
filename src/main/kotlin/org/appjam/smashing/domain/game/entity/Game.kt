@@ -16,10 +16,11 @@ import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 import org.appjam.smashing.domain.common.entity.BaseEntity
+import org.appjam.smashing.domain.game.enums.GameStatus
 import org.appjam.smashing.domain.matching.entity.Matching
-import org.appjam.smashing.domain.game.enums.GameResultStatus
 import org.appjam.smashing.domain.sport.entity.Sport
 import org.appjam.smashing.domain.user.entity.User
+import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.hibernate.annotations.Comment
 import org.hibernate.annotations.SQLDelete
 import org.hibernate.annotations.SQLRestriction
@@ -33,8 +34,8 @@ import java.time.LocalDateTime
     indexes = [
         Index(name = "idx_game_matching_id", columnList = "matching_id"),
         Index(name = "idx_game_sport_id", columnList = "sport_id"),
-        Index(name = "idx_game_winner_user_id", columnList = "winner_user_id"),
-        Index(name = "idx_game_loser_user_id", columnList = "loser_user_id"),
+        Index(name = "idx_game_winner_profile_id", columnList = "winner_profile_id"),
+        Index(name = "idx_game_loser_profile_id", columnList = "loser_profile_id"),
         Index(name = "idx_game_confirmed_submission_id", columnList = "confirmed_submission_id"),
     ]
 )
@@ -51,15 +52,7 @@ class Game(
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "VARCHAR(30)")
     @Comment("경기 결과 처리 상태")
-    var resultStatus: GameResultStatus,
-
-    @Column
-    @Comment("승자 점수(확정)")
-    var scoreWinner: Int? = null,
-
-    @Column
-    @Comment("패자 점수(확정)")
-    var scoreLoser: Int? = null,
+    var resultStatus: GameStatus,
 
     @Column
     @Comment("결과 확정 시각")
@@ -89,57 +82,53 @@ class Game(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
-        name = "winner_user_id",
+        name = "winner_profile_id",
         foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT)
     )
-    @Comment("승자 유저 IDX(확정 시)")
-    var winner: User? = null,
+    @Comment("승자 유저-스포츠 프로필 IDX(확정 시)")
+    var winnerProfile: UserSportProfile? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
-        name = "loser_user_id",
+        name = "loser_profile_id",
         foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT)
     )
-    @Comment("패자 유저 IDX(확정 시)")
-    var loser: User? = null,
+    @Comment("패자 유저-스포츠 프로필 IDX(확정 시)")
+    var loserProfile: UserSportProfile? = null,
 ) : BaseEntity() {
 
     companion object {
         fun createFromMatching(
             matching: Matching
         ) = Game(
-            resultStatus = GameResultStatus.PENDING_RESULT,
+            resultStatus = GameStatus.PENDING_RESULT,
             matching = matching,
             sport = matching.sport,
         )
     }
 
     fun markWaitingConfirmation() {
-        resultStatus = GameResultStatus.WAITING_CONFIRMATION
+        resultStatus = GameStatus.WAITING_CONFIRMATION
     }
 
     fun markRejected() {
-        resultStatus = GameResultStatus.RESULT_REJECTED
+        resultStatus = GameStatus.RESULT_REJECTED
     }
 
     fun confirmResult(
         submissionId: String,
-        winner: User,
-        loser: User,
-        scoreWinner: Int,
-        scoreLoser: Int,
+        winnerProfile: UserSportProfile,
+        loserProfile: UserSportProfile,
         confirmedAt: LocalDateTime,
     ) {
-        resultStatus = GameResultStatus.RESULT_CONFIRMED
+        resultStatus = GameStatus.RESULT_CONFIRMED
         confirmedSubmissionId = submissionId
-        this.winner = winner
-        this.loser = loser
-        this.scoreWinner = scoreWinner
-        this.scoreLoser = scoreLoser
+        this.winnerProfile = winnerProfile
+        this.loserProfile = loserProfile
         this.confirmedAt = confirmedAt
     }
 
     fun cancel() {
-        resultStatus = GameResultStatus.CANCELED
+        resultStatus = GameStatus.CANCELED
     }
 }
