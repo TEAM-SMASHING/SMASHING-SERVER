@@ -41,11 +41,11 @@ class MatchingController(
     )
     @PostMapping("/profiles/{receiverProfileId}")
     fun requestMatching(
-        @RequestHeader principal: String,
+        @AuthenticationPrincipal principal: CustomUserDetails,
         @PathVariable receiverProfileId: String,
     ): ResponseEntity<ApiResponse<Unit>> {
         matchingService.requestMatching(
-            requesterUserId = principal,
+            requesterUserId = principal.username,
             receiverProfileId = receiverProfileId,
         )
 
@@ -113,11 +113,11 @@ class MatchingController(
     )
     @PostMapping("/{matchingId}/accept")
     fun acceptMatching(
-        @RequestHeader principal: String,
+        @AuthenticationPrincipal principal: CustomUserDetails,
         @PathVariable matchingId: String,
     ): ResponseEntity<ApiResponse<Unit>> {
         matchingService.acceptMatching(
-            receiverUserId = principal,
+            receiverUserId = principal.username,
             matchingId = matchingId,
         )
 
