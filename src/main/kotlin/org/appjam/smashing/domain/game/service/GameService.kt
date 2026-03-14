@@ -10,27 +10,19 @@ import org.appjam.smashing.domain.game.dto.response.GameResultSubmitResponse
 import org.appjam.smashing.domain.game.dto.response.PendingResultAcceptedGameSummaryResponse
 import org.appjam.smashing.domain.game.entity.Game
 import org.appjam.smashing.domain.game.entity.GameResultSubmission
-import org.appjam.smashing.domain.game.enums.GameResultRejectReason
-import org.appjam.smashing.domain.game.enums.GameResultStatus
-import org.appjam.smashing.domain.game.enums.SubmissionStatus
+import org.appjam.smashing.domain.game.enums.GameStatus
+import org.appjam.smashing.domain.game.enums.GameSubmissionStatus
 import org.appjam.smashing.domain.game.repository.GameRepository
 import org.appjam.smashing.domain.game.repository.GameResultSubmissionRepository
 import org.appjam.smashing.domain.lp.entity.LpHistory
 import org.appjam.smashing.domain.lp.repository.LpHistoryRepository
-import org.appjam.smashing.domain.notification.enums.NotificationType
 import org.appjam.smashing.domain.notification.service.NotificationService
 import org.appjam.smashing.domain.outbox.components.OutboxEventPublisher
-import org.appjam.smashing.domain.outbox.dto.GameResultRejectedNotificationCreatedPayload
-import org.appjam.smashing.domain.outbox.dto.GameResultSubmittedNotificationCreatedPayload
 import org.appjam.smashing.domain.outbox.dto.GameUpdatedPayload
-import org.appjam.smashing.domain.outbox.dto.ReviewReceivedNotificationCreatedPayload
 import org.appjam.smashing.domain.outbox.enums.SseEventType
-import org.appjam.smashing.domain.review.repository.GameReviewRepository
 import org.appjam.smashing.domain.review.service.GameReviewService
 import org.appjam.smashing.domain.tier.entity.Tier
-import org.appjam.smashing.domain.tier.enums.TierCode
 import org.appjam.smashing.domain.tier.repository.TierRepository
-import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.appjam.smashing.domain.user.repository.UserRepository
 import org.appjam.smashing.domain.user.repository.UserSportProfileRepository
@@ -54,7 +46,6 @@ class GameService(
     private val notificationService: NotificationService,
     private val outboxEventPublisher: OutboxEventPublisher,
     private val gameReviewService: GameReviewService,
-    private val gameReviewRepository: GameReviewRepository,
     private val userSportProfileRepository: UserSportProfileRepository,
     private val lpHistoryRepository: LpHistoryRepository,
     private val tierRepository: TierRepository,
@@ -66,116 +57,258 @@ class GameService(
         gameId: String,
         command: GameResultSubmitCommand,
     ): GameResultSubmitResponse {
-        // 게임 조회(잠금)
         val game = gameRepository.findByIdFetchAllForUpdate(gameId)
             ?: throw CustomException(ErrorCode.GAME_NOT_FOUND)
 
-        // 게임 상태 검증
-        if (game.resultStatus != GameResultStatus.PENDING_RESULT && game.resultStatus != GameResultStatus.RESULT_REJECTED) {
-            throw CustomException(ErrorCode.GAME_RESULT_ALREADY_SUBMITTED)
+        val requesterProfile = game.matching.requesterProfile
+        val receiverProfile = game.matching.receiverProfile
+
+        // Host는 매칭을 수락한 사람(receiverProfile)
+        if (receiverProfile.user.id != submitterUserId) {
+            throw CustomException(ErrorCode.GAME_RESULT_SUBMIT_ALLOW_ONLY_HOST)
         }
 
-        // 제출자/상대 결정
-        val requester = game.matching.requesterProfile.user
-        val receiver = game.matching.receiverProfile.user
-        val (submitter, confirmer) = determineSubmitterAndConfirmer(submitterUserId, requester, receiver)
+        val now = LocalDateTime.now(TimeUtils.DEFAULT_ZONE_ID)
+        val startOfDay = now.toLocalDate().atStartOfDay()
 
-        val submitterProfile = userSportProfileRepository.findByUserIdAndSportIdFetch(
-            userId = submitter.id!!,
-            sportId = game.sport.id!!,
-        ) ?: throw CustomException(ErrorCode.MATCHING_REQUESTER_NOT_FOUND)
-
-        val confirmerProfile = userSportProfileRepository.findByUserIdAndSportIdFetch(
-            userId = confirmer.id!!,
-            sportId = game.sport.id!!,
-        ) ?: throw CustomException(ErrorCode.MATCHING_RECEIVER_PROFILE_NOT_FOUND)
-
-        // 게임 결과 제출 시간 제약
-        // TODO: 앱잼 기간 내 결과 제출 제약 삭제
-        // validateSubmitWindow(game)
-
+        // 이번 제출이 몇 번째 제출인지 계산
         val totalSubmissionCount = submissionRepository.countByGame_Id(gameId)
-        val submitterSubmissionCount = submissionRepository.countByGame_IdAndSubmitter_Id(gameId, submitterUserId)
+        val attemptNo = (totalSubmissionCount + 1).toInt()
 
-        // 재제출 제약 (이전 제출자만 가능)
-        if (totalSubmissionCount >= 1L && submitterSubmissionCount == 0L) {
-            throw CustomException(ErrorCode.GAME_RESULT_RESUBMIT_ONLY_PREVIOUS_SUBMITTER)
-        }
-
-        // 유저당 제출 2회 제한
-        if (submitterSubmissionCount >= 2L) {
+        // 결과 제출은 최대 2회까지만 허용 (최초 제출 1회 + 재제출 1회)
+        if (attemptNo > 2) {
             throw CustomException(ErrorCode.GAME_RESULT_SUBMISSION_LIMIT_EXCEEDED)
         }
 
-        // attemptNo 계산
-        val attemptNo = (totalSubmissionCount + 1).toInt()
+        // 최초 제출 / 재제출 분기 검증
+        when (attemptNo) {
+            1 -> {
+                // 최초 제출은 PENDING_RESULT 상태에서만 가능
+                if (game.resultStatus != GameStatus.PENDING_RESULT) {
+                    throw CustomException(ErrorCode.GAME_RESULT_ALREADY_SUBMITTED)
+                }
 
-        // 리뷰 검증 (첫 제출 시 필수, 재제출 시 불가)
-        validateReviewRule(attemptNo, command.review)
+                val todayConfirmedCount = gameRepository.countTodayConfirmedGamesBetweenProfiles(
+                    startAt = startOfDay,
+                    profileA = requesterProfile.id!!,
+                    profileB = receiverProfile.id!!,
+                )
 
-        // score 검증, winner/loser 검증
-        validateWinnerLoserAndScores(
-            winnerUserId = command.winnerUserId,
-            loserUserId = command.loserUserId,
-            scoreWinner = command.scoreWinner,
-            scoreLoser = command.scoreLoser,
-            requesterUserId = requester.id!!,
-            receiverUserId = receiver.id!!,
-        )
+                // 오늘 첫 경기면 생성 후 1시간 동안 결과 제출 불가
+                if (todayConfirmedCount == 0L && ChronoUnit.MINUTES.between(game.createdAt, now) < 60) {
+                    throw CustomException(ErrorCode.GAME_RESULT_SUBMIT_BLOCKED_1H)
+                }
 
-        // winner/loser 엔티티 매핑
-        val (winner, loser) = determineWinnerAndLoser(game, command.winnerUserId, command.loserUserId)
+                // 오늘 2~3번째 경기면 10분 제한
+                if (todayConfirmedCount in 1L..2L) {
+                    val prevConfirmedAt = gameRepository.findTodayLatestConfirmedAtBetweenProfiles(
+                        startAt = startOfDay,
+                        profileA = requesterProfile.id!!,
+                        profileB = receiverProfile.id!!,
+                    )
+
+                    if (prevConfirmedAt != null && ChronoUnit.MINUTES.between(prevConfirmedAt, now) <= 30 && ChronoUnit.MINUTES.between(game.createdAt, now) < 10) {
+                        throw CustomException(ErrorCode.GAME_RESULT_SUBMIT_BLOCKED_10M)
+                    }
+                }
+
+                // 최초 제출에서는 review 필수
+                if (command.review == null) {
+                    throw CustomException(ErrorCode.GAME_REVIEW_REQUIRED_ON_FIRST_SUBMISSION)
+                }
+            }
+
+            2 -> {
+                // 재제출은 경기가 RESULT_REJECTED 상태에서만 가능
+                if (game.resultStatus != GameStatus.RESULT_REJECTED) {
+                    throw CustomException(ErrorCode.GAME_RESULT_RESUBMIT_NOT_ALLOWED)
+                }
+
+                // 가장 최근 제출안 조회
+                val latestSubmission = submissionRepository.findTopByGame_IdOrderByAttemptNoDesc(gameId)
+                    ?: throw CustomException(ErrorCode.GAME_SUBMISSION_NOT_FOUND)
+
+                // 재제출은 가장 최근 제출안이 REJECTED 상태일 때만 가능
+                if (latestSubmission.status != GameSubmissionStatus.REJECTED) {
+                    throw CustomException(ErrorCode.GAME_RESULT_RESUBMIT_NOT_ALLOWED)
+                }
+
+                // 재제출에서는 review 받지 않음
+                if (command.review != null) {
+                    throw CustomException(ErrorCode.GAME_REVIEW_ONLY_FIRST_SUBMISSION_ALLOWED)
+                }
+            }
+        }
+
+        // 승자/패자 프로필 검증
+        val winnerProfile = when (command.winnerProfileId) {
+            requesterProfile.id -> requesterProfile
+            receiverProfile.id -> receiverProfile
+            else -> throw CustomException(ErrorCode.GAME_RESULT_INVALID_PLAYERS)
+        }
+
+        val loserProfile = when (command.loserProfileId) {
+            requesterProfile.id -> requesterProfile
+            receiverProfile.id -> receiverProfile
+            else -> throw CustomException(ErrorCode.GAME_RESULT_INVALID_PLAYERS)
+        }
+
+        if (winnerProfile.id == loserProfile.id) {
+            throw CustomException(ErrorCode.GAME_RESULT_SAME_PLAYER)
+        }
 
         // 게임 상태 변경
         game.markWaitingConfirmation()
 
-        // 경기 결과 제출안 저장
+        // 제출안 저장
         val submission = submissionRepository.save(
             GameResultSubmission.create(
                 game = game,
-                submitter = submitter,
-                confirmer = confirmer,
-                winner = winner,
-                loser = loser,
+                submitterProfile = receiverProfile,
+                confirmerProfile = requesterProfile,
+                winnerProfile = winnerProfile,
+                loserProfile = loserProfile,
                 attemptNo = attemptNo,
-                scoreSubmitter = if (submitter.id == command.winnerUserId) command.scoreWinner else command.scoreLoser,
-                scoreConfirmer = if (confirmer.id == command.winnerUserId) command.scoreWinner else command.scoreLoser,
             )
         )
 
-        // 게임 상태 변경 SSE 발행
-        publishGameUpdated(
-            receiverUserId = confirmer.id!!,
-            gameId = gameId,
-            submissionId = submission.id!!,
-            submissionAttemptNo = submission.attemptNo,
-            resultStatus = game.resultStatus
-        )
-
-        // 결과 제출 알림 + SSE 발행
-        notifyGameResultSubmitted(
-            receiver = confirmer,
-            receiverProfile = confirmerProfile,
-            game = game,
-            submission = submission,
-            submitter = submitter,
-            submitterTierCode = submitterProfile.tier.code,
-        )
-
-        // 후기 저장
-        val savedReviewId = if (attemptNo == 1) {
-            val savedReview = gameReviewService.createReview(
-                gameId = game.id!!,
-                reviewer = submitter,
-                reviewee = confirmer,
+        // 최초 제출일 때만 리뷰 저장
+        if (attemptNo == 1) {
+            gameReviewService.createReview(
+                game = game,
+                reviewerProfile = receiverProfile,
+                revieweeProfile = requesterProfile,
                 rating = command.review!!.rating,
                 content = command.review.content,
                 tags = command.review.tags,
             )
-            savedReview.id!!
-        } else null
+        }
 
-        return GameResultSubmitResponse.from(savedReviewId)
+        // 상대방(requester) 알림 저장
+        notificationService.createGameResultSubmitted(
+            receiver = requesterProfile.user,
+            receiverProfile = requesterProfile,
+            submitterProfile = receiverProfile,
+            game = game,
+            submission = submission,
+        )
+
+        // 상대방(requester)에게 game.updated SSE 발행
+        outboxEventPublisher.publish(
+            userId = requesterProfile.user.id!!,
+            eventType = SseEventType.GAME_UPDATED,
+            payload = GameUpdatedPayload(
+                gameId = game.id!!,
+                submissionId = submission.id!!,
+                submissionAttemptNo = submission.attemptNo,
+                resultStatus = game.resultStatus,
+            )
+        )
+
+        return GameResultSubmitResponse.from(submission.id!!)
+    }
+
+    @Transactional
+    fun rejectResult(
+        confirmerUserId: String,
+        gameId: String,
+        submissionId: String,
+        command: GameResultRejectCommand,
+    ) {
+        val now = LocalDateTime.now(TimeUtils.DEFAULT_ZONE_ID)
+
+        val game = gameRepository.findByIdForUpdate(gameId)
+            ?: throw CustomException(ErrorCode.GAME_NOT_FOUND)
+
+        // 현재 결과 확인 대기 상태인 경기만 반려 가능
+        if (game.resultStatus != GameStatus.WAITING_CONFIRMATION) {
+            throw CustomException(ErrorCode.GAME_RESULT_NOT_WAITING_CONFIRMATION)
+        }
+
+        val submission = submissionRepository.findByIdAndGameIdForUpdate(submissionId, gameId)
+            ?: throw CustomException(ErrorCode.GAME_SUBMISSION_NOT_FOUND)
+
+        // 아직 처리되지 않은 제출안만 반려 가능
+        if (submission.status != GameSubmissionStatus.SUBMITTED) {
+            throw CustomException(ErrorCode.GAME_SUBMISSION_NOT_SUBMITTED)
+        }
+
+        // 제출안의 confirmer(결과 확인자)만 반려 가능
+        if (submission.confirmerProfile.user.id != confirmerUserId) {
+            throw CustomException(ErrorCode.GAME_SUBMISSION_CONFIRMER_MISMATCH)
+        }
+
+        // 경기의 가장 최근 제출안일 경우에만 반려 가능
+        val latestSubmission = submissionRepository.findTopByGame_IdOrderByAttemptNoDesc(gameId)
+            ?: throw CustomException(ErrorCode.GAME_SUBMISSION_NOT_FOUND)
+
+        if (latestSubmission.id != submission.id) {
+            throw CustomException(ErrorCode.GAME_SUBMISSION_NOT_LATEST)
+        }
+
+        // 제출안 제출 회차에 따라 분기
+        when (submission.attemptNo) {
+            1 -> {
+                // 1차 반려는 사유 필수
+                val reason = command.reason
+                    ?: throw CustomException(ErrorCode.GAME_RESULT_REJECT_REASON_REQUIRED)
+
+                // 제출안 반려 처리
+                submission.rejectWithReason(
+                    reason = reason,
+                    actedAt = now,
+                )
+
+                // game은 재제출 가능 상태로 변경
+                game.markRejected()
+
+                // Host에게 반려 알림 저장
+                notificationService.createGameResultRejected(
+                    receiver = submission.submitterProfile.user,
+                    receiverProfile = submission.submitterProfile,
+                    rejectorProfile = submission.confirmerProfile,
+                    reason = reason,
+                )
+
+                // SSE - Host 화면 상태 실시간 반영
+                outboxEventPublisher.publish(
+                    userId = submission.submitterProfile.user.id!!,
+                    eventType = SseEventType.GAME_UPDATED,
+                    payload = GameUpdatedPayload(
+                        gameId = game.id!!,
+                        submissionId = submission.id!!,
+                        submissionAttemptNo = submission.attemptNo,
+                        resultStatus = game.resultStatus,
+                    )
+                )
+            }
+
+            2 -> {
+                // 제출안 반려 처리
+                submission.reject(
+                    actedAt = now,
+                )
+
+                // game은 기록되지 않음 처리(취소)
+                game.cancel()
+
+                // SSE - Host 화면 상태 실시간 반영 (게임 취소)
+                outboxEventPublisher.publish(
+                    userId = submission.submitterProfile.user.id!!,
+                    eventType = SseEventType.GAME_UPDATED,
+                    payload = GameUpdatedPayload(
+                        gameId = game.id!!,
+                        submissionId = submission.id!!,
+                        submissionAttemptNo = submission.attemptNo,
+                        resultStatus = GameStatus.CANCELED,
+                    )
+                )
+            }
+
+            else -> {
+                throw CustomException(ErrorCode.GAME_RESULT_REJECT_NOT_ALLOWED)
+            }
+        }
     }
 
     @Transactional
@@ -185,97 +318,100 @@ class GameService(
         submissionId: String,
         command: GameResultConfirmCommand,
     ): GameResultConfirmResponse {
-        val now = LocalDateTime.now(DEFAULT_ZONE_ID)
+        val now = LocalDateTime.now(TimeUtils.DEFAULT_ZONE_ID)
 
-        // 게임 조회(잠금)
         val game = gameRepository.findByIdFetchAllForUpdate(gameId)
             ?: throw CustomException(ErrorCode.GAME_NOT_FOUND)
 
-        // 상태 검증
-        if (game.resultStatus != GameResultStatus.WAITING_CONFIRMATION) {
+        // 1차 제출 승인 / 2차 재제출 승인 모두 WAITING_CONFIRMATION 상태에서만 가능
+        if (game.resultStatus != GameStatus.WAITING_CONFIRMATION) {
             throw CustomException(ErrorCode.GAME_RESULT_NOT_WAITING_CONFIRMATION)
         }
 
-        // 제출안 조회(잠금)
         val submission = submissionRepository.findByIdAndGameIdForUpdate(submissionId, gameId)
             ?: throw CustomException(ErrorCode.GAME_SUBMISSION_NOT_FOUND)
 
-        // 제출안 상태 검증
-        if (submission.status != SubmissionStatus.SUBMITTED) {
+        // 아직 처리되지 않은 제출안만 승인 가능
+        if (submission.status != GameSubmissionStatus.SUBMITTED) {
             throw CustomException(ErrorCode.GAME_SUBMISSION_NOT_SUBMITTED)
         }
 
-        // confirmer 검증
-        if (submission.confirmer.id != confirmerUserId) {
+        // 결과 확인자(confirmer) 검증
+        if (submission.confirmerProfile.user.id != confirmerUserId) {
             throw CustomException(ErrorCode.GAME_SUBMISSION_CONFIRMER_MISMATCH)
         }
 
-        // 확정 점수 매핑
-        val scoreWinner = if (submission.winner.id == submission.submitter.id) submission.scoreSubmitter else submission.scoreConfirmer
-        val scoreLoser = if (submission.loser.id == submission.submitter.id) submission.scoreSubmitter else submission.scoreConfirmer
+        // 가장 최근 제출안만 승인 가능
+        val latestSubmission = submissionRepository.findTopByGame_IdOrderByAttemptNoDesc(gameId)
+            ?: throw CustomException(ErrorCode.GAME_SUBMISSION_NOT_FOUND)
 
-        // game 확정 + submission 수락
-        game.confirmResult(
-            submissionId = submission.id!!,
-            winner = submission.winner,
-            loser = submission.loser,
-            scoreWinner = scoreWinner,
-            scoreLoser = scoreLoser,
-            confirmedAt = now,
-        )
+        if (latestSubmission.id != submission.id) {
+            throw CustomException(ErrorCode.GAME_SUBMISSION_NOT_LATEST)
+        }
+
+        // 제출안 승인 처리
         submission.accept(now)
 
-        // 승자/패자 프로필 조회(잠금)
-        val sportId = game.sport.id!!
-        val submitterProfile = userSportProfileRepository.findByUserIdAndSportIdForUpdate(submission.submitter.id!!, sportId)
-            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
-
-        val confirmerProfile = userSportProfileRepository
-            .findByUserIdAndSportIdForUpdate(submission.confirmer.id!!, sportId)
-            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
-
-        val opponentReviewId = gameReviewRepository.findIdByGameAndReviewerAndReviewee(
-            gameId = gameId,
-            reviewerId = submission.submitter.id!!,
-            revieweeId = submission.confirmer.id!!,
-        ) ?: throw CustomException(ErrorCode.REVIEW_NOT_FOUND)
-
-        // 승자/패자 프로필 업데이트 (승리/패배 수 + LP + 티어 + LP history)
-        val winnerProfile = if (submission.winner.id == submission.submitter.id) submitterProfile else confirmerProfile
-        val loserProfile = if (submission.loser.id == submission.submitter.id) submitterProfile else confirmerProfile
-
-        applyLpAndTierUpdate(winnerProfile, loserProfile, sportId, game)
-
-        // 게임 상태 변경 SSE 발행
-        publishGameUpdated(
-            receiverUserId = submission.submitter.id!!,
-            gameId = game.id!!,
+        // 게임 최종 확정
+        game.confirmResult(
             submissionId = submission.id!!,
-            submissionAttemptNo = submission.attemptNo,
-            resultStatus = game.resultStatus,
+            winnerProfile = submission.winnerProfile,
+            loserProfile = submission.loserProfile,
+            confirmedAt = now,
         )
 
-        // 확정자 리뷰 저장 + 이전 제출자에게 알림/SSE
-        notifyReviewReceivedOnConfirm(
+        // 승/패 프로필을 락으로 다시 조회
+        val sportId = game.sport.id!!
+
+        val winnerProfile = userSportProfileRepository.findByUserIdAndSportIdForUpdate(
+            submission.winnerProfile.user.id!!,
+            sportId,
+        ) ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+
+        val loserProfile = userSportProfileRepository.findByUserIdAndSportIdForUpdate(
+            submission.loserProfile.user.id!!,
+            sportId,
+        ) ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+
+        // 고정 LP 정책 반영: 승자 +30 / 패자 -20(최소 0)
+        applyLpAndTierUpdate(
+            winnerProfile = winnerProfile,
+            loserProfile = loserProfile,
+            sportId = sportId,
             game = game,
-            reviewer = submission.confirmer,
-            reviewee = submission.submitter,
-            receiverProfile = submitterProfile,
-            review = command.review,
-            reviewerTierCode = confirmerProfile.tier.code,
         )
 
-        // 이전 제출자가 예전에 쓴 리뷰를 확정자에게 알림/SSE
-        notifyOpponentReviewToConfirmer(
+        // confirmer -> host 리뷰 저장
+        val savedReview = gameReviewService.createReview(
             game = game,
-            receiver = submission.confirmer,
-            receiverProfile = confirmerProfile,
-            reviewId = opponentReviewId,
-            reviewer = submission.submitter,
-            reviewerTierCode = submitterProfile.tier.code,
+            reviewerProfile = submission.confirmerProfile,
+            revieweeProfile = submission.submitterProfile,
+            rating = command.review.rating,
+            content = command.review.content,
+            tags = command.review.tags,
         )
 
-        return GameResultConfirmResponse.from(opponentReviewId)
+        // Host에게 후기 도착 알림 저장
+        notificationService.createReviewReceived(
+            receiver = submission.submitterProfile.user,
+            receiverProfile = submission.submitterProfile,
+            reviewId = savedReview.id!!,
+            reviewerProfile = submission.confirmerProfile,
+        )
+
+        // Host 화면에서 카드 제거되도록 game.updated SSE 발행
+        outboxEventPublisher.publish(
+            userId = submission.submitterProfile.user.id!!,
+            eventType = SseEventType.GAME_UPDATED,
+            payload = GameUpdatedPayload(
+                gameId = game.id!!,
+                submissionId = submission.id!!,
+                submissionAttemptNo = submission.attemptNo,
+                resultStatus = game.resultStatus,
+            )
+        )
+
+        return GameResultConfirmResponse.from(savedReview.id!!)
     }
 
     @Transactional(readOnly = true)
@@ -288,203 +424,67 @@ class GameService(
             gameId = gameId,
         ) ?: throw CustomException(ErrorCode.GAME_SUBMISSION_NOT_FOUND)
 
-        // 점수 매핑
-        val winnerScore = scoreOf(submission, submission.winner.id!!)
-        val loserScore = scoreOf(submission, submission.loser.id!!)
-
-        return GameResultSubmissionDetailResponse.from(
-            submission = submission,
-            winnerScore = winnerScore,
-            loserScore = loserScore,
-        )
+        return GameResultSubmissionDetailResponse.from(submission)
     }
 
-    @Transactional
-    fun rejectResult(
-        confirmerUserId: String,
-        gameId: String,
-        submissionId: String,
-        command: GameResultRejectCommand,
-    ) {
-        val now = LocalDateTime.now(DEFAULT_ZONE_ID)// TODO: 인증인가 회복시 변경
-
-        // 게임 조회(잠금)
-        val game = gameRepository.findByIdForUpdate(gameId)
-            ?: throw CustomException(ErrorCode.GAME_NOT_FOUND)
-
-        // 경기 상태 검증
-        if (game.resultStatus != GameResultStatus.WAITING_CONFIRMATION) {
-            throw CustomException(ErrorCode.GAME_RESULT_NOT_WAITING_CONFIRMATION)
-        }
-
-        // 제출안 조회(잠금)
-        val submission = submissionRepository.findByIdAndGameIdForUpdate(submissionId, gameId)
-            ?: throw CustomException(ErrorCode.GAME_SUBMISSION_NOT_FOUND)
-
-        // 제출안 상태 검증
-        if (submission.status != SubmissionStatus.SUBMITTED) {
-            throw CustomException(ErrorCode.GAME_SUBMISSION_NOT_SUBMITTED)
-        }
-
-        // confirmer 검증
-        if (submission.confirmer.id != confirmerUserId) {
-            throw CustomException(ErrorCode.GAME_SUBMISSION_CONFIRMER_MISMATCH)
-        }
-
-        // 재제출 가능하도록 게임 상태를 REJECTED로
-        game.markRejected()
-
-        // 상태 변경 SSE는 항상 보내도록
-        publishGameUpdated(
-            receiverUserId = submission.submitter.id!!,
-            gameId = game.id!!,
-            submissionId = submission.id!!,
-            submissionAttemptNo = submission.attemptNo,
-            resultStatus = game.resultStatus,
-        )
-
-        if (submission.attemptNo == 1) {
-            // 1회차 반려: 사유 필수 + 알림/SSE 발행
-            val reason = command.reason ?: throw CustomException(ErrorCode.GAME_RESULT_REJECT_REASON_REQUIRED_ON_FIRST_REJECT)
-
-            submission.rejectWithReason(
-                reason = reason,
-                actedAt = now,
-            )
-
-            val receiverProfile = userSportProfileRepository.findByUserIdAndSportIdFetch(
-                userId = submission.submitter.id!!,
-                sportId = game.sport.id!!,
-            ) ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
-
-            val rejectorProfile = userSportProfileRepository.findByUserIdAndSportIdFetch(
-                userId = submission.confirmer.id!!,
-                sportId = game.sport.id!!,
-            ) ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
-
-            notifyGameResultRejected(
-                receiver = submission.submitter,
-                receiverProfile = receiverProfile,
-                rejector = submission.confirmer,
-                rejectorTierCode = rejectorProfile.tier.code,
-                gameId = game.id!!,
-                submissionId = submission.id!!,
-                reason = reason,
-            )
-            return
-        }
-
-        // 2회차 이상 반려: 게임 + 제출안 삭제 + 알림/SSE 없음
-        submissionRepository.delete(submission)
-        gameRepository.delete(game)
-    }
-
-    @Transactional
-    fun deleteGame(
-        userId: String,
-        gameId: String,
-    ) {
-        // 게임 조회(잠금)
-        val game = gameRepository.findByIdFetchUsersForUpdate(gameId)
-            ?: throw CustomException(ErrorCode.GAME_NOT_FOUND)
-
-        // 삭제 가능 상태 검증
-        validateDeletable(game.resultStatus)
-
-        // 상대방 userId 조회
-        val opponentUserId = resolveOpponentUserId(
-            requesterId = game.matching.requesterProfile.user.id!!,
-            receiverId = game.matching.receiverProfile.user.id!!,
-            userId = userId,
-        )
-
-        // 게임 취소 처리
-        game.cancel()
-
-        publishGameUpdated(
-            receiverUserId = opponentUserId,
-            gameId = game.id!!,
-            submissionId = "no-submission-id", // TODO: 앱잼 기간 내 빠르게 canceled sse 발행 추가.
-            submissionAttemptNo = 123,
-            resultStatus = game.resultStatus,
-        )
-
-        /* 앱잼 기간 내 삭제 기능 제외
-        gameRepository.flush()
-
-        // submissions soft delete
-        submissionRepository.softDeleteAllByGameId(gameId)
-
-        // game soft delete
-        gameRepository.delete(game)
-
-        // 게임 상태 변경 SSE 발행
-        publishGameUpdated(
-            receiverUserId = opponentUserId,
-            gameId = game.id!!,
-            resultStatus = game.resultStatus,
-        )
-        */
-    }
-
-    @Transactional(readOnly = true)
-    fun getPendingResultAcceptedGames(
-        userId: String,
-        request: CommonCursorRequest,
-    ): CursorResponse<PendingResultAcceptedGameSummaryResponse> {
-        val user = userRepository.findByIdOrNull(userId)
-            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
-
-        val activeProfileId = user.activeUserSportProfileId
-            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
-
-        val activeProfile = userSportProfileRepository.findByIdOrNull(activeProfileId)
-            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
-
-        val sportId = activeProfile.sport.id
-            ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
-
-        val snapshotAt = request.snapshotAt ?: TimeUtils.nowOffsetDateTime()
-
-        val response = gameRepository.fetchPendingResultAcceptedGamesPage(
-            userId = userId,
-            sportId = sportId,
-            request = request,
-            snapshotAt = snapshotAt,
-        )
-
-        val now = LocalDateTime.now(TimeUtils.DEFAULT_ZONE_ID)
-        val startOfDay = now.toLocalDate().atStartOfDay()
-
-        val results = response.results.map { projection ->
-            val availableAt = calcSubmitAvailableAt(
-                now = now,
-                startOfDay = startOfDay,
-                gameCreatedAt = projection.createdAtLdt,
-                requesterId = projection.requesterUserId,
-                receiverId = projection.receiverUserId,
-            )
-
-            val lockResponse = GameResultSubmitLockResponse.from(
-                now = now,
-                availableAt = now, //availableAt, // TODO: 앱잼 기간 내 잠금 정책 제외
-            )
-
-            PendingResultAcceptedGameSummaryResponse.from(
-                projection = projection,
-                submitAvailableAt = lockResponse.submitAvailableAt,
-                remainingSeconds = lockResponse.remainingSeconds,
-                isSubmitLocked = lockResponse.isLocked,
-            )
-        }
-
-        return CursorResponse(
-            snapshotAt = response.snapshotAt,
-            results = results,
-            nextCursor = response.nextCursor,
-            hasNext = response.hasNext,
-        )
-    }
+//    @Transactional(readOnly = true)
+//    fun getPendingResultAcceptedGames(
+//        userId: String,
+//        request: CommonCursorRequest,
+//    ): CursorResponse<PendingResultAcceptedGameSummaryResponse> {
+//        val user = userRepository.findByIdOrNull(userId)
+//            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+//
+//        val activeProfileId = user.activeUserSportProfileId
+//            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+//
+//        val activeProfile = userSportProfileRepository.findByIdOrNull(activeProfileId)
+//            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+//
+//        val sportId = activeProfile.sport.id
+//            ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
+//
+//        val snapshotAt = request.snapshotAt ?: TimeUtils.nowOffsetDateTime()
+//
+//        val response = gameRepository.fetchPendingResultAcceptedGamesPage(
+//            userId = userId,
+//            sportId = sportId,
+//            request = request,
+//            snapshotAt = snapshotAt,
+//        )
+//
+//        val now = LocalDateTime.now(TimeUtils.DEFAULT_ZONE_ID)
+//        val startOfDay = now.toLocalDate().atStartOfDay()
+//
+//        val results = response.results.map { projection ->
+//            val availableAt = calcSubmitAvailableAt(
+//                now = now,
+//                startOfDay = startOfDay,
+//                gameCreatedAt = projection.createdAtLdt,
+//                requesterId = projection.requesterUserId,
+//                receiverId = projection.receiverUserId,
+//            )
+//
+//            val lockResponse = GameResultSubmitLockResponse.from(
+//                now = now,
+//                availableAt = now, //availableAt, // TODO: 앱잼 기간 내 잠금 정책 제외
+//            )
+//
+//            PendingResultAcceptedGameSummaryResponse.from(
+//                projection = projection,
+//                submitAvailableAt = lockResponse.submitAvailableAt,
+//                remainingSeconds = lockResponse.remainingSeconds,
+//                isSubmitLocked = lockResponse.isLocked,
+//            )
+//        }
+//
+//        return CursorResponse(
+//            snapshotAt = response.snapshotAt,
+//            results = results,
+//            nextCursor = response.nextCursor,
+//            hasNext = response.hasNext,
+//        )
+//    }
 
     /**
      * 오늘 기준(00:00~)
@@ -527,418 +527,39 @@ class GameService(
         return gameCreatedAt
     }
 
-    private fun validateDeletable(
-        resultStatus: GameResultStatus
-    ) {
-        if (resultStatus == GameResultStatus.RESULT_CONFIRMED) {
-            throw CustomException(ErrorCode.GAME_RESULT_ALREADY_CONFIRMED)
-        }
-    }
-
-    private fun resolveOpponentUserId(
-        requesterId: String,
-        receiverId: String,
-        userId: String,
-    ): String {
-        return when (userId) {
-            requesterId -> receiverId
-            receiverId -> requesterId
-            else -> throw CustomException(ErrorCode.GAME_FORBIDDEN)
-        }
-    }
-
-    private fun scoreOf(
-        submission: GameResultSubmission,
-        userId: String,
-    ): Int {
-        return when (userId) {
-            submission.submitter.id!! -> submission.scoreSubmitter
-            submission.confirmer.id!! -> submission.scoreConfirmer
-            else -> throw CustomException(ErrorCode.GAME_RESULT_INVALID_PLAYERS)
-        }
-    }
-
-    private fun determineSubmitterAndConfirmer(
-        submitterUserId: String,
-        requester: User,
-        receiver: User,
-    ): Pair<User, User> {
-        if (submitterUserId != requester.id!! && submitterUserId != receiver.id!!) {
-            throw CustomException(ErrorCode.GAME_FORBIDDEN)
-        }
-        return if (submitterUserId == requester.id!!) requester to receiver else receiver to requester
-    }
-
-    private fun determineWinnerAndLoser(
-        game: Game,
-        winnerUserId: String,
-        loserUserId: String,
-    ): Pair<User, User> {
-        val requester = game.matching.requesterProfile.user
-        val receiver = game.matching.receiverProfile.user
-
-        val winner = if (winnerUserId == requester.id!!) requester else receiver
-        val loser = if (loserUserId == requester.id!!) requester else receiver
-
-        return winner to loser
-    }
-
-    private fun validateReviewRule(
-        attemptNo: Int,
-        review: GameResultSubmitCommand.ReviewCommand?,
-    ) {
-        if (attemptNo == 1 && review == null) {
-            throw CustomException(ErrorCode.GAME_REVIEW_REQUIRED_ON_FIRST_SUBMISSION)
-        }
-        if (attemptNo != 1 && review != null) {
-            throw CustomException(ErrorCode.GAME_REVIEW_ONLY_FIRST_SUBMISSION_ALLOWED)
-        }
-    }
-
-    private fun validateWinnerLoserAndScores(
-        winnerUserId: String,
-        loserUserId: String,
-        scoreWinner: Int,
-        scoreLoser: Int,
-        requesterUserId: String,
-        receiverUserId: String,
-    ) {
-        if (winnerUserId == loserUserId) throw CustomException(ErrorCode.GAME_RESULT_SAME_PLAYER)
-        if (scoreWinner <= scoreLoser) throw CustomException(ErrorCode.GAME_RESULT_INVALID_SCORE)
-
-        if ((winnerUserId != requesterUserId && winnerUserId != receiverUserId) || (loserUserId != requesterUserId && loserUserId != receiverUserId)) {
-            throw CustomException(ErrorCode.GAME_RESULT_INVALID_PLAYERS)
-        }
-    }
-
     /**
-     * 오늘 기준(00:00~)
-     * - 오늘 확정 0건이면(= 오늘 첫 확정 후보): 생성 후 1시간 제출 불가
-     * - 오늘 확정 1~2건이면(= 오늘 2~3번째 확정 후보):
-     *   직전 확정이 30분 이내에 있었던 연속 확정 상황일 때만
-     *   생성 후 10분 제출 불가
+     * LP 업데이트 후 티어 재산정 및 LP 변동 내역 저장
+      - 승자: +30 LP / 패자: -20 LP(최소 0)
+      - 티어는 LP 기준으로 resolveTierOrThrow() 통해 재산정
      */
-    private fun validateSubmitWindow(game: Game) {
-        val now = LocalDateTime.now(DEFAULT_ZONE_ID)
-        val startOfDay = now.toLocalDate().atStartOfDay()
-
-        val requesterId = game.matching.requesterProfile.user.id!!
-        val receiverId = game.matching.receiverProfile.user.id!!
-
-        val todayConfirmedCount = gameRepository.countTodayConfirmedGamesBetweenUsers(
-            startAt = startOfDay,
-            userA = requesterId,
-            userB = receiverId,
-        )
-
-        // 오늘 첫 확정 후보 → 1시간 결과 제출 제한
-        if (todayConfirmedCount == 0L) {
-            if (ChronoUnit.MINUTES.between(game.createdAt, now) < 60) {
-                throw CustomException(ErrorCode.GAME_RESULT_SUBMIT_BLOCKED_1H)
-            }
-            return
-        }
-
-        // 오늘 2~3번째 확정 후보 → 연속 확정일 때만 10분 룰
-        if (todayConfirmedCount in 1L..2L) {
-            val prevConfirmedAt = gameRepository.findTodayLatestConfirmedAtBetweenUsers(
-                startAt = startOfDay,
-                userA = requesterId,
-                userB = receiverId,
-            ) ?: return
-
-            // 직전 확정 이후 30분 이내에 게임 → 현재 게임은 생성 후 10분 결과 제출 제한
-            if (ChronoUnit.MINUTES.between(prevConfirmedAt, now) <= 30) {
-                if (ChronoUnit.MINUTES.between(game.createdAt, now) < 10) {
-                    throw CustomException(ErrorCode.GAME_RESULT_SUBMIT_BLOCKED_10M)
-                }
-            }
-        }
-    }
-
-    private fun notifyGameResultSubmitted(
-        receiver: User,
-        receiverProfile: UserSportProfile,
-        game: Game,
-        submission: GameResultSubmission,
-        submitter: User,
-        submitterTierCode: TierCode,
-    ) {
-        val notification = notificationService.createMatchingResultSubmitted(
-            receiver = receiver,
-            receiverProfile = receiverProfile,
-            submitterNickname = submitter.nickname,
-            game = game,
-            submission = submission,
-        )
-
-        val notificationCreatedAt = notification.createdAt
-            .atZone(DEFAULT_ZONE_ID)
-            .toOffsetDateTime()
-            .toString()
-
-        outboxEventPublisher.publish(
-            userId = receiver.id!!,
-            eventType = SseEventType.GAME_RESULT_SUBMITTED_NOTIFICATION_CREATED,
-            payload = GameResultSubmittedNotificationCreatedPayload(
-                notificationId = notification.id!!,
-                notificationType = NotificationType.MATCHING_RESULT_SUBMITTED,
-                notificationCreatedAt = notificationCreatedAt,
-                sportId = game.sport.id!!,
-                receiverProfileId = receiverProfile.id!!,
-                gameId = game.id!!,
-                submissionId = submission.id!!,
-                submitter = GameResultSubmittedNotificationCreatedPayload.SubmitterSummary(
-                    userId = submitter.id!!,
-                    nickname = submitter.nickname,
-                    tierCode = submitterTierCode,
-                )
-            )
-        )
-    }
-
-    private fun notifyReviewReceived(
-        game: Game,
-        reviewer: User,
-        reviewee: User,
-        receiverProfile: UserSportProfile,
-        review: GameResultSubmitCommand.ReviewCommand,
-        reviewerTierCode: TierCode,
-    ): String {
-        val savedReview = gameReviewService.createReview(
-            gameId = game.id!!,
-            reviewer = reviewer,
-            reviewee = reviewee,
-            rating = review.rating,
-            content = review.content,
-            tags = review.tags,
-        )
-
-        val notification = notificationService.createReviewReceived(
-            receiver = reviewee,
-            receiverProfile = receiverProfile,
-            reviewId = savedReview.id!!,
-            reviewerNickname = reviewer.nickname,
-        )
-
-        val notificationCreatedAt = notification.createdAt
-            .atZone(DEFAULT_ZONE_ID)
-            .toOffsetDateTime()
-            .toString()
-
-        outboxEventPublisher.publish(
-            userId = reviewee.id!!,
-            eventType = SseEventType.REVIEW_RECEIVED_NOTIFICATION_CREATED,
-            payload = ReviewReceivedNotificationCreatedPayload(
-                notificationId = notification.id!!,
-                notificationType = NotificationType.REVIEW_RECEIVED,
-                notificationCreatedAt = notificationCreatedAt,
-                sportId = game.sport.id!!,
-                receiverProfileId = receiverProfile.id!!,
-                gameId = game.id!!,
-                reviewId = savedReview.id!!,
-                reviewer = ReviewReceivedNotificationCreatedPayload.ReviewerSummary(
-                    userId = reviewer.id!!,
-                    nickname = reviewer.nickname,
-                    tierCode = reviewerTierCode,
-                )
-            )
-        )
-
-        return savedReview.id!!
-    }
-
-    private fun notifyReviewReceivedOnConfirm(
-        game: Game,
-        reviewer: User,
-        reviewee: User,
-        receiverProfile: UserSportProfile,
-        review: GameResultConfirmCommand.ReviewCommand,
-        reviewerTierCode: TierCode,
-    ): String {
-        val savedReview = gameReviewService.createReview(
-            gameId = game.id!!,
-            reviewer = reviewer,
-            reviewee = reviewee,
-            rating = review.rating,
-            content = review.content,
-            tags = review.tags,
-        )
-
-        val notification = notificationService.createReviewReceived(
-            receiver = reviewee,
-            receiverProfile = receiverProfile,
-            reviewId = savedReview.id!!,
-            reviewerNickname = reviewer.nickname,
-        )
-
-        val notificationCreatedAt = notification.createdAt
-            .atZone(DEFAULT_ZONE_ID)
-            .toOffsetDateTime()
-            .toString()
-
-        outboxEventPublisher.publish(
-            userId = reviewee.id!!,
-            eventType = SseEventType.REVIEW_RECEIVED_NOTIFICATION_CREATED,
-            payload = ReviewReceivedNotificationCreatedPayload(
-                notificationId = notification.id!!,
-                notificationType = NotificationType.REVIEW_RECEIVED,
-                notificationCreatedAt = notificationCreatedAt,
-                sportId = game.sport.id!!,
-                receiverProfileId = receiverProfile.id!!,
-                gameId = game.id!!,
-                reviewId = savedReview.id!!,
-                reviewer = ReviewReceivedNotificationCreatedPayload.ReviewerSummary(
-                    userId = reviewer.id!!,
-                    nickname = reviewer.nickname,
-                    tierCode = reviewerTierCode,
-                )
-            )
-        )
-
-        return savedReview.id!!
-    }
-
-    private fun notifyOpponentReviewToConfirmer(
-        game: Game,
-        receiver: User,
-        receiverProfile: UserSportProfile,
-        reviewId: String,
-        reviewer: User,
-        reviewerTierCode: TierCode,
-    ) {
-        val notification = notificationService.createReviewReceived(
-            receiver = receiver,
-            receiverProfile = receiverProfile,
-            reviewId = reviewId,
-            reviewerNickname = reviewer.nickname,
-        )
-
-        val notificationCreatedAt = notification.createdAt
-            .atZone(DEFAULT_ZONE_ID).toOffsetDateTime().toString()
-
-        outboxEventPublisher.publish(
-            userId = receiver.id!!,
-            eventType = SseEventType.REVIEW_RECEIVED_NOTIFICATION_CREATED,
-            payload = ReviewReceivedNotificationCreatedPayload(
-                notificationId = notification.id!!,
-                notificationType = NotificationType.REVIEW_RECEIVED,
-                notificationCreatedAt = notificationCreatedAt,
-                sportId = game.sport.id!!,
-                receiverProfileId = receiverProfile.id!!,
-                gameId = game.id!!,
-                reviewId = reviewId,
-                reviewer = ReviewReceivedNotificationCreatedPayload.ReviewerSummary(
-                    userId = reviewer.id!!,
-                    nickname = reviewer.nickname,
-                    tierCode = reviewerTierCode,
-                )
-            )
-        )
-    }
-
-    private fun publishGameUpdated(
-        receiverUserId: String,
-        gameId: String,
-        submissionId: String,
-        submissionAttemptNo: Int,
-        resultStatus: GameResultStatus,
-    ) {
-        outboxEventPublisher.publish(
-            userId = receiverUserId,
-            eventType = SseEventType.GAME_UPDATED,
-            payload = GameUpdatedPayload(
-                gameId = gameId,
-                submissionId = submissionId,
-                submissionAttemptNo = submissionAttemptNo,
-                resultStatus = resultStatus,
-            )
-        )
-    }
-
-    private fun notifyGameResultRejected(
-        receiver: User,
-        receiverProfile: UserSportProfile,
-        rejector: User,
-        rejectorTierCode: TierCode,
-        gameId: String,
-        submissionId: String,
-        reason: GameResultRejectReason,
-    ) {
-        val notificationType = when (reason) {
-            GameResultRejectReason.SCORE_MISMATCH -> NotificationType.RESULT_REJECTED_SCORE_MISMATCH
-            GameResultRejectReason.WIN_LOSE_REVERSED -> NotificationType.RESULT_REJECTED_WIN_LOSE_REVERSED
-            GameResultRejectReason.SCORE_AND_WIN_LOSE_MISMATCH -> NotificationType.RESULT_REJECTED_SCORE_AND_WIN_LOSE_MISMATCH
-            GameResultRejectReason.GAME_NOT_PLAYED_YET -> NotificationType.RESULT_REJECTED_GAME_NOT_PLAYED_YET
-        }
-
-        val notification = notificationService.createResultRejected(
-            receiver = receiver,
-            receiverProfile = receiverProfile,
-            notificationType = notificationType,
-            rejectorNickname = rejector.nickname,
-        )
-
-        val notificationCreatedAt = notification.createdAt
-            .atZone(DEFAULT_ZONE_ID)
-            .toOffsetDateTime()
-            .toString()
-
-        outboxEventPublisher.publish(
-            userId = receiver.id!!,
-            eventType = SseEventType.GAME_RESULT_REJECTED_NOTIFICATION_CREATED,
-            payload = GameResultRejectedNotificationCreatedPayload(
-                notificationId = notification.id!!,
-                notificationType = notificationType,
-                notificationCreatedAt = notificationCreatedAt,
-                sportId = receiverProfile.sport.id!!,
-                receiverProfileId = receiverProfile.id!!,
-                gameId = gameId,
-                submissionId = submissionId,
-                reason = reason,
-                rejector = GameResultRejectedNotificationCreatedPayload.RejectorSummary(
-                    userId = rejector.id!!,
-                    nickname = rejector.nickname,
-                    tierCode = rejectorTierCode,
-                ),
-            )
-        )
-    }
-
     private fun applyLpAndTierUpdate(
         winnerProfile: UserSportProfile,
         loserProfile: UserSportProfile,
         sportId: Long,
         game: Game,
     ) {
-        // 승/패 수 갱신
+        // 경기 결과에 따른 승/패 기록 업데이트
         winnerProfile.recordWin()
         loserProfile.recordLoss()
 
-        // 이번 경기 기준 gameNo 계산 (업데이트 후 wins+losses 기준)
-        val winnerGameNo = winnerProfile.wins + winnerProfile.losses
-        val loserGameNo = loserProfile.wins + loserProfile.losses
-
-        // 이번 경기 LP 변화량 계산
-        val winnerDelta = calcWinLpDelta(winnerGameNo)
-        val loserDelta = calcLoseLpDelta(loserGameNo)
-
-        // before/after 계산 (0 미만 방지 포함)
         val winnerBefore = winnerProfile.lp
         val loserBefore = loserProfile.lp
 
+        val winnerDelta = 30
+        val loserDelta = 20
+
+        // LP 업데이트: 승자 +30 / 패자 -20(최소 0)
         val winnerAfter = winnerBefore + winnerDelta
         val loserAfter = (loserBefore - loserDelta).coerceAtLeast(0)
 
-        // 실제 LP 반영
         winnerProfile.lp = winnerAfter
         loserProfile.lp = loserAfter
 
-        // tier 재계산/갱신
+        // 티어 업데이트: LP 기준으로 티어 재산정
         winnerProfile.changeTier(resolveTierOrThrow(sportId, winnerAfter))
         loserProfile.changeTier(resolveTierOrThrow(sportId, loserAfter))
 
-        // LP history 2건 저장 (승자/패자 각각 1건)
+        // LP 변동 내역 저장
         lpHistoryRepository.save(
             LpHistory.create(
                 userSportProfile = winnerProfile,
@@ -960,35 +581,15 @@ class GameService(
         )
     }
 
-    private fun calcWinLpDelta(
-        gameNo: Int
-    ): Int {
-        return when (gameNo) {
-            in 1..3 -> 90
-            in 4..8 -> 45
-            else -> 30
-        }
-    }
-
-    private fun calcLoseLpDelta(
-        gameNo: Int
-    ): Int {
-        return when (gameNo) {
-            in 1..3 -> 20
-            in 4..8 -> 15
-            else -> 20
-        }
-    }
-
+    /**
+     * 주어진 스포츠 ID와 LP에 해당하는 티어 조회
+      - 티어가 존재하지 않을 경우 예외 발생
+     */
     private fun resolveTierOrThrow(
         sportId: Long,
-        lp: Int
+        lp: Int,
     ): Tier {
         return tierRepository.findBySportIdAndLpInRange(sportId, lp)
-            ?: throw CustomException(ErrorCode.TIER_NOT_FOUND) // TODO: 추후 챌린저 관련 maxlp 처리 필요
-    }
-
-    companion object {
-        private val DEFAULT_ZONE_ID = ZoneId.of("Asia/Seoul")
+            ?: throw CustomException(ErrorCode.TIER_NOT_FOUND)
     }
 }

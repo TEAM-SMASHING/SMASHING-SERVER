@@ -9,6 +9,6 @@ data class GameResultConfirmCommand(
     data class ReviewCommand(
         val rating: ReviewRating,
         val content: String?,
-        val tags: Set<ReviewTag>?,
+        val tags: Set<ReviewTag>,
     )
 }

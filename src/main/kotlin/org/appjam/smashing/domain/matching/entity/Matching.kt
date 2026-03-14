@@ -55,28 +55,12 @@ class Matching(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
-        name = "requester_id",
-        foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT)
-    )
-    @Comment("발신자 유저 IDX")
-    val requester: User ?=null,// TODO: 매칭 관련 리팩토링 완료 후 삭제 예정
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
         name = "receiver_profile_id",
         nullable = false,
         foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT)
     )
     @Comment("수신자 유저-스포츠 프로필 IDX")
     val receiverProfile: UserSportProfile,
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-        name = "receiver_id",
-        foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT)
-    )
-    @Comment("수신자 유저 IDX")
-    val receiver: User ?=null,// TODO: 매칭 관련 리팩토링 완료 후 삭제 예정
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(

@@ -61,57 +61,57 @@ interface MatchingRepository : JpaRepository<Matching, String>, MatchingReposito
         matchingId: String,
     ): Matching?
 
-    @Modifying
-    @Query(
-        """
-    update Matching m
-       set m.deletedAt = :deletedAt
-     where m.deletedAt is null
-       and m.status = :status
-       and m.id <> :excludeMatchingId
-       and m.sport.id = :sportId
-       and (
-            (m.requester.id = :userA and m.receiver.id = :userB)
-         or (m.requester.id = :userB and m.receiver.id = :userA)
-       )
-    """
-    )
-    fun softDeleteRequestedBetweenUsersExcept(
-        deletedAt: LocalDateTime,
-        status: MatchingStatus,
-        excludeMatchingId: String,
-        userA: String,
-        userB: String,
-        sportId: Long,
-    ): Int
+//    @Modifying
+//    @Query(
+//        """
+//    update Matching m
+//       set m.deletedAt = :deletedAt
+//     where m.deletedAt is null
+//       and m.status = :status
+//       and m.id <> :excludeMatchingId
+//       and m.sport.id = :sportId
+//       and (
+//            (m.requester.id = :userA and m.receiver.id = :userB)
+//         or (m.requester.id = :userB and m.receiver.id = :userA)
+//       )
+//    """
+//    )
+//    fun softDeleteRequestedBetweenUsersExcept(
+//        deletedAt: LocalDateTime,
+//        status: MatchingStatus,
+//        excludeMatchingId: String,
+//        userA: String,
+//        userB: String,
+//        sportId: Long,
+//    ): Int
 
-    fun findFirstByReceiverIdAndRequesterIdAndSportIdAndStatusOrderByCreatedAtDesc(
-        receiverId: String,
-        requesterId: String,
-        sportId: Long,
-        status: MatchingStatus
-    ): Matching?
-
-    @Query(
-        value = """
-    select exists(
-        select 1
-          from matching m
-          left join game g
-                 on g.matching_id = m.id
-         where m.created_at >= :startAt
-           and (
-                (m.requester_user_id = :userA and m.receiver_user_id = :userB)
-             or (m.requester_user_id = :userB and m.receiver_user_id = :userA)
-           )
-           and (g.id is null or g.result_status <> 'RESULT_CONFIRMED')
-    )
-    """,
-        nativeQuery = true
-    )
-    fun existsUnconfirmedMatchingBetweenUsersSinceRaw(
-        startAt: LocalDateTime,
-        userA: String,
-        userB: String,
-    ): Long
+//    fun findFirstByReceiverIdAndRequesterIdAndSportIdAndStatusOrderByCreatedAtDesc(
+//        receiverId: String,
+//        requesterId: String,
+//        sportId: Long,
+//        status: MatchingStatus
+//    ): Matching?
+//
+//    @Query(
+//        value = """
+//    select exists(
+//        select 1
+//          from matching m
+//          left join game g
+//                 on g.matching_id = m.id
+//         where m.created_at >= :startAt
+//           and (
+//                (m.requester_user_id = :userA and m.receiver_user_id = :userB)
+//             or (m.requester_user_id = :userB and m.receiver_user_id = :userA)
+//           )
+//           and (g.id is null or g.result_status <> 'RESULT_CONFIRMED')
+//    )
+//    """,
+//        nativeQuery = true
+//    )
+//    fun existsUnconfirmedMatchingBetweenUsersSinceRaw(
+//        startAt: LocalDateTime,
+//        userA: String,
+//        userB: String,
+//    ): Long
 }

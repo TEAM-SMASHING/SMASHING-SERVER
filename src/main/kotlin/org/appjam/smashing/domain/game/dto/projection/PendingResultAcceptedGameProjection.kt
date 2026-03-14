@@ -1,7 +1,7 @@
 package org.appjam.smashing.domain.game.dto.projection
 
 import com.querydsl.core.annotations.QueryProjection
-import org.appjam.smashing.domain.game.enums.GameResultStatus
+import org.appjam.smashing.domain.game.enums.GameStatus
 import org.appjam.smashing.domain.tier.enums.TierCode
 import org.appjam.smashing.domain.user.enums.Gender
 import org.appjam.smashing.global.common.dto.CursorKey
@@ -13,7 +13,7 @@ import java.time.OffsetDateTime
 data class PendingResultAcceptedGameProjection(
     val gameId: String,
     val createdAtLdt: LocalDateTime,
-    val resultStatus: GameResultStatus,
+    val resultStatus: GameStatus,
     val requesterUserId: String,
     val receiverUserId: String,
     val opponentUserId: String,

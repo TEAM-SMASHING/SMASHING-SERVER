@@ -1,7 +1,7 @@
 package org.appjam.smashing.domain.game.dto.response
 
 import org.appjam.smashing.domain.game.dto.projection.PendingResultAcceptedGameProjection
-import org.appjam.smashing.domain.game.enums.GameResultStatus
+import org.appjam.smashing.domain.game.enums.GameStatus
 import org.appjam.smashing.domain.tier.enums.TierCode
 import org.appjam.smashing.domain.user.enums.Gender
 import java.time.OffsetDateTime
@@ -9,7 +9,7 @@ import java.time.OffsetDateTime
 data class PendingResultAcceptedGameSummaryResponse(
     val gameId: String,
     val createdAt: OffsetDateTime,
-    val resultStatus: GameResultStatus,
+    val resultStatus: GameStatus,
     val opponent: OpponentSummary,
     val submitAvailableAt: OffsetDateTime,
     val remainingSeconds: Long,
