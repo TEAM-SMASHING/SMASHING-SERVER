@@ -169,64 +169,64 @@ class UserService(
         )
     }
 
-    @Transactional(readOnly = true)
-    fun getOtherUserProfiles(
-        userId: String,
-        otherUserId: String,
-        sportCode: String?,
-    ): OtherUserProfilesResponse {
-        val myInfo = getMyInfoAndActiveProfile(userId)
-
-        val otherUser = userRepository.findByIdOrNull(otherUserId)
-            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
-
-        val allProfiles = userSportProfileRepository.findAllByUserIdOrderBySportName(otherUserId)
-
-        val selectedProfile = if (sportCode == null) {
-            allProfiles.find { myInfo.activeProfile.sport.code == it.sport.code }
-                ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
-        } else {
-            allProfiles.find { it.sport.code == sportCode }
-                ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
-        }
-
-        val reviews = gameReviewRepository.countByRevieweeAndSport(
-            revieweeUserId = otherUserId,
-            sportId = selectedProfile.sport.id!!,
-        )
-
-        // 하루 (00:00 ~) 최대 3회 게임 가능
-        /* TODO: 앱잼 기간내 하루 3회 제한 해제
-        validateDailyLimit(
-            requesterUserId = requesterUserId,
-            receiverUserId = receiverProfile.user.id!!,
-        )
-        */
-
-        // 24시간 내 매칭 요청이 남아있는 경우, 동일 상대방에 대해 중복 매칭 요청 불가
-        val validateNoMatchingWithin24h = validateNoMatchingWithin24h(
-            userA = userId,
-            userB = selectedProfile.user.id!!,
-        )
-
-        val receivedMatching = matchingRepository.findFirstByReceiverIdAndRequesterIdAndSportIdAndStatusOrderByCreatedAtDesc(
-            receiverId = userId,
-            requesterId = otherUserId,
-            sportId = selectedProfile.sport.id!!,
-            status = MatchingStatus.REQUESTED
-        )
-
-        return OtherUserProfilesResponse.from(
-            nickname = otherUser.nickname,
-            gender = otherUser.gender,
-            reviews = reviews,
-            selectedProfile = selectedProfile,
-            allProfiles = allProfiles,
-            isChallengeable = validateNoMatchingWithin24h,
-            isAcceptable = receivedMatching != null,
-            receivedMatchingId = receivedMatching?.id,
-        )
-    }
+//    @Transactional(readOnly = true)
+//    fun getOtherUserProfiles(
+//        userId: String,
+//        otherUserId: String,
+//        sportCode: String?,
+//    ): OtherUserProfilesResponse {
+//        val myInfo = getMyInfoAndActiveProfile(userId)
+//
+//        val otherUser = userRepository.findByIdOrNull(otherUserId)
+//            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+//
+//        val allProfiles = userSportProfileRepository.findAllByUserIdOrderBySportName(otherUserId)
+//
+//        val selectedProfile = if (sportCode == null) {
+//            allProfiles.find { myInfo.activeProfile.sport.code == it.sport.code }
+//                ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
+//        } else {
+//            allProfiles.find { it.sport.code == sportCode }
+//                ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+//        }
+//
+//        val reviews = gameReviewRepository.countByRevieweeAndSport(
+//            revieweeUserId = otherUserId,
+//            sportId = selectedProfile.sport.id!!,
+//        )
+//
+//        // 하루 (00:00 ~) 최대 3회 게임 가능
+//        /* TODO: 앱잼 기간내 하루 3회 제한 해제
+//        validateDailyLimit(
+//            requesterUserId = requesterUserId,
+//            receiverUserId = receiverProfile.user.id!!,
+//        )
+//        */
+//
+//        // 24시간 내 매칭 요청이 남아있는 경우, 동일 상대방에 대해 중복 매칭 요청 불가
+//        val validateNoMatchingWithin24h = validateNoMatchingWithin24h(
+//            userA = userId,
+//            userB = selectedProfile.user.id!!,
+//        )
+//
+//        val receivedMatching = matchingRepository.findFirstByReceiverIdAndRequesterIdAndSportIdAndStatusOrderByCreatedAtDesc(
+//            receiverId = userId,
+//            requesterId = otherUserId,
+//            sportId = selectedProfile.sport.id!!,
+//            status = MatchingStatus.REQUESTED
+//        )
+//
+//        return OtherUserProfilesResponse.from(
+//            nickname = otherUser.nickname,
+//            gender = otherUser.gender,
+//            reviews = reviews,
+//            selectedProfile = selectedProfile,
+//            allProfiles = allProfiles,
+//            isChallengeable = validateNoMatchingWithin24h,
+//            isAcceptable = receivedMatching != null,
+//            receivedMatchingId = receivedMatching?.id,
+//        )
+//    }
 
     private fun validateDailyLimit(
         requesterUserId: String,
@@ -246,21 +246,21 @@ class UserService(
         return todayConfirmedGames < 3L
     }
 
-    private fun validateNoMatchingWithin24h(
-        userA: String,
-        userB: String,
-    ): Boolean {
-        val now = LocalDateTime.now(TimeUtils.DEFAULT_ZONE_ID)
-        val since = now.minusHours(24)
-
-        val exists = matchingRepository.existsUnconfirmedMatchingBetweenUsersSinceRaw(
-            startAt = since,
-            userA = userA,
-            userB = userB,
-        ) == 1L
-
-        return !exists
-    }
+//    private fun validateNoMatchingWithin24h(
+//        userA: String,
+//        userB: String,
+//    ): Boolean {
+//        val now = LocalDateTime.now(TimeUtils.DEFAULT_ZONE_ID)
+//        val since = now.minusHours(24)
+//
+//        val exists = matchingRepository.existsUnconfirmedMatchingBetweenUsersSinceRaw(
+//            startAt = since,
+//            userA = userA,
+//            userB = userB,
+//        ) == 1L
+//
+//        return !exists
+//    }
 
     @Transactional
     fun updateRegion(

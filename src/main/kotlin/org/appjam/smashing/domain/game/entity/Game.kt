@@ -95,22 +95,6 @@ class Game(
     )
     @Comment("패자 유저-스포츠 프로필 IDX(확정 시)")
     var loserProfile: UserSportProfile? = null,
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-        name = "winner_user_id",
-        foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT)
-    )
-    @Comment("승자 유저 IDX(확정 시)")
-    var winner: User? = null, // TODO: Game 리팩토링 완료 후 제거 예정
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-        name = "loser_user_id",
-        foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT)
-    )
-    @Comment("패자 유저 IDX(확정 시)")
-    var loser: User? = null, // TODO: Game 리팩토링 완료 후 제거 예정
 ) : BaseEntity() {
 
     companion object {

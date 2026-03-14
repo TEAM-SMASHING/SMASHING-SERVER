@@ -71,10 +71,6 @@ class Notification(
     @Comment("수신자 유저-스포츠 프로필 IDX")
     val receiverUserProfileId: String,
 
-    @Column(length = 500)
-    @Comment("알림 치환 파라미터(JSON)")
-    val params: String? = null, // TODO: 추후 알림 모두 리팩토링 시 삭제
-
     @Column(nullable = false)
     @Comment("알림 읽음 여부")
     var isRead: Boolean = false,
@@ -82,18 +78,6 @@ class Notification(
     @Column(length = 500)
     @Comment("알림 연결 URL")
     val linkUrl: String? = null,
-
-    @Column(length = 10)
-    @Comment("발신자 유저 닉네임")
-    val senderNickname: String? = null, // TODO: senderUserId 기반 조회로 대체 후 제거
-
-    @Comment("수신 스포츠 IDX")
-    val receiverSportId: Long? = null, // TODO: 모두 리팩토링시 제거 예정
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "notification_template_id", foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT))
-    @Comment("템플릿 IDX")
-    val notificationTemplate: NotificationTemplate? = null, // TODO: 알림 리팩토링 완료 후 제거
 ) : BaseEntity() {
 
 

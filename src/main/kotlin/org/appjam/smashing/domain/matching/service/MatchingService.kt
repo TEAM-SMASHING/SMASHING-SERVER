@@ -274,75 +274,75 @@ class MatchingService(
         )
     }
 
-    @Transactional(readOnly = true)
-    fun getReceivedMatchings(
-        userId: String,
-        request: CommonCursorRequest,
-    ): CursorResponse<ReceivedMatchingSummaryResponse> {
+//    @Transactional(readOnly = true)
+//    fun getReceivedMatchings(
+//        userId: String,
+//        request: CommonCursorRequest,
+//    ): CursorResponse<ReceivedMatchingSummaryResponse> {
+//
+//        val user = userRepository.findByIdOrNull(userId)
+//            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+//
+//        val activeProfileId = user.activeUserSportProfileId
+//            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+//
+//        val activeProfile = userSportProfileRepository.findByIdOrNull(activeProfileId)
+//            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+//
+//        val sportId = activeProfile.sport.id
+//            ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
+//
+//        val snapshotAt = request.snapshotAt ?: TimeUtils.nowOffsetDateTime()
+//
+//        val response = matchingRepository.fetchReceivedRequestedPage(
+//            receiverUserId = userId,
+//            sportId = sportId,
+//            request = request,
+//            snapshotAt = snapshotAt,
+//        )
+//
+//        return CursorResponse(
+//            snapshotAt = response.snapshotAt,
+//            results = ReceivedMatchingSummaryResponse.from(response.results),
+//            nextCursor = response.nextCursor,
+//            hasNext = response.hasNext,
+//        )
+//    }
 
-        val user = userRepository.findByIdOrNull(userId)
-            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
-
-        val activeProfileId = user.activeUserSportProfileId
-            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
-
-        val activeProfile = userSportProfileRepository.findByIdOrNull(activeProfileId)
-            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
-
-        val sportId = activeProfile.sport.id
-            ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
-
-        val snapshotAt = request.snapshotAt ?: TimeUtils.nowOffsetDateTime()
-
-        val response = matchingRepository.fetchReceivedRequestedPage(
-            receiverUserId = userId,
-            sportId = sportId,
-            request = request,
-            snapshotAt = snapshotAt,
-        )
-
-        return CursorResponse(
-            snapshotAt = response.snapshotAt,
-            results = ReceivedMatchingSummaryResponse.from(response.results),
-            nextCursor = response.nextCursor,
-            hasNext = response.hasNext,
-        )
-    }
-
-    @Transactional(readOnly = true)
-    fun getSentMatchings(
-        userId: String,
-        request: CommonCursorRequest,
-    ): CursorResponse<SentMatchingSummaryResponse> {
-
-        val user = userRepository.findByIdOrNull(userId)
-            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
-
-        val activeProfileId = user.activeUserSportProfileId
-            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
-
-        val activeProfile = userSportProfileRepository.findByIdOrNull(activeProfileId)
-            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
-
-        val sportId = activeProfile.sport.id
-            ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
-
-        val snapshotAt = request.snapshotAt ?: TimeUtils.nowOffsetDateTime()
-
-        val response = matchingRepository.fetchSentRequestedPage(
-            requesterUserId = userId,
-            sportId = sportId,
-            request = request,
-            snapshotAt = snapshotAt,
-        )
-
-        return CursorResponse(
-            snapshotAt = response.snapshotAt,
-            results = SentMatchingSummaryResponse.from(response.results),
-            nextCursor = response.nextCursor,
-            hasNext = response.hasNext,
-        )
-    }
+//    @Transactional(readOnly = true)
+//    fun getSentMatchings(
+//        userId: String,
+//        request: CommonCursorRequest,
+//    ): CursorResponse<SentMatchingSummaryResponse> {
+//
+//        val user = userRepository.findByIdOrNull(userId)
+//            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+//
+//        val activeProfileId = user.activeUserSportProfileId
+//            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+//
+//        val activeProfile = userSportProfileRepository.findByIdOrNull(activeProfileId)
+//            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+//
+//        val sportId = activeProfile.sport.id
+//            ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
+//
+//        val snapshotAt = request.snapshotAt ?: TimeUtils.nowOffsetDateTime()
+//
+//        val response = matchingRepository.fetchSentRequestedPage(
+//            requesterUserId = userId,
+//            sportId = sportId,
+//            request = request,
+//            snapshotAt = snapshotAt,
+//        )
+//
+//        return CursorResponse(
+//            snapshotAt = response.snapshotAt,
+//            results = SentMatchingSummaryResponse.from(response.results),
+//            nextCursor = response.nextCursor,
+//            hasNext = response.hasNext,
+//        )
+//    }
 
     private fun validateDailyLimit(
         profileA: String,

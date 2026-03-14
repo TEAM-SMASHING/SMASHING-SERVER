@@ -107,36 +107,36 @@ class UserController(
         )
     }
 
-    @Operation(
-        summary = "다른 유저 정보 상세 조회 API",
-        description = """
-           다른 유저의 프로필을 티어 정보와 함께 조회합니다.
-           
-           [조건]
-           - 상대의 다른 스포츠 프로필을 누르더라도 canChallenge와 canAccept는 나의 스포츠 활성화된 프로필과 동일한 것만 노출
-           -선택 여부는 isSelected로 판단
-           - QueryParam(sportCode)이 없을 경우 selectedProfile에는 나를 기준으로 활성화된 스포츠 프로필이 디폴트
-           
-           [정렬]
-           - 스포츠 프로필 선택 여부 상관 없이 allProfiles에 모든 스포츠를 가나다 순 정렬
-        """
-    )
-    @GetMapping("/{userId}/profiles")
-    fun getOtherUserProfiles(
-        @AuthenticationPrincipal principal: CustomUserDetails,
-        @PathVariable userId: String,
-        @RequestParam sportCode: String?,
-    ): ResponseEntity<ApiResponse<OtherUserProfilesResponse>> {
-        val response = userService.getOtherUserProfiles(
-            userId = principal.username,
-            otherUserId = userId,
-            sportCode = sportCode,
-        )
-
-        return ApiResponse.success(
-            data = response,
-        )
-    }
+//    @Operation(
+//        summary = "다른 유저 정보 상세 조회 API",
+//        description = """
+//           다른 유저의 프로필을 티어 정보와 함께 조회합니다.
+//
+//           [조건]
+//           - 상대의 다른 스포츠 프로필을 누르더라도 canChallenge와 canAccept는 나의 스포츠 활성화된 프로필과 동일한 것만 노출
+//           -선택 여부는 isSelected로 판단
+//           - QueryParam(sportCode)이 없을 경우 selectedProfile에는 나를 기준으로 활성화된 스포츠 프로필이 디폴트
+//
+//           [정렬]
+//           - 스포츠 프로필 선택 여부 상관 없이 allProfiles에 모든 스포츠를 가나다 순 정렬
+//        """
+//    )
+//    @GetMapping("/{userId}/profiles")
+//    fun getOtherUserProfiles(
+//        @AuthenticationPrincipal principal: CustomUserDetails,
+//        @PathVariable userId: String,
+//        @RequestParam sportCode: String?,
+//    ): ResponseEntity<ApiResponse<OtherUserProfilesResponse>> {
+//        val response = userService.getOtherUserProfiles(
+//            userId = principal.username,
+//            otherUserId = userId,
+//            sportCode = sportCode,
+//        )
+//
+//        return ApiResponse.success(
+//            data = response,
+//        )
+//    }
 
     @Operation(
         summary = "사용자 주소 변경 API",

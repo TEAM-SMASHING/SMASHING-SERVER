@@ -105,14 +105,6 @@ class GameResultSubmission(
     )
     @Comment("패자 유저-스포츠 프로필 IDX(제출안 기준)")
     val loserProfile: UserSportProfile,
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-        name = "submitter_user_id",
-        foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT)
-    )
-    @Comment("결과 제출자 IDX")
-    val submitter: User? = null, // TODO: Submission 리팩토링 완료 후 제거 예정
 ) : BaseEntity() {
 
     companion object {
@@ -130,7 +122,6 @@ class GameResultSubmission(
             confirmerProfile = confirmerProfile,
             winnerProfile = winnerProfile,
             loserProfile = loserProfile,
-            submitter = submitterProfile.user,
         )
     }
 
