@@ -116,14 +116,15 @@ class AuthService(
         accessToken: String,
         userId: String,
     ) {
+        val token = accessToken.removePrefix("Bearer ").trim()
         validateAccessTokenSubject(
-            accessToken = accessToken,
+            accessToken = token,
             userId = userId,
         )
 
         jwtRefreshStore.deleteAllForUser(userId)
 
-        jwtBlacklistManager.add(accessToken)
+        jwtBlacklistManager.add(token)
     }
 
     @Transactional
@@ -159,9 +160,10 @@ class AuthService(
         accessToken: String,
         userId: String,
     ) {
-        // 유저 조회
+        // 유저 검증 - 토큰 subject 확인 및 유저 조회 (없을 경우 예외 발생)
+        val token = accessToken.removePrefix("Bearer ").trim()
         validateAccessTokenSubject(
-            accessToken = accessToken,
+            accessToken = token,
             userId = userId,
         )
 
@@ -172,9 +174,9 @@ class AuthService(
         userRepository.delete(user)
 
         // 토큰 무효화
-        jwtRefreshStore.deleteAllForUser(userId)
+        jwtBlacklistManager.add(token)
 
-        jwtBlacklistManager.add(accessToken)
+        jwtRefreshStore.deleteAllForUser(userId)
     }
 
     private fun validateUser(requestCommand: SignUpRequestCommand) {
@@ -215,8 +217,7 @@ class AuthService(
         accessToken: String,
         userId: String,
     ) {
-        val token = accessToken.removePrefix("Bearer ").trim()
-        val subject = jwtProvider.extractAccessSubject(token)
+        val subject = jwtProvider.extractAccessSubject(accessToken)
         if (subject != userId) {
             throw CustomException(ErrorCode.ACCESS_TOKEN_SUBJECT_MISMATCH)
         }

@@ -19,8 +19,7 @@ import org.hibernate.annotations.SQLRestriction
 @SQLDelete(
     sql = """
         update user 
-        set deleted_at = now(),
-            nickname = '알 수 없음'
+        set deleted_at = now()
         where id = ?
         """
 )
@@ -37,7 +36,7 @@ class User(
 
     @Column(nullable = false, length = 50)
     @Comment("닉네임")
-    val nickname: String,
+    var nickname: String,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "VARCHAR(30)")

@@ -2,15 +2,14 @@ package org.appjam.smashing.domain.review.entity
 
 import io.hypersistence.utils.hibernate.id.Tsid
 import jakarta.persistence.*
-import jakarta.persistence.ForeignKey
-import jakarta.persistence.Index
-import jakarta.persistence.Table
 import org.appjam.smashing.domain.common.entity.BaseEntity
 import org.appjam.smashing.domain.game.entity.Game
 import org.appjam.smashing.domain.review.enums.ReviewRating
 import org.appjam.smashing.domain.review.enums.ReviewTag
 import org.appjam.smashing.domain.user.entity.UserSportProfile
-import org.hibernate.annotations.*
+import org.hibernate.annotations.Comment
+import org.hibernate.annotations.SQLDelete
+import org.hibernate.annotations.SQLRestriction
 
 @Entity
 @Table(
@@ -55,9 +54,8 @@ class GameReview(
         nullable = false,
         foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT)
     )
-    @NotFound(action = NotFoundAction.IGNORE)
     @Comment("후기 작성자 유저-스포츠 프로필 IDX")
-    var reviewerProfile: UserSportProfile?,
+    var reviewerProfile: UserSportProfile,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
