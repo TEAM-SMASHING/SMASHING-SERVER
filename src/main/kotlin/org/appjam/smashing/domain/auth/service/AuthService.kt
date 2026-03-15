@@ -172,9 +172,9 @@ class AuthService(
         userRepository.delete(user)
 
         // 토큰 무효화
-        jwtRefreshStore.deleteAllForUser(userId)
-
         jwtBlacklistManager.add(accessToken)
+
+        jwtRefreshStore.deleteAllForUser(userId)
     }
 
     private fun validateUser(requestCommand: SignUpRequestCommand) {
