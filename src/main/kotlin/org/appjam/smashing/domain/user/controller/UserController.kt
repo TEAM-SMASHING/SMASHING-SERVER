@@ -359,39 +359,39 @@ class UserController(
         )
     }
 
-//    @Operation(
-//        summary = "사용자 지역 유저들 목록 조회 API",
-//        description = """
-//            매칭 탐색 화면에서 다른 유저들을 조회합니다.
-//
-//            [조건]
-//            - 유저의 활성화 되어 있는 스포츠와 동일한 다른 유저 노출
-//            - 유저의 지역과 동일한 다른 유저 노출
-//            - QueryParam(gender)가 없으면 전체 성별
-//            - QueryParam(tier)가 없으면 전체 티어
-//
-//            [정렬]
-//            - 1순위 후기 개수
-//            - 2순위 진행한 경기 회수
-//            - 3순위 닉네임 순
-//        """
-//    )
-//    @GetMapping("/me/regions/users")
-//    fun getOtherUserRegion(
-//        @AuthenticationPrincipal principal: CustomUserDetails,
-//        @Valid regionRequest: OtherUserRegionRequest,
-//        @Valid requestCursor: CommonCursorRequest,
-//    ): ResponseEntity<ApiResponse<CursorResponse<OtherUserRegionResponse>>> {
-//        val response = userService.getOtherUserRegion(
-//            userId = principal.username,
-//            requestCommand = regionRequest.toCommand(),
-//            requestCursor = requestCursor,
-//        )
-//
-//        return ApiResponse.success(
-//            data = response,
-//        )
-//    }
+    @Operation(
+        summary = "사용자 지역 유저들 목록 조회 API",
+        description = """
+            매칭 탐색 화면에서 다른 유저들을 조회합니다.
+
+            [조건]
+            - 유저의 활성화 되어 있는 스포츠와 동일한 다른 유저 노출
+            - 유저의 지역과 동일한 다른 유저 노출
+            - QueryParam(gender)가 없으면 전체 성별
+            - QueryParam(tier)가 없으면 전체 티어
+
+            [정렬]
+            - 1순위 후기 개수
+            - 2순위 진행한 경기 회수
+            - 3순위 닉네임 순
+        """
+    )
+    @GetMapping("/me/regions/users")
+    fun getOtherUserRegion(
+        @AuthenticationPrincipal principal: CustomUserDetails,
+        @Valid regionRequest: OtherUserRegionRequest,
+        @Valid requestCursor: CommonCursorRequest,
+    ): ResponseEntity<ApiResponse<CursorResponse<OtherUserRegionResponse>>> {
+        val response = userService.getOtherUserRegion(
+            userId = principal.username,
+            requestCommand = regionRequest.toCommand(),
+            requestCursor = requestCursor,
+        )
+
+        return ApiResponse.success(
+            data = response,
+        )
+    }
 
     @Operation(
         summary = "사용자 주소 조회 API",

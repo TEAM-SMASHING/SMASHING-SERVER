@@ -535,34 +535,34 @@ class UserService(
         )
     }
 
-//    @Transactional(readOnly = true)
-//    fun getOtherUserRegion(
-//        userId: String,
-//        requestCommand: OtherUserRegionCommand,
-//        requestCursor: CommonCursorRequest,
-//    ): CursorResponse<OtherUserRegionResponse> {
-//        val myInfo = getMyInfoAndActiveProfile(userId)
-//        val sportId = myInfo.activeProfile.sport.id!!
-//
-//        val snapshotAt = requestCursor.snapshotAt ?: TimeUtils.nowOffsetDateTime()
-//
-//        val response = userSportProfileRepository.findAllBySportAndRegion(
-//            userId = userId,
-//            sportId = sportId,
-//            region = myInfo.user.region,
-//            request = requestCursor,
-//            gender = requestCommand.gender,
-//            tier = requestCommand.tier?.name,
-//            snapshotAt = snapshotAt,
-//        )
-//
-//        return CursorResponse(
-//            snapshotAt = response.snapshotAt,
-//            results = OtherUserRegionResponse.listForm(response.results),
-//            nextCursor = response.nextCursor,
-//            hasNext = response.hasNext,
-//        )
-//    }
+    @Transactional(readOnly = true)
+    fun getOtherUserRegion(
+        userId: String,
+        requestCommand: OtherUserRegionCommand,
+        requestCursor: CommonCursorRequest,
+    ): CursorResponse<OtherUserRegionResponse> {
+        val myInfo = getMyInfoAndActiveProfile(userId)
+        val sportId = myInfo.activeProfile.sport.id!!
+
+        val snapshotAt = requestCursor.snapshotAt ?: TimeUtils.nowOffsetDateTime()
+
+        val response = userSportProfileRepository.findAllBySportAndRegion(
+            userId = userId,
+            sportId = sportId,
+            region = myInfo.user.region,
+            request = requestCursor,
+            gender = requestCommand.gender,
+            tier = requestCommand.tier?.name,
+            snapshotAt = snapshotAt,
+        )
+
+        return CursorResponse(
+            snapshotAt = response.snapshotAt,
+            results = OtherUserRegionResponse.listForm(response.results),
+            nextCursor = response.nextCursor,
+            hasNext = response.hasNext,
+        )
+    }
 
     private fun getMyInfoAndActiveProfile(userId: String): UserWithActiveProfile {
         val user = userRepository.findByIdOrNull(userId)
