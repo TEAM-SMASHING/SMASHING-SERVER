@@ -5,7 +5,10 @@ import org.appjam.smashing.domain.matching.repository.MatchingRepository
 import org.appjam.smashing.domain.review.repository.GameReviewRepository
 import org.appjam.smashing.domain.sport.repository.SportRepository
 import org.appjam.smashing.domain.tier.repository.TierRepository
-import org.appjam.smashing.domain.user.dto.command.*
+import org.appjam.smashing.domain.user.dto.command.ActiveProfileUpdateCommand
+import org.appjam.smashing.domain.user.dto.command.AddressUpdateCommand
+import org.appjam.smashing.domain.user.dto.command.OpenChatValidateCommand
+import org.appjam.smashing.domain.user.dto.command.ProfileAddCommand
 import org.appjam.smashing.domain.user.dto.response.*
 import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.entity.UserSportProfile
@@ -370,59 +373,59 @@ class UserService(
         )
     }
 
-//    @Transactional(readOnly = true)
-//    fun getUserRecentReviewSummary(
-//        userId: String,
-//    ): UserRecentReviewSummaryResponse {
-//        val myInfo = getMyInfoAndActiveProfile(userId)
-//
-//        val sportId = myInfo.activeProfile.sport.id!!
-//
-//        val counts = getCounts(
-//            userId = userId,
-//            sportId = sportId
-//        )
-//
-//        return UserRecentReviewSummaryResponse.from(
-//            ratingMap = counts.ratingMap,
-//            tagMap = counts.tagMap,
-//        )
-//    }
+    @Transactional(readOnly = true)
+    fun getUserRecentReviewSummary(
+        userId: String,
+    ): UserRecentReviewSummaryResponse {
+        val myInfo = getMyInfoAndActiveProfile(userId)
 
-//    @Transactional(readOnly = true)
-//    fun getOtherUserRecentReview(
-//        userId: String,
-//        otherUserId: String,
-//        sportCode: String?,
-//        request: CommonCursorRequest,
-//    ): CursorResponse<UserRecentReviewResponse> {
-//        val otherUser = userRepository.findByIdOrNull(otherUserId)
-//            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
-//
-//        val selectedProfile = resolveProfile(
-//            userId = userId,
-//            otherUser = otherUser,
-//            sportCode = sportCode,
-//        )
-//
-//        val sportId = selectedProfile.sport.id!!
-//
-//        val snapshotAt = request.snapshotAt ?: OffsetDateTime.now()
-//
-//        val response = gameReviewRepository.findAllBySportIdOrderByDate(
-//            request = request,
-//            sportId = sportId,
-//            userId = otherUserId,
-//            snapshotAt = snapshotAt
-//        )
-//
-//        return CursorResponse(
-//            snapshotAt = snapshotAt,
-//            results = UserRecentReviewResponse.listForm(response.results),
-//            nextCursor = response.nextCursor,
-//            hasNext = response.hasNext
-//        )
-//    }
+        val sportId = myInfo.activeProfile.sport.id!!
+
+        val counts = getCounts(
+            userId = userId,
+            sportId = sportId
+        )
+
+        return UserRecentReviewSummaryResponse.from(
+            ratingMap = counts.ratingMap,
+            tagMap = counts.tagMap,
+        )
+    }
+
+    @Transactional(readOnly = true)
+    fun getOtherUserRecentReview(
+        userId: String,
+        otherUserId: String,
+        sportCode: String?,
+        request: CommonCursorRequest,
+    ): CursorResponse<UserRecentReviewResponse> {
+        val otherUser = userRepository.findByIdOrNull(otherUserId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+
+        val selectedProfile = resolveProfile(
+            userId = userId,
+            otherUser = otherUser,
+            sportCode = sportCode,
+        )
+
+        val sportId = selectedProfile.sport.id!!
+
+        val snapshotAt = request.snapshotAt ?: OffsetDateTime.now()
+
+        val response = gameReviewRepository.findAllBySportIdOrderByDate(
+            request = request,
+            sportId = sportId,
+            userId = otherUserId,
+            snapshotAt = snapshotAt
+        )
+
+        return CursorResponse(
+            snapshotAt = snapshotAt,
+            results = UserRecentReviewResponse.listForm(response.results),
+            nextCursor = response.nextCursor,
+            hasNext = response.hasNext
+        )
+    }
 
 //    @Transactional(readOnly = true)
 //    fun getOtherUserRecentReviewSummary(

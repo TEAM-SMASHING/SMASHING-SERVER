@@ -49,6 +49,7 @@ class UserSportProfile(
     )
     @NotFound(action = NotFoundAction.IGNORE)
     @Comment("유저 IDX")
+    @NotFound(action = NotFoundAction.IGNORE)
     val user: User,
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param
 
 interface GameReviewRepository : JpaRepository<GameReview, String>, GameReviewRepositoryCustom {
 
-    //        @Query(
+//    @Query(
 //        """
 //        select count(gr)
 //          from GameReview gr
@@ -22,7 +22,7 @@ interface GameReviewRepository : JpaRepository<GameReview, String>, GameReviewRe
 //        revieweeUserId: String,
 //        sportId: Long,
 //    ): Long
-//
+
     @Query(
         """
             select gr
