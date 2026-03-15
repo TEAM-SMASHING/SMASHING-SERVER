@@ -6,10 +6,7 @@ import org.appjam.smashing.domain.matching.repository.MatchingRepository
 import org.appjam.smashing.domain.review.repository.GameReviewRepository
 import org.appjam.smashing.domain.sport.repository.SportRepository
 import org.appjam.smashing.domain.tier.repository.TierRepository
-import org.appjam.smashing.domain.user.dto.command.ActiveProfileUpdateCommand
-import org.appjam.smashing.domain.user.dto.command.AddressUpdateCommand
-import org.appjam.smashing.domain.user.dto.command.OpenChatValidateCommand
-import org.appjam.smashing.domain.user.dto.command.ProfileAddCommand
+import org.appjam.smashing.domain.user.dto.command.*
 import org.appjam.smashing.domain.user.dto.response.*
 import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.entity.UserSportProfile
@@ -373,21 +370,21 @@ class UserService(
         )
     }
 
-//    @Transactional(readOnly = true)
-//    fun getOtherUserSearch(
-//        userId: String,
-//        requestCommand: OtherUserSearchCommand,
-//    ): OtherUserSearchResponse {
-//        val myInfo = getMyInfoAndActiveProfile(userId)
-//
-//        val otherUsersSearch = userSportProfileRepository.findAllBySportOrderByNickname(
-//            nickname = requestCommand.nickname,
-//            sportId = myInfo.activeProfile.sport.id!!,
-//            excludeUserId = userId,
-//        )
-//
-//        return OtherUserSearchResponse.from(otherUsersSearch)
-//    }
+    @Transactional(readOnly = true)
+    fun getOtherUserSearch(
+        userId: String,
+        requestCommand: OtherUserSearchCommand,
+    ): OtherUserSearchResponse {
+        val myInfo = getMyInfoAndActiveProfile(userId)
+
+        val otherUsersSearch = userSportProfileRepository.findAllBySportOrderByNickname(
+            nickname = requestCommand.nickname,
+            sportId = myInfo.activeProfile.sport.id!!,
+            excludeUserId = userId,
+        )
+
+        return OtherUserSearchResponse.from(otherUsersSearch)
+    }
 
     @Transactional(readOnly = true)
     fun getUserRecentReview(

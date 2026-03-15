@@ -3,10 +3,7 @@ package org.appjam.smashing.domain.user.controller
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
-import org.appjam.smashing.domain.user.dto.request.ActiveProfileUpdateRequest
-import org.appjam.smashing.domain.user.dto.request.AddressUpdateRequest
-import org.appjam.smashing.domain.user.dto.request.OpenChatValidateRequest
-import org.appjam.smashing.domain.user.dto.request.ProfileAddRequest
+import org.appjam.smashing.domain.user.dto.request.*
 import org.appjam.smashing.domain.user.dto.response.*
 import org.appjam.smashing.domain.user.service.UserService
 import org.appjam.smashing.global.auth.security.data.CustomUserDetails
@@ -224,33 +221,33 @@ class UserController(
         )
     }
 
-//    @Operation(
-//        summary = "유저 닉네임 기준 목록 검색 API",
-//        description = """
-//            다른 유저의 닉네임으로 목록을 검색합니다.
-//
-//            [조건]
-//            - 유저와 활성화된 스포츠가 동일
-//            - 유저의 지역과는 무관
-//
-//            [정렬]
-//            - 최대 5개 노출
-//        """
-//    )
-//    @GetMapping("/search")
-//    fun getOtherUserSearch(
-//        @AuthenticationPrincipal principal: CustomUserDetails,
-//        @Valid request: OtherUserSearchRequest,
-//    ): ResponseEntity<ApiResponse<OtherUserSearchResponse>> {
-//        val response = userService.getOtherUserSearch(
-//            userId = principal.username,
-//            requestCommand = request.toCommand(),
-//        )
-//
-//        return ApiResponse.success(
-//            data = response,
-//        )
-//    }
+    @Operation(
+        summary = "유저 닉네임 기준 목록 검색 API",
+        description = """
+            다른 유저의 닉네임으로 목록을 검색합니다.
+
+            [조건]
+            - 유저와 활성화된 스포츠가 동일
+            - 유저의 지역과는 무관
+
+            [정렬]
+            - 최대 5개 노출
+        """
+    )
+    @GetMapping("/search")
+    fun getOtherUserSearch(
+        @AuthenticationPrincipal principal: CustomUserDetails,
+        @Valid request: OtherUserSearchRequest,
+    ): ResponseEntity<ApiResponse<OtherUserSearchResponse>> {
+        val response = userService.getOtherUserSearch(
+            userId = principal.username,
+            requestCommand = request.toCommand(),
+        )
+
+        return ApiResponse.success(
+            data = response,
+        )
+    }
 
     @Operation(
         summary = "나의 최근 리뷰 목록 조회 API",
