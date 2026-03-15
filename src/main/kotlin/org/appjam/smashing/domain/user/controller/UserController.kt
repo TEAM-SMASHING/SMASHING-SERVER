@@ -175,30 +175,30 @@ class UserController(
         return ApiResponse.success()
     }
 
-//    @Operation(
-//        summary = "사용자 지역 유저들 추천 조회 API",
-//        description = """
-//            주변 추천 유저들을 조회합니다.
-//
-//            [조건]
-//            - 유저와 지역이랑 활성화된 스포츠가 동일
-//
-//            [정렬]
-//            - id순으로 정렬 (가입순)
-//            - lp ±200  이내에서 랜덤
-//            - 5명 보다 적을 경우 그대로 노출
-//        """
-//    )
-//    @GetMapping("/me/regions/recommendation")
-//    fun getOtherUsersRecommendation(
-//        @AuthenticationPrincipal principal: CustomUserDetails,
-//    ): ResponseEntity<ApiResponse<OtherUsersRecommendationResponse>> {
-//        val response = userService.getOtherUsersRecommendation(principal.username)
-//
-//        return ApiResponse.success(
-//            data = response,
-//        )
-//    }
+    @Operation(
+        summary = "사용자 지역 유저들 추천 조회 API",
+        description = """
+            주변 추천 유저들을 조회합니다.
+
+            [조건]
+            - 유저와 지역이랑 활성화된 스포츠가 동일
+
+            [정렬]
+            - id순으로 정렬 (가입순)
+            - lp ±200  이내에서 랜덤
+            - 5명 보다 적을 경우 그대로 노출
+        """
+    )
+    @GetMapping("/me/regions/recommendation")
+    fun getOtherUsersRecommendation(
+        @AuthenticationPrincipal principal: CustomUserDetails,
+    ): ResponseEntity<ApiResponse<OtherUsersRecommendationResponse>> {
+        val response = userService.getOtherUsersRecommendation(principal.username)
+
+        return ApiResponse.success(
+            data = response,
+        )
+    }
 
     @Operation(
         summary = "사용자 지역 유저들 실력순 조회 API",

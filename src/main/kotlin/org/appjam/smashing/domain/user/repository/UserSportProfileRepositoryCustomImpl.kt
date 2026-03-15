@@ -1,67 +1,60 @@
 package org.appjam.smashing.domain.user.repository
 
-import com.querydsl.core.BooleanBuilder
-import com.querydsl.core.types.dsl.Expressions
 import com.querydsl.jpa.JPAExpressions
 import com.querydsl.jpa.impl.JPAQueryFactory
 import org.appjam.smashing.domain.review.entity.QGameReview
-import org.appjam.smashing.domain.review.entity.QGameReview.Companion.gameReview
-import org.appjam.smashing.domain.user.dto.projection.*
+import org.appjam.smashing.domain.user.dto.projection.OtherUserRecommendationProjection
+import org.appjam.smashing.domain.user.dto.projection.QOtherUserRecommendationProjection
 import org.appjam.smashing.domain.user.entity.QUser.Companion.user
 import org.appjam.smashing.domain.user.entity.QUserSportProfile.Companion.userSportProfile
-import org.appjam.smashing.domain.user.enums.Gender
-import org.appjam.smashing.global.common.dto.CommonCursorRequest
-import org.appjam.smashing.global.common.dto.CursorPageResponse
 import org.appjam.smashing.global.util.CursorCodec
 import org.appjam.smashing.global.util.QueryUtils.randomOrder
-import org.appjam.smashing.global.util.TimeUtils
-import java.time.OffsetDateTime
 
 class UserSportProfileRepositoryCustomImpl(
     private val queryFactory: JPAQueryFactory,
     private val cursorCodec: CursorCodec,
 ) : UserSportProfileRepositoryCustom {
-//    override fun findRandomRecommendation(
-//        region: String,
-//        sportId: Long,
-//        excludeUserId: String,
-//        myLp: Int,
-//        lpThreshold: Int,
-//        limit: Long
-//    ): List<OtherUserRecommendationProjection> {
-//        val gr = QGameReview("gr")
-//
-//        return queryFactory
-//            .select(
-//                QOtherUserRecommendationProjection(
-//                    user.id,
-//                    user.nickname,
-//                    userSportProfile.tier.code,
-//                    userSportProfile.wins,
-//                    userSportProfile.losses,
-//                    JPAExpressions
-//                        .select(gr.count().castToNum(Int::class.java))
-//                        .from(gr)
-//                        .where(
-//                            gr.reviewee.id.eq(user.id),
-//                            gr.game.sport.id.eq(sportId)
-//                        ),
-//                    user.gender.stringValue(),
-//                )
-//            )
-//            .from(userSportProfile)
-//            .join(userSportProfile.user, user)
-//            .where(
-//                user.region.eq(region),
-//                userSportProfile.sport.id.eq(sportId),
-//                user.id.ne(excludeUserId),
-//                userSportProfile.lp.between(myLp - lpThreshold, myLp + lpThreshold)
-//            )
-//            .orderBy(randomOrder.asc())
-//            .limit(limit)
-//            .fetch()
-//    }
-//
+    override fun findRandomRecommendation(
+        region: String,
+        sportId: Long,
+        excludeUserId: String,
+        myLp: Int,
+        lpThreshold: Int,
+        limit: Long
+    ): List<OtherUserRecommendationProjection> {
+        val gr = QGameReview("gr")
+
+        return queryFactory
+            .select(
+                QOtherUserRecommendationProjection(
+                    user.id,
+                    user.nickname,
+                    userSportProfile.tier.code,
+                    userSportProfile.wins,
+                    userSportProfile.losses,
+                    JPAExpressions
+                        .select(gr.count().castToNum(Int::class.java))
+                        .from(gr)
+                        .where(
+                            gr.revieweeProfile.user.id.eq(user.id),
+                            gr.game.sport.id.eq(sportId)
+                        ),
+                    user.gender.stringValue(),
+                )
+            )
+            .from(userSportProfile)
+            .join(userSportProfile.user, user)
+            .where(
+                user.region.eq(region),
+                userSportProfile.sport.id.eq(sportId),
+                user.id.ne(excludeUserId),
+                userSportProfile.lp.between(myLp - lpThreshold, myLp + lpThreshold)
+            )
+            .orderBy(randomOrder.asc())
+            .limit(limit)
+            .fetch()
+    }
+
 //    override fun findAllBySportOrderByNickname(
 //        nickname: String,
 //        sportId: Long,

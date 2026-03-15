@@ -335,24 +335,24 @@ class UserService(
 
         user.updateActiveProfile(requestCommand.profileId)
     }
-//
-//    @Transactional(readOnly = true)
-//    fun getOtherUsersRecommendation(
-//        userId: String,
-//    ): OtherUsersRecommendationResponse {
-//        val myInfo = getMyInfoAndActiveProfile(userId)
-//
-//        val recommendedProfiles = userSportProfileRepository.findRandomRecommendation(
-//            region = myInfo.user.region,
-//            sportId = myInfo.activeProfile.sport.id!!,
-//            excludeUserId = myInfo.user.id!!,
-//            myLp = myInfo.activeProfile.lp,
-//            lpThreshold = LP_THRESHOLD,
-//            limit = LIMIT_RECOMMEND
-//        )
-//
-//        return OtherUsersRecommendationResponse.from(recommendedProfiles)
-//    }
+
+    @Transactional(readOnly = true)
+    fun getOtherUsersRecommendation(
+        userId: String,
+    ): OtherUsersRecommendationResponse {
+        val myInfo = getMyInfoAndActiveProfile(userId)
+
+        val recommendedProfiles = userSportProfileRepository.findRandomRecommendation(
+            region = myInfo.user.region,
+            sportId = myInfo.activeProfile.sport.id!!,
+            excludeUserId = myInfo.user.id!!,
+            myLp = myInfo.activeProfile.lp,
+            lpThreshold = LP_THRESHOLD,
+            limit = LIMIT_RECOMMEND
+        )
+
+        return OtherUsersRecommendationResponse.from(recommendedProfiles)
+    }
 
     @Transactional(readOnly = true)
     fun getOtherUsersLeaderBoard(
