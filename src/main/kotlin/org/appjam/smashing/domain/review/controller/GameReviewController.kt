@@ -17,21 +17,21 @@ import org.springframework.web.bind.annotation.RestController
 class GameReviewController(
     private val gameReviewService: GameReviewService,
 ) {
-//    @Operation(
-//        summary = "후기 단건 상세 조회 API",
-//        description = "리뷰 후기를 단건 상세 조회합니다."
-//    )
-//    @GetMapping("/{reviewId}")
-//    fun getReviewDetail(
-//        @AuthenticationPrincipal principal: CustomUserDetails,
-//        @PathVariable("reviewId") reviewId: String,
-//    ): ResponseEntity<ApiResponse<ReviewDetailResponse>> {
-//        val response = gameReviewService.getReviewDetail(
-//            reviewId = reviewId,
-//        )
-//
-//        return ApiResponse.success(
-//            data = response
-//        )
-//    }
+    @Operation(
+        summary = "후기 단건 상세 조회 API",
+        description = "리뷰 후기를 단건 상세 조회합니다."
+    )
+    @GetMapping("/{reviewId}")
+    fun getReviewDetail(
+        @AuthenticationPrincipal principal: CustomUserDetails,
+        @PathVariable("reviewId") reviewId: String,
+    ): ResponseEntity<ApiResponse<ReviewDetailResponse>> {
+        val response = gameReviewService.getReviewDetail(
+            reviewId = reviewId,
+        )
+
+        return ApiResponse.success(
+            data = response
+        )
+    }
 }

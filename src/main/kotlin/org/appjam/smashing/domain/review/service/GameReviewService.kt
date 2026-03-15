@@ -37,13 +37,13 @@ class GameReviewService(
         )
     }
 
-//    @Transactional(readOnly = true)
-//    fun getReviewDetail(
-//        reviewId: String,
-//    ): ReviewDetailResponse {
-//        val review = gameReviewRepository.findByIdFetchAll(reviewId)
-//            ?: throw CustomException(ErrorCode.REVIEW_NOT_FOUND)
-//
-//        return ReviewDetailResponse.from(review)
-//    }
+    @Transactional(readOnly = true)
+    fun getReviewDetail(
+        reviewId: String,
+    ): ReviewDetailResponse {
+        val review = gameReviewRepository.findByIdFetchAll(reviewId)
+            ?: throw CustomException(ErrorCode.REVIEW_NOT_FOUND)
+
+        return ReviewDetailResponse.from(review)
+    }
 }

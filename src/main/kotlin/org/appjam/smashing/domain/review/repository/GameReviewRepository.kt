@@ -1,14 +1,13 @@
 package org.appjam.smashing.domain.review.repository
 
-import org.appjam.smashing.domain.review.dto.response.ReviewRatingCount
-import org.appjam.smashing.domain.review.dto.response.ReviewTagCount
 import org.appjam.smashing.domain.review.entity.GameReview
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.query.Param
 
 interface GameReviewRepository : JpaRepository<GameReview, String>, GameReviewRepositoryCustom {
 
-//    @Query(
+    //    @Query(
 //        """
 //        select count(gr)
 //          from GameReview gr
@@ -22,19 +21,21 @@ interface GameReviewRepository : JpaRepository<GameReview, String>, GameReviewRe
 //        sportId: Long,
 //    ): Long
 //
-//    @Query(
-//        """
-//            select gr
-//            from GameReview gr
-//            join fetch gr.reviewer
-//            join fetch gr.reviewee
-//            left join fetch gr.tags
-//            where gr.id = :reviewId
-//        """
-//    )
-//    fun findByIdFetchAll(
-//        reviewId: String,
-//    ): GameReview?
+    @Query(
+        """
+            select gr
+            from GameReview gr
+            left join fetch gr.reviewerProfile rp
+            left join fetch rp.user
+            left join fetch gr.revieweeProfile ep
+            left join fetch ep.user
+            left join fetch gr.tags
+            where gr.id = :reviewId
+        """
+    )
+    fun findByIdFetchAll(
+        @Param("reviewId") reviewId: String,
+    ): GameReview?
 //
 //    @Query(
 //        """

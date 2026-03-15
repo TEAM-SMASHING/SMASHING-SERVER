@@ -2,12 +2,13 @@ package org.appjam.smashing.domain.user.entity
 
 import io.hypersistence.utils.hibernate.id.Tsid
 import jakarta.persistence.*
+import jakarta.persistence.ForeignKey
+import jakarta.persistence.Index
+import jakarta.persistence.Table
 import org.appjam.smashing.domain.common.entity.BaseEntity
 import org.appjam.smashing.domain.sport.entity.Sport
 import org.appjam.smashing.domain.tier.entity.Tier
-import org.hibernate.annotations.Comment
-import org.hibernate.annotations.SQLDelete
-import org.hibernate.annotations.SQLRestriction
+import org.hibernate.annotations.*
 
 @Entity
 @Table(
@@ -46,6 +47,7 @@ class UserSportProfile(
         nullable = false,
         foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT)
     )
+    @NotFound(action = NotFoundAction.IGNORE)
     @Comment("유저 IDX")
     val user: User,
 
