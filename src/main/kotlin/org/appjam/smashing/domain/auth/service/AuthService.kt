@@ -159,7 +159,7 @@ class AuthService(
         accessToken: String,
         userId: String,
     ) {
-        // 유저 조회
+        // 유저 검증 - 토큰 subject 확인 및 유저 조회 (없을 경우 예외 발생)
         validateAccessTokenSubject(
             accessToken = accessToken,
             userId = userId,
