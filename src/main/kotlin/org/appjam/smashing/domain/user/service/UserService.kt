@@ -1,13 +1,14 @@
 package org.appjam.smashing.domain.user.service
 
 import org.appjam.smashing.domain.game.repository.GameRepository
-import org.appjam.smashing.domain.matching.enums.MatchingStatus
 import org.appjam.smashing.domain.matching.repository.MatchingRepository
-import org.appjam.smashing.domain.matching.service.MatchingService
 import org.appjam.smashing.domain.review.repository.GameReviewRepository
 import org.appjam.smashing.domain.sport.repository.SportRepository
 import org.appjam.smashing.domain.tier.repository.TierRepository
-import org.appjam.smashing.domain.user.dto.command.*
+import org.appjam.smashing.domain.user.dto.command.ActiveProfileUpdateCommand
+import org.appjam.smashing.domain.user.dto.command.AddressUpdateCommand
+import org.appjam.smashing.domain.user.dto.command.OpenChatValidateCommand
+import org.appjam.smashing.domain.user.dto.command.ProfileAddCommand
 import org.appjam.smashing.domain.user.dto.response.*
 import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.entity.UserSportProfile
@@ -17,7 +18,6 @@ import org.appjam.smashing.global.common.dto.CommonCursorRequest
 import org.appjam.smashing.global.common.dto.CursorResponse
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
-import org.appjam.smashing.global.util.TimeUtils
 import org.appjam.smashing.global.util.TimeUtils.DEFAULT_ZONE_ID
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -349,29 +349,29 @@ class UserService(
 //        return OtherUserSearchResponse.from(otherUsersSearch)
 //    }
 
-//    @Transactional(readOnly = true)
-//    fun getUserRecentReview(
-//        userId: String,
-//        request: CommonCursorRequest
-//    ): CursorResponse<UserRecentReviewResponse> {
-//        val myInfo = getMyInfoAndActiveProfile(userId)
-//        val snapshotAt = request.snapshotAt ?: OffsetDateTime.now()
-//        val sportId = myInfo.activeProfile.sport.id ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
-//
-//        val response = gameReviewRepository.findAllBySportIdOrderByDate(
-//            request = request,
-//            sportId = sportId,
-//            userId = userId,
-//            snapshotAt = snapshotAt,
-//        )
-//
-//        return CursorResponse(
-//            snapshotAt = response.snapshotAt,
-//            results = UserRecentReviewResponse.listForm(response.results),
-//            nextCursor = response.nextCursor,
-//            hasNext = response.hasNext,
-//        )
-//    }
+    @Transactional(readOnly = true)
+    fun getUserRecentReview(
+        userId: String,
+        request: CommonCursorRequest
+    ): CursorResponse<UserRecentReviewResponse> {
+        val myInfo = getMyInfoAndActiveProfile(userId)
+        val snapshotAt = request.snapshotAt ?: OffsetDateTime.now()
+        val sportId = myInfo.activeProfile.sport.id ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
+
+        val response = gameReviewRepository.findAllBySportIdOrderByDate(
+            request = request,
+            sportId = sportId,
+            userId = userId,
+            snapshotAt = snapshotAt,
+        )
+
+        return CursorResponse(
+            snapshotAt = response.snapshotAt,
+            results = UserRecentReviewResponse.listForm(response.results),
+            nextCursor = response.nextCursor,
+            hasNext = response.hasNext,
+        )
+    }
 
 //    @Transactional(readOnly = true)
 //    fun getUserRecentReviewSummary(
@@ -472,31 +472,31 @@ class UserService(
         ) ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
     }
 
-//    private fun getCounts(
-//        userId: String,
-//        sportId: Long
-//    ): ReviewCountsResult {
-//        val ratingResults = gameReviewRepository.countRatingsByRevieweeAndSport(
-//            revieweeId = userId,
-//            sportId = sportId,
-//        )
-//        val ratingMap = ratingResults.associate { data ->
-//            data.reviewRating to data.counts
-//        }
-//
-//        val tagResults = gameReviewRepository.countTagsByRevieweeAndSport(
-//            revieweeId = userId,
-//            sportId = sportId,
-//        )
-//        val tagMap = tagResults.associate { data ->
-//            data.reviewTag to data.counts
-//        }
-//
-//        return ReviewCountsResult(
-//            ratingMap = ratingMap,
-//            tagMap = tagMap,
-//        )
-//    }
+    private fun getCounts(
+        userId: String,
+        sportId: Long
+    ): ReviewCountsResult {
+        val ratingResults = gameReviewRepository.countRatingsByRevieweeAndSport(
+            revieweeId = userId,
+            sportId = sportId,
+        )
+        val ratingMap = ratingResults.associate { data ->
+            data.reviewRating to data.counts
+        }
+
+        val tagResults = gameReviewRepository.countTagsByRevieweeAndSport(
+            revieweeId = userId,
+            sportId = sportId,
+        )
+        val tagMap = tagResults.associate { data ->
+            data.reviewTag to data.counts
+        }
+
+        return ReviewCountsResult(
+            ratingMap = ratingMap,
+            tagMap = tagMap,
+        )
+    }
 
 //    @Transactional(readOnly = true)
 //    fun getOtherUserRegion(

@@ -249,33 +249,33 @@ class UserController(
 //        )
 //    }
 
-//    @Operation(
-//        summary = "나의 최근 리뷰 목록 조회 API",
-//        description = """
-//            유저가 받은 최근 리뷰 목록을 조회합니다.
-//
-//            [조건]
-//            - 유저의 지역과는 무관
-//            - 유저의 활성화된 스포츠 경기에 대한 목록 리뷰
-//
-//            [정렬]
-//            - 가장 최근에 받은 리뷰 목록 순
-//        """
-//    )
-//    @GetMapping("/me/reviews/recent")
-//    fun getUserRecentReview(
-//        @AuthenticationPrincipal principal: CustomUserDetails,
-//        @Valid request: CommonCursorRequest,
-//    ): ResponseEntity<ApiResponse<CursorResponse<UserRecentReviewResponse>>> {
-//        val response = userService.getUserRecentReview(
-//            userId = principal.username,
-//            request = request,
-//        )
-//
-//        return ApiResponse.success(
-//            data = response,
-//        )
-//    }
+    @Operation(
+        summary = "나의 최근 리뷰 목록 조회 API",
+        description = """
+            유저가 받은 최근 리뷰 목록을 조회합니다.
+
+            [조건]
+            - 유저의 지역과는 무관
+            - 유저의 활성화된 스포츠 경기에 대한 목록 리뷰
+
+            [정렬]
+            - 가장 최근에 받은 리뷰 목록 순
+        """
+    )
+    @GetMapping("/me/reviews/recent")
+    fun getUserRecentReview(
+        @AuthenticationPrincipal principal: CustomUserDetails,
+        @Valid request: CommonCursorRequest,
+    ): ResponseEntity<ApiResponse<CursorResponse<UserRecentReviewResponse>>> {
+        val response = userService.getUserRecentReview(
+            userId = principal.username,
+            request = request,
+        )
+
+        return ApiResponse.success(
+            data = response,
+        )
+    }
 
 //    @Operation(
 //        summary = "나의 최근 리뷰 통계 조회 API ",

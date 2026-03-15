@@ -16,53 +16,50 @@ class GameReviewRepositoryCustomImpl(
     private val queryFactory: JPAQueryFactory,
     private val cursorCodec: CursorCodec,
 ) : GameReviewRepositoryCustom {
-//    override fun findAllBySportIdOrderByDate(
-//        request: CommonCursorRequest,
-//        sportId: Long,
-//        userId: String,
-//        snapshotAt: OffsetDateTime
-//    ): CursorPageResponse<UserRecentGameProjection> {
-//        val size = request.size.coerceIn(1, 50).toInt()
-//        val cursor = cursorCodec.decode(request.cursor)
-//        val gr = QGameReview.gameReview
-//
-//        val where = BooleanBuilder()
-//            .and(gr.reviewee.id.eq(userId))
-//            .and(gr.game.sport.id.eq(sportId))
-//            .and(gr.createdAt.loe(snapshotAt.toLocalDateTime()))
-//            .and(gr.content.isNotNull)
-//            .and(gr.content.isNotEmpty)
-//
-//        if (cursor != null) {
-//            where.and(gr.id.lt(cursor.id))
-//        }
+    override fun findAllBySportIdOrderByDate(
+        request: CommonCursorRequest,
+        sportId: Long,
+        userId: String,
+        snapshotAt: OffsetDateTime
+    ): CursorPageResponse<UserRecentGameProjection> {
+        val size = request.size.coerceIn(1, 50).toInt()
+        val cursor = cursorCodec.decode(request.cursor)
+        val gr = QGameReview.gameReview
 
-//    val reviewer = QUser.user
-//
-//        val projections = queryFactory
-//            .select(
-//                QUserRecentGameProjection(
-//                    gr.id,
-//    reviewer.nickname.coalesce(DELETED_USER_NICKNAME),
+        val where = BooleanBuilder()
+            .and(gr.revieweeProfile.user.id.eq(userId))
+            .and(gr.game.sport.id.eq(sportId))
+            .and(gr.createdAt.loe(snapshotAt.toLocalDateTime()))
+            .and(gr.content.isNotNull)
+            .and(gr.content.isNotEmpty)
 
-//                    gr.reviewer.nickname,
-//                    gr.createdAt,
-//                    gr.content,
-//                )
-//            )
-//            .from(gr)
-//    .leftJoin(gr.reviewer, reviewer)
+        if (cursor != null) {
+            where.and(gr.id.lt(cursor.id))
+        }
 
-//            .where(where)
-//            .orderBy(gr.id.desc())
-//            .limit((size + 1).toLong())
-//            .fetch()
-//
-//        return CursorPageResponse.create(
-//            snapshotAt = snapshotAt,
-//            fetched = projections,
-//            pageSize = size,
-//            cursorCodec = cursorCodec,
-//        )
-//    }
+        val reviewer = QUser.user
+
+        val projections = queryFactory
+            .select(
+                QUserRecentGameProjection(
+                    gr.id,
+                    reviewer.nickname.coalesce(DELETED_USER_NICKNAME),
+                    gr.createdAt,
+                    gr.content,
+                )
+            )
+            .from(gr)
+            .leftJoin(gr.reviewerProfile.user, reviewer)
+            .where(where)
+            .orderBy(gr.id.desc())
+            .limit((size + 1).toLong())
+            .fetch()
+
+        return CursorPageResponse.create(
+            snapshotAt = snapshotAt,
+            fetched = projections,
+            pageSize = size,
+            cursorCodec = cursorCodec,
+        )
+    }
 }
