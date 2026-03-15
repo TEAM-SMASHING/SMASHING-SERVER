@@ -1,6 +1,7 @@
 package org.appjam.smashing.domain.user.service
 
 import org.appjam.smashing.domain.game.repository.GameRepository
+import org.appjam.smashing.domain.matching.enums.MatchingStatus
 import org.appjam.smashing.domain.matching.repository.MatchingRepository
 import org.appjam.smashing.domain.review.repository.GameReviewRepository
 import org.appjam.smashing.domain.sport.repository.SportRepository
@@ -18,10 +19,12 @@ import org.appjam.smashing.global.common.dto.CommonCursorRequest
 import org.appjam.smashing.global.common.dto.CursorResponse
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
+import org.appjam.smashing.global.util.TimeUtils
 import org.appjam.smashing.global.util.TimeUtils.DEFAULT_ZONE_ID
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 
@@ -169,98 +172,135 @@ class UserService(
         )
     }
 
-//    @Transactional(readOnly = true)
-//    fun getOtherUserProfiles(
-//        userId: String,
-//        otherUserId: String,
-//        sportCode: String?,
-//    ): OtherUserProfilesResponse {
-//        val myInfo = getMyInfoAndActiveProfile(userId)
-//
-//        val otherUser = userRepository.findByIdOrNull(otherUserId)
-//            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
-//
-//        val allProfiles = userSportProfileRepository.findAllByUserIdOrderBySportName(otherUserId)
-//
-//        val selectedProfile = if (sportCode == null) {
-//            allProfiles.find { myInfo.activeProfile.sport.code == it.sport.code }
-//                ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
-//        } else {
-//            allProfiles.find { it.sport.code == sportCode }
-//                ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
-//        }
-//
-//        val reviews = gameReviewRepository.countByRevieweeAndSport(
-//            revieweeUserId = otherUserId,
-//            sportId = selectedProfile.sport.id!!,
-//        )
-//
-//        // 하루 (00:00 ~) 최대 3회 게임 가능
-//        /* TODO: 앱잼 기간내 하루 3회 제한 해제
-//        validateDailyLimit(
-//            requesterUserId = requesterUserId,
-//            receiverUserId = receiverProfile.user.id!!,
-//        )
-//        */
-//
-//        // 24시간 내 매칭 요청이 남아있는 경우, 동일 상대방에 대해 중복 매칭 요청 불가
-//        val validateNoMatchingWithin24h = validateNoMatchingWithin24h(
-//            userA = userId,
-//            userB = selectedProfile.user.id!!,
-//        )
-//
-//        val receivedMatching = matchingRepository.findFirstByReceiverIdAndRequesterIdAndSportIdAndStatusOrderByCreatedAtDesc(
-//            receiverId = userId,
-//            requesterId = otherUserId,
-//            sportId = selectedProfile.sport.id!!,
-//            status = MatchingStatus.REQUESTED
-//        )
-//
-//        return OtherUserProfilesResponse.from(
-//            nickname = otherUser.nickname,
-//            gender = otherUser.gender,
-//            reviews = reviews,
-//            selectedProfile = selectedProfile,
-//            allProfiles = allProfiles,
-//            isChallengeable = validateNoMatchingWithin24h,
-//            isAcceptable = receivedMatching != null,
-//            receivedMatchingId = receivedMatching?.id,
-//        )
-//    }
+    @Transactional(readOnly = true)
+    fun getOtherUserProfiles(
+        userId: String,
+        otherUserId: String,
+        sportCode: String?,
+    ): OtherUserProfilesResponse {
+        val myInfo = getMyInfoAndActiveProfile(userId)
 
-    private fun validateDailyLimit(
-        requesterUserId: String,
-        receiverUserId: String
-    ): Boolean {
-        val now = LocalDateTime.now(DEFAULT_ZONE_ID)
-        val startOfDay = now.toLocalDate().atStartOfDay()
+        val otherUser = userRepository.findByIdOrNull(otherUserId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
-        // 하루 확정 게임 갯수 조회
-        val todayConfirmedGames = gameRepository.countTodayConfirmedGamesBetweenUsers(
-            startAt = startOfDay,
-            userA = requesterUserId,
-            userB = receiverUserId,
+        val allProfiles = userSportProfileRepository.findAllByUserIdOrderBySportName(otherUserId)
+
+        val selectedProfile = if (sportCode == null) {
+            allProfiles.find { myInfo.activeProfile.sport.code == it.sport.code }
+                ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
+        } else {
+            allProfiles.find { it.sport.code == sportCode }
+                ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+        }
+
+        val reviews = gameReviewRepository.countByRevieweeAndSport(
+            revieweeUserId = otherUserId,
+            sportId = selectedProfile.sport.id!!,
         )
 
-        // 하루 최대 3회 제한
-        return todayConfirmedGames < 3L
+        // 매칭 신청 가능 여부 확인
+        val isChallengeable = checkIsChallengeable(
+            myProfileId = myInfo.activeProfile.id!!,
+            otherProfileId = selectedProfile.id!!,
+            sportId = selectedProfile.sport.id!!
+        )
+
+        // 매칭 수락 가능 여부 확인
+        val receivedMatching = matchingRepository.findFirstByReceiverProfileIdAndRequesterProfileIdAndSportIdAndStatusOrderByCreatedAtDesc(
+            receiverProfileId = myInfo.activeProfile.id!!,
+            requesterProfileId = selectedProfile.id!!,
+            sportId = selectedProfile.sport.id!!,
+            status = MatchingStatus.REQUESTED
+        )
+
+        return OtherUserProfilesResponse.from(
+            nickname = otherUser.nickname,
+            gender = otherUser.gender,
+            reviews = reviews,
+            selectedProfile = selectedProfile,
+            allProfiles = allProfiles,
+            isChallengeable = isChallengeable,
+            isAcceptable = receivedMatching != null,
+            receivedMatchingId = receivedMatching?.id,
+        )
     }
 
-//    private fun validateNoMatchingWithin24h(
-//        userA: String,
-//        userB: String,
-//    ): Boolean {
-//        val now = LocalDateTime.now(TimeUtils.DEFAULT_ZONE_ID)
-//        val since = now.minusHours(24)
-//
-//        val exists = matchingRepository.existsUnconfirmedMatchingBetweenUsersSinceRaw(
-//            startAt = since,
-//            userA = userA,
-//            userB = userB,
-//        ) == 1L
-//
-//        return !exists
-//    }
+    private fun checkIsChallengeable(
+        myProfileId: String,
+        otherProfileId: String,
+        sportId: Long,
+    ): Boolean {
+        // 하루 3판 제한 (RESULT_CONFIRMED 게임 기준)
+        val isDailyLimitValid = validateDailyLimit(
+            profileA = myProfileId,
+            profileB = otherProfileId,
+            sportId = sportId,
+        )
+
+        // 24h 쿨다운 (요청/취소/거절 기준)
+        val isCooldownValid = runCatching {
+            validateCooldown(
+                profileA = myProfileId,
+                profileB = otherProfileId,
+                sportId = sportId,
+                now = TimeUtils.nowOffsetDateTime().toLocalDateTime(),
+            )
+        }.isSuccess
+
+        return isDailyLimitValid && isCooldownValid
+    }
+
+    private fun validateDailyLimit(
+        profileA: String,
+        profileB: String,
+        sportId: Long,
+    ): Boolean {
+        val today = LocalDate.now(DEFAULT_ZONE_ID)
+        val startOfDay = today.atStartOfDay()
+        val endOfDay = today.plusDays(1).atStartOfDay()
+
+        val confirmedCount = gameRepository.countConfirmedGamesTodayBetweenProfiles(
+            profileA = profileA,
+            profileB = profileB,
+            sportId = sportId,
+            startOfDay = startOfDay,
+            endOfDay = endOfDay,
+        )
+
+        return confirmedCount < 3L
+    }
+
+    private fun validateCooldown(
+        profileA: String,
+        profileB: String,
+        sportId: Long,
+        now: LocalDateTime,
+    ) {
+        val latest = matchingRepository.findLatestForCooldown(
+            profileA = profileA,
+            profileB = profileB,
+            sportId = sportId,
+        ) ?: return
+
+        val status = runCatching { MatchingStatus.valueOf(latest.status) }
+            .getOrElse { return }
+
+        when (status) {
+            MatchingStatus.REQUESTED -> {
+                val until = latest.createdAt.plusHours(24)
+                if (now.isBefore(until)) throw CustomException(ErrorCode.MATCHING_PENDING_EXISTS)
+            }
+
+            MatchingStatus.CANCELLED,
+            MatchingStatus.REJECTED -> {
+                val base = latest.respondedAt ?: latest.createdAt
+                val until = base.plusHours(24)
+                if (now.isBefore(until)) throw CustomException(ErrorCode.MATCHING_PENDING_EXISTS)
+            }
+
+            else -> Unit
+        }
+    }
 
     @Transactional
     fun updateRegion(

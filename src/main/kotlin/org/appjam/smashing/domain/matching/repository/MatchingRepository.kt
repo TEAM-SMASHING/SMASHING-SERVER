@@ -6,10 +6,8 @@ import org.appjam.smashing.domain.matching.entity.Matching
 import org.appjam.smashing.domain.matching.enums.MatchingStatus
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Lock
-import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
-import java.time.LocalDateTime
 
 interface MatchingRepository : JpaRepository<Matching, String>, MatchingRepositoryCustom {
 
@@ -85,13 +83,13 @@ interface MatchingRepository : JpaRepository<Matching, String>, MatchingReposito
 //        sportId: Long,
 //    ): Int
 
-//    fun findFirstByReceiverIdAndRequesterIdAndSportIdAndStatusOrderByCreatedAtDesc(
-//        receiverId: String,
-//        requesterId: String,
-//        sportId: Long,
-//        status: MatchingStatus
-//    ): Matching?
-//
+    fun findFirstByReceiverProfileIdAndRequesterProfileIdAndSportIdAndStatusOrderByCreatedAtDesc(
+        receiverProfileId: String,
+        requesterProfileId: String,
+        sportId: Long,
+        status: MatchingStatus
+    ): Matching?
+
 //    @Query(
 //        value = """
 //    select exists(
