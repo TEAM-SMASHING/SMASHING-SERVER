@@ -373,24 +373,24 @@ class UserService(
         )
     }
 
-//    @Transactional(readOnly = true)
-//    fun getUserRecentReviewSummary(
-//        userId: String,
-//    ): UserRecentReviewSummaryResponse {
-//        val myInfo = getMyInfoAndActiveProfile(userId)
-//
-//        val sportId = myInfo.activeProfile.sport.id!!
-//
-//        val counts = getCounts(
-//            userId = userId,
-//            sportId = sportId
-//        )
-//
-//        return UserRecentReviewSummaryResponse.from(
-//            ratingMap = counts.ratingMap,
-//            tagMap = counts.tagMap,
-//        )
-//    }
+    @Transactional(readOnly = true)
+    fun getUserRecentReviewSummary(
+        userId: String,
+    ): UserRecentReviewSummaryResponse {
+        val myInfo = getMyInfoAndActiveProfile(userId)
+
+        val sportId = myInfo.activeProfile.sport.id!!
+
+        val counts = getCounts(
+            userId = userId,
+            sportId = sportId
+        )
+
+        return UserRecentReviewSummaryResponse.from(
+            ratingMap = counts.ratingMap,
+            tagMap = counts.tagMap,
+        )
+    }
 
 //    @Transactional(readOnly = true)
 //    fun getOtherUserRecentReview(

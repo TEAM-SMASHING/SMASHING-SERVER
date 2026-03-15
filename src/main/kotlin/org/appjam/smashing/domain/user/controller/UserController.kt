@@ -3,7 +3,10 @@ package org.appjam.smashing.domain.user.controller
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
-import org.appjam.smashing.domain.user.dto.request.*
+import org.appjam.smashing.domain.user.dto.request.ActiveProfileUpdateRequest
+import org.appjam.smashing.domain.user.dto.request.AddressUpdateRequest
+import org.appjam.smashing.domain.user.dto.request.OpenChatValidateRequest
+import org.appjam.smashing.domain.user.dto.request.ProfileAddRequest
 import org.appjam.smashing.domain.user.dto.response.*
 import org.appjam.smashing.domain.user.service.UserService
 import org.appjam.smashing.global.auth.security.data.CustomUserDetails
@@ -277,26 +280,26 @@ class UserController(
         )
     }
 
-//    @Operation(
-//        summary = "나의 최근 리뷰 통계 조회 API ",
-//        description = """
-//            유저가 받은 리뷰의 통계를 조회합니다.
-//
-//            [조건]
-//            - 유저의 지역과는 무관
-//            - 유저의 활성화된 스포츠 경기에 대한 목록 리뷰
-//        """
-//    )
-//    @GetMapping("/me/reviews/summary")
-//    fun getUserRecentReviewSummary(
-//        @AuthenticationPrincipal principal: CustomUserDetails,
-//    ): ResponseEntity<ApiResponse<UserRecentReviewSummaryResponse>> {
-//        val response = userService.getUserRecentReviewSummary(principal.username)
-//
-//        return ApiResponse.success(
-//            data = response,
-//        )
-//    }
+    @Operation(
+        summary = "나의 최근 리뷰 통계 조회 API ",
+        description = """
+            유저가 받은 리뷰의 통계를 조회합니다.
+
+            [조건]
+            - 유저의 지역과는 무관
+            - 유저의 활성화된 스포츠 경기에 대한 목록 리뷰
+        """
+    )
+    @GetMapping("/me/reviews/summary")
+    fun getUserRecentReviewSummary(
+        @AuthenticationPrincipal principal: CustomUserDetails,
+    ): ResponseEntity<ApiResponse<UserRecentReviewSummaryResponse>> {
+        val response = userService.getUserRecentReviewSummary(principal.username)
+
+        return ApiResponse.success(
+            data = response,
+        )
+    }
 
 //    @Operation(
 //        summary = "유저의 최근 리뷰 목록 조회 API",
