@@ -143,31 +143,31 @@ class UserService(
         }
     }
 
-//    @Transactional(readOnly = true)
-//    fun getUserProfiles(
-//        userId: String,
-//    ): UserProfilesResponse {
-//        val user = userRepository.findByIdOrNull(userId)
-//            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
-//
-//        val allProfiles = userSportProfileRepository.findAllByUserIdOrderBySportName(userId)
-//
-//        val activeProfile = allProfiles.find { it.id == user.activeUserSportProfileId }
-//            ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
-//
-//        val reviews = gameReviewRepository.countByRevieweeAndSport(
-//            revieweeUserId = userId,
-//            sportId = activeProfile.sport.id!!,
-//        )
-//
-//        return UserProfilesResponse.from(
-//            nickname = user.nickname,
-//            gender = user.gender,
-//            reviews = reviews,
-//            activeProfile = activeProfile,
-//            allProfiles = allProfiles,
-//        )
-//    }
+    @Transactional(readOnly = true)
+    fun getUserProfiles(
+        userId: String,
+    ): UserProfilesResponse {
+        val user = userRepository.findByIdOrNull(userId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+
+        val allProfiles = userSportProfileRepository.findAllByUserIdOrderBySportName(userId)
+
+        val activeProfile = allProfiles.find { it.id == user.activeUserSportProfileId }
+            ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
+
+        val reviews = gameReviewRepository.countByRevieweeAndSport(
+            revieweeUserId = userId,
+            sportId = activeProfile.sport.id!!,
+        )
+
+        return UserProfilesResponse.from(
+            nickname = user.nickname,
+            gender = user.gender,
+            reviews = reviews,
+            activeProfile = activeProfile,
+            allProfiles = allProfiles,
+        )
+    }
 
 //    @Transactional(readOnly = true)
 //    fun getOtherUserProfiles(

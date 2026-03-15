@@ -89,28 +89,26 @@ class UserController(
         return ApiResponse.success()
     }
 
-    // refac
+    @Operation(
+        summary = "사용자 프로필별 마이페이지 정보 조회 API",
+        description = """
+            마이페이지 화면에서 유저의 프로필을 티어 정보와 함께 조회합니다.
+            - 스포츠 프로필 활성화 여부 상관 없이 allProfiles 에 모든 스포츠를 가나다 순 정렬
+           - 활성 여부는 isActive로 판단
+        """
+    )
+    @GetMapping("/me/profiles")
+    fun getUserProfiles(
+        @AuthenticationPrincipal principal: CustomUserDetails,
+    ): ResponseEntity<ApiResponse<UserProfilesResponse>> {
+        val response = userService.getUserProfiles(
+            userId = principal.username,
+        )
 
-//    @Operation(
-//        summary = "사용자 프로필별 마이페이지 정보 조회 API",
-//        description = """
-//            마이페이지 화면에서 유저의 프로필을 티어 정보와 함께 조회합니다.
-//            - 스포츠 프로필 활성화 여부 상관 없이 allProfiles 에 모든 스포츠를 가나다 순 정렬
-//           - 활성 여부는 isActive로 판단
-//        """
-//    )
-//    @GetMapping("/me/profiles")
-//    fun getUserProfiles(
-//        @AuthenticationPrincipal principal: CustomUserDetails,
-//    ): ResponseEntity<ApiResponse<UserProfilesResponse>> {
-//        val response = userService.getUserProfiles(
-//            userId = principal.username,
-//        )
-//
-//        return ApiResponse.success(
-//            data = response,
-//        )
-//    }
+        return ApiResponse.success(
+            data = response,
+        )
+    }
 
 //    @Operation(
 //        summary = "다른 유저 정보 상세 조회 API",
