@@ -89,6 +89,8 @@ class UserController(
         return ApiResponse.success()
     }
 
+    // refac
+
 //    @Operation(
 //        summary = "사용자 프로필별 마이페이지 정보 조회 API",
 //        description = """
@@ -414,5 +416,5 @@ class UserController(
             data = response,
         )
     }
-    
+
 }
