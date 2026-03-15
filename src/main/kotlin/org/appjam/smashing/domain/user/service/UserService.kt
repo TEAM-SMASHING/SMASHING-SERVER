@@ -392,40 +392,40 @@ class UserService(
         )
     }
 
-//    @Transactional(readOnly = true)
-//    fun getOtherUserRecentReview(
-//        userId: String,
-//        otherUserId: String,
-//        sportCode: String?,
-//        request: CommonCursorRequest,
-//    ): CursorResponse<UserRecentReviewResponse> {
-//        val otherUser = userRepository.findByIdOrNull(otherUserId)
-//            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
-//
-//        val selectedProfile = resolveProfile(
-//            userId = userId,
-//            otherUser = otherUser,
-//            sportCode = sportCode,
-//        )
-//
-//        val sportId = selectedProfile.sport.id!!
-//
-//        val snapshotAt = request.snapshotAt ?: OffsetDateTime.now()
-//
-//        val response = gameReviewRepository.findAllBySportIdOrderByDate(
-//            request = request,
-//            sportId = sportId,
-//            userId = otherUserId,
-//            snapshotAt = snapshotAt
-//        )
-//
-//        return CursorResponse(
-//            snapshotAt = snapshotAt,
-//            results = UserRecentReviewResponse.listForm(response.results),
-//            nextCursor = response.nextCursor,
-//            hasNext = response.hasNext
-//        )
-//    }
+    @Transactional(readOnly = true)
+    fun getOtherUserRecentReview(
+        userId: String,
+        otherUserId: String,
+        sportCode: String?,
+        request: CommonCursorRequest,
+    ): CursorResponse<UserRecentReviewResponse> {
+        val otherUser = userRepository.findByIdOrNull(otherUserId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+
+        val selectedProfile = resolveProfile(
+            userId = userId,
+            otherUser = otherUser,
+            sportCode = sportCode,
+        )
+
+        val sportId = selectedProfile.sport.id!!
+
+        val snapshotAt = request.snapshotAt ?: OffsetDateTime.now()
+
+        val response = gameReviewRepository.findAllBySportIdOrderByDate(
+            request = request,
+            sportId = sportId,
+            userId = otherUserId,
+            snapshotAt = snapshotAt
+        )
+
+        return CursorResponse(
+            snapshotAt = snapshotAt,
+            results = UserRecentReviewResponse.listForm(response.results),
+            nextCursor = response.nextCursor,
+            hasNext = response.hasNext
+        )
+    }
 
 //    @Transactional(readOnly = true)
 //    fun getOtherUserRecentReviewSummary(
