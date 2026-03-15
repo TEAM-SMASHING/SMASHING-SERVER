@@ -464,33 +464,33 @@ class UserService(
         )
     }
 
-//    @Transactional(readOnly = true)
-//    fun getOtherUserRecentReviewSummary(
-//        userId: String,
-//        otherUserId: String,
-//        sportCode: String?,
-//    ): UserRecentReviewSummaryResponse {
-//        val otherUser = userRepository.findByIdOrNull(otherUserId)
-//            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
-//
-//        val selectedProfile = resolveProfile(
-//            userId = userId,
-//            otherUser = otherUser,
-//            sportCode = sportCode,
-//        )
-//
-//        val sportId = selectedProfile.sport.id!!
-//
-//        val counts = getCounts(
-//            userId = otherUserId,
-//            sportId = sportId
-//        )
-//
-//        return UserRecentReviewSummaryResponse.from(
-//            ratingMap = counts.ratingMap,
-//            tagMap = counts.tagMap,
-//        )
-//    }
+    @Transactional(readOnly = true)
+    fun getOtherUserRecentReviewSummary(
+        userId: String,
+        otherUserId: String,
+        sportCode: String?,
+    ): UserRecentReviewSummaryResponse {
+        val otherUser = userRepository.findByIdOrNull(otherUserId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+
+        val selectedProfile = resolveProfile(
+            userId = userId,
+            otherUser = otherUser,
+            sportCode = sportCode,
+        )
+
+        val sportId = selectedProfile.sport.id!!
+
+        val counts = getCounts(
+            userId = otherUserId,
+            sportId = sportId
+        )
+
+        return UserRecentReviewSummaryResponse.from(
+            ratingMap = counts.ratingMap,
+            tagMap = counts.tagMap,
+        )
+    }
 
     private fun resolveProfile(
         userId: String,

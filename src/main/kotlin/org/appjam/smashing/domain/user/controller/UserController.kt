@@ -331,33 +331,33 @@ class UserController(
         )
     }
 
-//    @Operation(
-//        summary = "유저의 최근 리뷰 통계 조회 API",
-//        description = """
-//            다른 유저가 받은 리뷰의 통계를 조회합니다.
-//
-//            [조건]
-//            - 다른 유저의 지역과는 무관
-//            - 사용자가 선택한 다른 유저의 스포츠 경기에 대한 목록 리뷰
-//            - QueryParam(sportCode)이 없을 경우 나를 기준으로 활성화된 스포츠 프로필이 디폴트
-//        """
-//    )
-//    @GetMapping("/{userId}/reviews/summary")
-//    fun getOtherUserRecentReviewSummary(
-//        @AuthenticationPrincipal principal: CustomUserDetails,
-//        @PathVariable userId: String,
-//        @RequestParam sportCode: String?,
-//    ): ResponseEntity<ApiResponse<UserRecentReviewSummaryResponse>> {
-//        val response = userService.getOtherUserRecentReviewSummary(
-//            userId = principal.username,
-//            otherUserId = userId,
-//            sportCode = sportCode,
-//        )
-//
-//        return ApiResponse.success(
-//            data = response,
-//        )
-//    }
+    @Operation(
+        summary = "유저의 최근 리뷰 통계 조회 API",
+        description = """
+            다른 유저가 받은 리뷰의 통계를 조회합니다.
+
+            [조건]
+            - 다른 유저의 지역과는 무관
+            - 사용자가 선택한 다른 유저의 스포츠 경기에 대한 목록 리뷰
+            - QueryParam(sportCode)이 없을 경우 나를 기준으로 활성화된 스포츠 프로필이 디폴트
+        """
+    )
+    @GetMapping("/{userId}/reviews/summary")
+    fun getOtherUserRecentReviewSummary(
+        @AuthenticationPrincipal principal: CustomUserDetails,
+        @PathVariable userId: String,
+        @RequestParam sportCode: String?,
+    ): ResponseEntity<ApiResponse<UserRecentReviewSummaryResponse>> {
+        val response = userService.getOtherUserRecentReviewSummary(
+            userId = principal.username,
+            otherUserId = userId,
+            sportCode = sportCode,
+        )
+
+        return ApiResponse.success(
+            data = response,
+        )
+    }
 
 //    @Operation(
 //        summary = "사용자 지역 유저들 목록 조회 API",
