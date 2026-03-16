@@ -1,13 +1,70 @@
 package org.appjam.smashing.domain.report.service
 
+import org.appjam.smashing.domain.report.dto.command.UserReportCommand
+import org.appjam.smashing.domain.report.entity.Report
+import org.appjam.smashing.domain.report.enums.ReportType
+import org.appjam.smashing.domain.report.repository.ReportRepository
+import org.appjam.smashing.domain.user.entity.User
+import org.appjam.smashing.domain.user.repository.UserRepository
+import org.appjam.smashing.global.exception.CustomException
+import org.appjam.smashing.global.exception.ErrorCode
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 
 @Service
-class ReportService {
-
+class ReportService(
+    private val userRepository: UserRepository,
+    private val reportRepository: ReportRepository,
+) {
     @Transactional
-    fun reportUser() {
+    fun reportUser(
+        userId: String,
+        requestCommand: UserReportCommand,
+    ) {
+        val reporter = userRepository.findByIdOrNull(userId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+        val reportedUser = userRepository.findByIdOrNull(requestCommand.reportedUserId)
+            ?: throw CustomException(ErrorCode.REPORTED_NOT_FOUND)
 
+        // 조치1 - 자기 자신 신고 방지
+        if (userId == reportedUser.id) {
+            throw CustomException(ErrorCode.REPORT_SELF_FORBIDDEN)
+        }
+
+        // 조치2 - 중복 신고 확인
+        if (reportRepository.existsByReporterAndReportedUser(reporter, reportedUser)) {
+            throw CustomException(ErrorCode.REPORT_ALREADY_EXISTS)
+        }
+
+        // 정책1 - 신고 데이터 저장
+        val report = Report.create(
+            reporter = reporter,
+            reportedUser = reportedUser,
+            reportType = requestCommand.reportType,
+            reasonDetail = if (requestCommand.reportType == ReportType.ETC) requestCommand.reasonDetail else null
+        )
+        reportRepository.save(report)
+
+        // 정책2 - 자동 제재 정책 확인
+        checkAndApplySanction(reportedUser)
     }
+
+    private fun checkAndApplySanction(user: User) {
+        val thirtyDaysAgo = LocalDateTime.now().minusDays(30)
+        // 30일 내에 서로 다른 신고자에게 받은 신고 횟수 카운트
+        val reportCount = reportRepository.countRecentReports(
+            reportedUser = user,
+            since = thirtyDaysAgo,
+        )
+
+        if (reportCount >= 3) {
+            // 유저 상태 변경 및 제한 종료일 설정 (7일)
+            //   user.applySanction(durationDays = 7)
+
+            // TODO:  예정된 경기 및 매칭 요청 일괄 무효 처리
+        }
+    }
+
 }
