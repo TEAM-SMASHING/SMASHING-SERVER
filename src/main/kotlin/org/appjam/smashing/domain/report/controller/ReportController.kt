@@ -29,7 +29,10 @@ class ReportController(
         @AuthenticationPrincipal principal: CustomUserDetails,
         @Valid @RequestBody userReportRequest: UserReportRequest,
     ): ResponseEntity<ApiResponse<Unit>> {
-        reportService.reportUser()
+        reportService.reportUser(
+            userId = principal.username,
+            requestCommand = userReportRequest.toCommand()
+        )
 
         return ApiResponse.success()
     }
