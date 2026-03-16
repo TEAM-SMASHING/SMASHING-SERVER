@@ -4,9 +4,11 @@ import io.hypersistence.utils.hibernate.id.Tsid
 import jakarta.persistence.*
 import org.appjam.smashing.domain.common.entity.BaseEntity
 import org.appjam.smashing.domain.user.enums.Gender
+import org.appjam.smashing.domain.user.enums.UserStatus
 import org.hibernate.annotations.Comment
 import org.hibernate.annotations.SQLDelete
 import org.hibernate.annotations.SQLRestriction
+import java.time.LocalDateTime
 
 @Entity
 @Table(
@@ -53,7 +55,16 @@ class User(
 
     @Column(name = "active_user_sport_profile_id", length = 13)
     @Comment("현재 활성화된 유저-스포츠 프로필 IDX")
-    var activeUserSportProfileId: String? = null
+    var activeUserSportProfileId: String? = null,
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Comment("유저 상태")
+    var status: UserStatus = UserStatus.ACTIVE,
+
+    @Column
+    @Comment("제재 종료 일시")
+    var sanctionEndDate: LocalDateTime? = null
 ) : BaseEntity() {
 
     fun updateActiveProfile(
@@ -67,6 +78,16 @@ class User(
     ) {
         this.region = newRegion
     }
+
+    fun applySanction(
+        durationDays: Long,
+    ) {
+        this.status = UserStatus.SANCTIONED
+        this.sanctionEndDate = LocalDateTime.now().plusDays(durationDays)
+    }
+
+    fun isRestricted(): Boolean = status == UserStatus.SANCTIONED &&
+            (sanctionEndDate != null && sanctionEndDate!!.isAfter(LocalDateTime.now()))
 
     companion object {
         const val DELETED_USER_NICKNAME = "알 수 없음"

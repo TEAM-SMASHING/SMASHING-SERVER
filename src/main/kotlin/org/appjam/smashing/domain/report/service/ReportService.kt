@@ -61,10 +61,9 @@ class ReportService(
 
         if (reportCount >= 3) {
             // 유저 상태 변경 및 제한 종료일 설정 (7일)
-            //   user.applySanction(durationDays = 7)
+            user.applySanction(durationDays = 7)
 
             // TODO:  예정된 경기 및 매칭 요청 일괄 무효 처리
         }
     }
-
 }
