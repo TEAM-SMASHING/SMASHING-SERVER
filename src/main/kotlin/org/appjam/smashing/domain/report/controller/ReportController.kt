@@ -22,7 +22,13 @@ class ReportController(
 ) {
     @Operation(
         summary = "신고 API",
-        description = "유저를 신고합니다."
+        description = """
+            유저를 신고합니다.
+                
+            [정책]
+             - 같은 유저를 두 번 이상 신고할 수 없습니다.
+             - 30일 내에 서로 다른 3명의 유저에게 신고당할 경우, 7일 동안 탐색/추천에서 노출에 제외됩니다.
+        """
     )
     @PostMapping
     fun reportUser(
