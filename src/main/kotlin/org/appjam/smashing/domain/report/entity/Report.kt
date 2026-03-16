@@ -48,6 +48,16 @@ class Report(
 ) : BaseEntity() {
 
     companion object {
-
+        fun create(
+            reporter: User,
+            reportedUser: User,
+            reportType: ReportType,
+            reasonDetail: String?
+        ) = Report(
+            reporter = reporter,
+            reportedUser = reportedUser,
+            reportType = reportType,
+            reasonDetail = reasonDetail,
+        )
     }
 }
