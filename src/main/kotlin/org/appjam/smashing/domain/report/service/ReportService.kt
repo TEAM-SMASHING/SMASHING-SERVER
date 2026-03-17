@@ -54,10 +54,10 @@ class ReportService(
         reportRepository.save(report)
 
         // 정책2 - 자동 제재 정책 확인
-        checkAndApplySanction(reportedUser)
+        checkAndApplyRestriction(reportedUser)
     }
 
-    private fun checkAndApplySanction(user: User) {
+    private fun checkAndApplyRestriction(user: User) {
         val thirtyDaysAgo = LocalDateTime.now().minusDays(30)
         // 30일 내에 서로 다른 신고자에게 받은 신고 횟수 카운트
         val reportCount = reportRepository.countRecentReports(
