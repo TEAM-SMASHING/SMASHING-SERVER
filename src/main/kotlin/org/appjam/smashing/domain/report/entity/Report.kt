@@ -42,7 +42,7 @@ class Report(
     @Comment("신고 타입")
     val reportType: ReportType,
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = true, length = 100)
     @Comment("기타 사유")
     val reasonDetail: String? = null
 ) : BaseEntity() {
