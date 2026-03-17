@@ -79,14 +79,14 @@ class User(
         this.region = newRegion
     }
 
-    fun applySanction(
+    fun applyRestriction(
         durationDays: Long,
     ) {
-        this.status = UserStatus.SANCTIONED
+        this.status = UserStatus.RESTRICTED
         this.sanctionEndDate = LocalDateTime.now().plusDays(durationDays)
     }
 
-    fun isRestricted(): Boolean = status == UserStatus.SANCTIONED &&
+    fun isRestricted(): Boolean = status == UserStatus.RESTRICTED &&
             (sanctionEndDate != null && sanctionEndDate!!.isAfter(LocalDateTime.now()))
 
     companion object {

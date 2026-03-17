@@ -61,7 +61,7 @@ class UserSportProfileRepositoryCustomImpl(
                 userSportProfile.lp.between(myLp - lpThreshold, myLp + lpThreshold),
                 user.status.eq(UserStatus.ACTIVE)
                     .or(
-                        user.status.eq(UserStatus.SANCTIONED)
+                        user.status.eq(UserStatus.RESTRICTED)
                             .and(user.sanctionEndDate.before(now))
                     )
             )
@@ -91,7 +91,7 @@ class UserSportProfileRepositoryCustomImpl(
                 user.nickname.startsWith(nickname),
                 user.status.eq(UserStatus.ACTIVE)
                     .or(
-                        user.status.eq(UserStatus.SANCTIONED)
+                        user.status.eq(UserStatus.RESTRICTED)
                             .and(user.sanctionEndDate.before(now))
                     )
             )
