@@ -14,6 +14,7 @@ import org.appjam.smashing.domain.outbox.dto.MatchingSentPayload
 import org.appjam.smashing.domain.outbox.dto.MatchingUpdatedPayload
 import org.appjam.smashing.domain.outbox.enums.MatchingUpdateStatus
 import org.appjam.smashing.domain.outbox.enums.SseEventType
+import org.appjam.smashing.domain.review.repository.GameReviewRepository
 import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.appjam.smashing.domain.user.repository.UserRepository
 import org.appjam.smashing.domain.user.repository.UserSportProfileRepository
@@ -34,6 +35,7 @@ class MatchingService(
     private val userRepository: UserRepository,
     private val userSportProfileRepository: UserSportProfileRepository,
     private val gameRepository: GameRepository,
+    private val gameReviewRepository: GameReviewRepository,
     private val notificationService: NotificationService,
     private val outboxEventPublisher: OutboxEventPublisher,
 ) {
@@ -105,21 +107,14 @@ class MatchingService(
             requesterProfile = requesterProfile,
         )
 
-        /**
-         * TODO: 프로필 기반 리뷰 카운트로 바꿀지 결정되면 교체 필요
-         */
-        val requesterReviewCount = 123L
+        // 전체 종목 통합 후기 수 조회
+        val requesterReviewCount = gameReviewRepository.countByRevieweeUserId(
+            userId = requesterUser.id!!,
+        )
 
-//            gameReviewRepository.countByRevieweeAndSport(
-//            revieweeUserId = requesterUser.id!!,
-//            sportId = sportId,
-//        )
-        val receiverReviewCount = 123L // TODO: 이거 아직 논의 안됐음......
-
-//            gameReviewRepository.countByRevieweeAndSport(
-//            revieweeUserId = receiverUser.id!!,
-//            sportId = sportId,
-//        )
+        val receiverReviewCount = gameReviewRepository.countByRevieweeUserId(
+            userId = receiverUser.id!!,
+        )
 
         // SSE - 상대방에게 받은 요청 실시간 반영 + 토스트
         outboxEventPublisher.publish(
