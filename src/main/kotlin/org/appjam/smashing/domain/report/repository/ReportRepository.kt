@@ -8,9 +8,10 @@ import org.springframework.data.repository.query.Param
 import java.time.LocalDateTime
 
 interface ReportRepository : JpaRepository<Report, String> {
-    fun existsByReporterAndReportedUser(
+    fun existsByReporterAndReportedUserAndCreatedAtAfter(
         reporter: User,
         reportedUser: User,
+        since: LocalDateTime
     ): Boolean
 
     @Query(

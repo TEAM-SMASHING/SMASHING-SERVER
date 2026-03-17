@@ -33,8 +33,14 @@ class ReportService(
             throw CustomException(ErrorCode.REPORT_SELF_FORBIDDEN)
         }
 
-        // 조치2 - 중복 신고 확인
-        if (reportRepository.existsByReporterAndReportedUser(reporter, reportedUser)) {
+        // 조치2 - 중복 신고 확인 (30일이 지나면 동일 유저에게 신고 가능)
+        val thirtyDaysAgo = LocalDateTime.now().minusDays(30)
+        if (reportRepository.existsByReporterAndReportedUserAndCreatedAtAfter(
+                reporter = reporter,
+                reportedUser = reportedUser,
+                since = thirtyDaysAgo,
+            )
+        ) {
             throw CustomException(ErrorCode.REPORT_ALREADY_EXISTS)
         }
 
