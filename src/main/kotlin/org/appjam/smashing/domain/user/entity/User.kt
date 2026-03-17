@@ -64,7 +64,7 @@ class User(
 
     @Column
     @Comment("제재 종료 일시")
-    var sanctionEndDate: LocalDateTime? = null
+    var restrictionEndDate: LocalDateTime? = null
 ) : BaseEntity() {
 
     fun updateActiveProfile(
@@ -83,11 +83,8 @@ class User(
         durationDays: Long,
     ) {
         this.status = UserStatus.RESTRICTED
-        this.sanctionEndDate = LocalDateTime.now().plusDays(durationDays)
+        this.restrictionEndDate = LocalDateTime.now().plusDays(durationDays)
     }
-
-    fun isRestricted(): Boolean = status == UserStatus.RESTRICTED &&
-            (sanctionEndDate != null && sanctionEndDate!!.isAfter(LocalDateTime.now()))
 
     companion object {
         const val DELETED_USER_NICKNAME = "알 수 없음"
