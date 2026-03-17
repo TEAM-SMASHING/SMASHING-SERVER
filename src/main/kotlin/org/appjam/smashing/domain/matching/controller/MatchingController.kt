@@ -142,11 +142,11 @@ class MatchingController(
     )
     @GetMapping("/received")
     fun getReceivedMatchings(
-        @RequestHeader principal: String,
+        @AuthenticationPrincipal principal: CustomUserDetails,
         @Valid request: CommonCursorRequest,
     ): ResponseEntity<ApiResponse<CursorResponse<ReceivedMatchingSummaryResponse>>> {
         val response = matchingService.getReceivedMatchings(
-            userId = principal,
+            userId = principal.username,
             request = request,
         )
 
@@ -171,11 +171,11 @@ class MatchingController(
     )
     @GetMapping("/sent")
     fun getSentMatchings(
-        @RequestHeader principal: String,
+        @AuthenticationPrincipal principal: CustomUserDetails,
         @Valid request: CommonCursorRequest,
     ): ResponseEntity<ApiResponse<CursorResponse<SentMatchingSummaryResponse>>> {
         val response = matchingService.getSentMatchings(
-            userId = principal,
+            userId = principal.username,
             request = request,
         )
 
