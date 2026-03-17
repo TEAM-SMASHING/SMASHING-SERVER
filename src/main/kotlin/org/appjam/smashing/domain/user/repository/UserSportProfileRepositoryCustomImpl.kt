@@ -32,6 +32,7 @@ class UserSportProfileRepositoryCustomImpl(
         limit: Long
     ): List<OtherUserRecommendationProjection> {
         val gr = QGameReview("gr")
+        val now = LocalDateTime.now()
 
         return queryFactory
             .select(
@@ -57,7 +58,12 @@ class UserSportProfileRepositoryCustomImpl(
                 user.region.eq(region),
                 userSportProfile.sport.id.eq(sportId),
                 user.id.ne(excludeUserId),
-                userSportProfile.lp.between(myLp - lpThreshold, myLp + lpThreshold)
+                userSportProfile.lp.between(myLp - lpThreshold, myLp + lpThreshold),
+                user.status.eq(UserStatus.ACTIVE)
+                    .or(
+                        user.status.eq(UserStatus.SANCTIONED)
+                            .and(user.sanctionEndDate.before(now))
+                    )
             )
             .orderBy(randomOrder.asc())
             .limit(limit)

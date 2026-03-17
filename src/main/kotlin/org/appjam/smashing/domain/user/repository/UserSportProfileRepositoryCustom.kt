@@ -9,6 +9,10 @@ import org.appjam.smashing.global.common.dto.CursorPageResponse
 import java.time.OffsetDateTime
 
 interface UserSportProfileRepositoryCustom {
+    /**
+     * [추가 제재]
+     * - 신고로 인해 정지당한 유저는 제외
+     */
     fun findRandomRecommendation(
         region: String,
         sportId: Long,
