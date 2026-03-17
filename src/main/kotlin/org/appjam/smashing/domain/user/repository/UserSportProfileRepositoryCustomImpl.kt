@@ -10,11 +10,13 @@ import org.appjam.smashing.domain.user.dto.projection.*
 import org.appjam.smashing.domain.user.entity.QUser.Companion.user
 import org.appjam.smashing.domain.user.entity.QUserSportProfile.Companion.userSportProfile
 import org.appjam.smashing.domain.user.enums.Gender
+import org.appjam.smashing.domain.user.enums.UserStatus
 import org.appjam.smashing.global.common.dto.CommonCursorRequest
 import org.appjam.smashing.global.common.dto.CursorPageResponse
 import org.appjam.smashing.global.util.CursorCodec
 import org.appjam.smashing.global.util.QueryUtils.randomOrder
 import org.appjam.smashing.global.util.TimeUtils
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
 
 class UserSportProfileRepositoryCustomImpl(
@@ -66,8 +68,10 @@ class UserSportProfileRepositoryCustomImpl(
         nickname: String,
         sportId: Long,
         excludeUserId: String,
-    ): List<OtherUserSearchProjection> =
-        queryFactory
+    ): List<OtherUserSearchProjection> {
+        val now = LocalDateTime.now()
+
+        return queryFactory
             .select(
                 QOtherUserSearchProjection(
                     user.id,
@@ -78,11 +82,17 @@ class UserSportProfileRepositoryCustomImpl(
             .where(
                 userSportProfile.sport.id.eq(sportId),
                 user.id.ne(excludeUserId),
-                user.nickname.startsWith(nickname)
+                user.nickname.startsWith(nickname),
+                user.status.eq(UserStatus.ACTIVE)
+                    .or(
+                        user.status.eq(UserStatus.SANCTIONED)
+                            .and(user.sanctionEndDate.before(now))
+                    )
             )
             .orderBy(user.nickname.asc())
             .limit(5)
             .fetch()
+    }
 
     override fun findAllBySportAndRegion(
         userId: String,
