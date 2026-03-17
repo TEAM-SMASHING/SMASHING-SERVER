@@ -16,14 +16,13 @@ data class PendingResultAcceptedGameProjection(
     val resultStatus: GameStatus,
     val requesterUserId: String,
     val receiverUserId: String,
-    val opponentUserId: String,
+    val opponentProfileId: String,
     val opponentNickname: String,
-    val opponentOpenchatUrl: String?,
     val opponentGender: Gender,
     val opponentTierCode: TierCode,
     val latestSubmissionId: String?,
     val latestAttemptNo: Int?,
-    val latestSubmitterId: String?,
+    val latestSubmitterProfileId: String?,
 ) : CursorKey {
 
     override val cursorId: String
