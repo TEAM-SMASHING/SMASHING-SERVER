@@ -21,7 +21,7 @@ class Report(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
-        name = "user_id",
+        name = "reporter_id",
         nullable = false,
         foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT)
     )
@@ -30,7 +30,7 @@ class Report(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
-        name = "user_id",
+        name = "reported_id",
         nullable = false,
         foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT)
     )
