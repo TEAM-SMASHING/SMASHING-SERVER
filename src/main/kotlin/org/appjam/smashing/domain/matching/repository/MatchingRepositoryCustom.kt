@@ -15,10 +15,10 @@ interface MatchingRepositoryCustom {
         snapshotAt: OffsetDateTime,
     ): CursorPageResponse<ReceivedMatchingSummaryProjection>
 
-//    fun fetchSentRequestedPage(
-//        requesterUserId: String,
-//        sportId: Long,
-//        request: CommonCursorRequest,
-//        snapshotAt: OffsetDateTime,
-//    ): CursorPageResponse<SentMatchingSummaryProjection>
+    fun fetchSentRequestedPage(
+        requesterUserId: String,
+        sportId: Long,
+        request: CommonCursorRequest,
+        snapshotAt: OffsetDateTime,
+    ): CursorPageResponse<SentMatchingSummaryProjection>
 }

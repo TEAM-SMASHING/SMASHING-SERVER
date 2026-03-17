@@ -14,7 +14,6 @@ import org.appjam.smashing.domain.outbox.dto.MatchingSentPayload
 import org.appjam.smashing.domain.outbox.dto.MatchingUpdatedPayload
 import org.appjam.smashing.domain.outbox.enums.MatchingUpdateStatus
 import org.appjam.smashing.domain.outbox.enums.SseEventType
-import org.appjam.smashing.domain.review.repository.GameReviewRepository
 import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.appjam.smashing.domain.user.repository.UserRepository
 import org.appjam.smashing.domain.user.repository.UserSportProfileRepository
@@ -35,7 +34,6 @@ class MatchingService(
     private val userRepository: UserRepository,
     private val userSportProfileRepository: UserSportProfileRepository,
     private val gameRepository: GameRepository,
-    private val gameReviewRepository: GameReviewRepository,
     private val notificationService: NotificationService,
     private val outboxEventPublisher: OutboxEventPublisher,
 ) {
@@ -318,40 +316,44 @@ class MatchingService(
         )
     }
 
-//    @Transactional(readOnly = true)
-//    fun getSentMatchings(
-//        userId: String,
-//        request: CommonCursorRequest,
-//    ): CursorResponse<SentMatchingSummaryResponse> {
-//
-//        val user = userRepository.findByIdOrNull(userId)
-//            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
-//
-//        val activeProfileId = user.activeUserSportProfileId
-//            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
-//
-//        val activeProfile = userSportProfileRepository.findByIdOrNull(activeProfileId)
-//            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
-//
-//        val sportId = activeProfile.sport.id
-//            ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
-//
-//        val snapshotAt = request.snapshotAt ?: TimeUtils.nowOffsetDateTime()
-//
-//        val response = matchingRepository.fetchSentRequestedPage(
-//            requesterUserId = userId,
-//            sportId = sportId,
-//            request = request,
-//            snapshotAt = snapshotAt,
-//        )
-//
-//        return CursorResponse(
-//            snapshotAt = response.snapshotAt,
-//            results = SentMatchingSummaryResponse.from(response.results),
-//            nextCursor = response.nextCursor,
-//            hasNext = response.hasNext,
-//        )
-//    }
+    @Transactional(readOnly = true)
+    fun getSentMatchings(
+        userId: String,
+        request: CommonCursorRequest,
+    ): CursorResponse<SentMatchingSummaryResponse> {
+        val user = userRepository.findByIdOrNull(userId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+
+        // 현재 활성화된 유저-스포츠 프로필 ID 조회
+        val activeProfileId = user.activeUserSportProfileId
+            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+
+        // 활성 프로필 엔티티 조회
+        val activeProfile = userSportProfileRepository.findByIdOrNull(activeProfileId)
+            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+
+        val sportId = activeProfile.sport.id
+            ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
+
+        // 스냅샷 시각 설정
+        // 최초 요청 시 snapshotAt이 없으면 현재 시각으로 고정
+        val snapshotAt = request.snapshotAt ?: TimeUtils.nowOffsetDateTime()
+
+        // 보낸 매칭 요청 목록 cursor 기반 페이징 조회
+        val response = matchingRepository.fetchSentRequestedPage(
+            requesterUserId = userId,
+            sportId = sportId,
+            request = request,
+            snapshotAt = snapshotAt,
+        )
+
+        return CursorResponse(
+            snapshotAt = response.snapshotAt,
+            results = SentMatchingSummaryResponse.from(response.results),
+            nextCursor = response.nextCursor,
+            hasNext = response.hasNext,
+        )
+    }
 
     private fun validateDailyLimit(
         profileA: String,
