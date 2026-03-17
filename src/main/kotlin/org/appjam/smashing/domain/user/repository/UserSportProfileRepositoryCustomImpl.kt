@@ -62,7 +62,7 @@ class UserSportProfileRepositoryCustomImpl(
                 user.status.eq(UserStatus.ACTIVE)
                     .or(
                         user.status.eq(UserStatus.RESTRICTED)
-                            .and(user.sanctionEndDate.before(now))
+                            .and(user.restrictionEndDate.before(now))
                     )
             )
             .orderBy(randomOrder.asc())
@@ -92,7 +92,7 @@ class UserSportProfileRepositoryCustomImpl(
                 user.status.eq(UserStatus.ACTIVE)
                     .or(
                         user.status.eq(UserStatus.RESTRICTED)
-                            .and(user.sanctionEndDate.before(now))
+                            .and(user.restrictionEndDate.before(now))
                     )
             )
             .orderBy(user.nickname.asc())
