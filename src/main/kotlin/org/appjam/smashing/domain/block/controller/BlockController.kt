@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.appjam.smashing.domain.block.dto.request.UserBlockRequest
+import org.appjam.smashing.domain.block.service.BlockService
 import org.appjam.smashing.global.auth.security.data.CustomUserDetails
 import org.appjam.smashing.global.common.dto.ApiResponse
 import org.springframework.http.ResponseEntity
@@ -16,7 +17,9 @@ import org.springframework.web.bind.annotation.RestController
 @Tag(name = "Block")
 @RestController
 @RequestMapping("/api/v1/blocks")
-class BlockController {
+class BlockController(
+    private val blockService: BlockService,
+) {
     @Operation(
         summary = "차단 API",
         description = """
@@ -28,7 +31,10 @@ class BlockController {
         @AuthenticationPrincipal principal: CustomUserDetails,
         @Valid @RequestBody userBlockRequest: UserBlockRequest,
     ): ResponseEntity<ApiResponse<Unit>> {
-
+        blockService.blockUser(
+            userId = principal.username,
+            requestCommand = userBlockRequest.toCommand(),
+        )
 
         return ApiResponse.success()
     }
