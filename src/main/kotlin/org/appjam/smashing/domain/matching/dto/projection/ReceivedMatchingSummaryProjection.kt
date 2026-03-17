@@ -15,6 +15,7 @@ data class ReceivedMatchingSummaryProjection(
     val createdAtLdt: LocalDateTime,
     val status: MatchingStatus,
     val requesterUserId: String,
+    val requesterProfileId: String,
     val requesterNickname: String,
     val requesterGender: Gender,
     val requesterReviewCount: Long,

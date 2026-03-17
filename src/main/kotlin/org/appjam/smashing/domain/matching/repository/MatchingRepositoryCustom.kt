@@ -8,12 +8,12 @@ import java.time.OffsetDateTime
 
 interface MatchingRepositoryCustom {
 
-//    fun fetchReceivedRequestedPage(
-//        receiverUserId: String,
-//        sportId: Long,
-//        request: CommonCursorRequest,
-//        snapshotAt: OffsetDateTime,
-//    ): CursorPageResponse<ReceivedMatchingSummaryProjection>
+    fun fetchReceivedRequestedPage(
+        receiverUserId: String,
+        sportId: Long,
+        request: CommonCursorRequest,
+        snapshotAt: OffsetDateTime,
+    ): CursorPageResponse<ReceivedMatchingSummaryProjection>
 
 //    fun fetchSentRequestedPage(
 //        requesterUserId: String,
