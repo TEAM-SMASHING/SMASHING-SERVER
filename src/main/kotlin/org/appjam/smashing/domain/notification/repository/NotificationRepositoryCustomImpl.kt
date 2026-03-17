@@ -8,6 +8,7 @@ import org.appjam.smashing.domain.notification.entity.QNotification.Companion.no
 import org.appjam.smashing.global.common.dto.CommonCursorRequest
 import org.appjam.smashing.global.common.dto.CursorPageResponse
 import org.appjam.smashing.global.util.CursorCodec
+import org.appjam.smashing.global.util.TimeUtils
 import java.time.OffsetDateTime
 
 class NotificationRepositoryCustomImpl(
@@ -15,52 +16,51 @@ class NotificationRepositoryCustomImpl(
     private val cursorCodec: CursorCodec,
 ) : NotificationRepositoryCustom {
 
-//    override fun fetchMyNotificationPage(
-//        userId: String,
-//        request: CommonCursorRequest,
-//        snapshotAt: OffsetDateTime,
-//    ): CursorPageResponse<NotificationSummaryProjection> {
-//
-//        val size = request.size.coerceIn(1, 50).toInt()
-//        val cursor = cursorCodec.decode(request.cursor)
-//
-//        val where = BooleanBuilder()
-//            .and(notification.receiverUser.id.eq(userId))
-//            .and(notification.createdAt.loe(snapshotAt.toLocalDateTime()))
-//
-//        if (cursor != null) {
-//            where.and(notification.id.lt(cursor.id))
-//        }
-//
-//        val fetched = queryFactory
-//            .select(
-//                QNotificationSummaryProjection(
-//                    notification.id,
-//                    notificationTemplate.type,
-//                    notificationTemplate.title,
-//                    notificationTemplate.content,
-//                    notification.params,
-//                    notification.linkUrl,
-//                    notification.isRead,
-//                    notification.createdAt,
-//                    notification.senderNickname,
-//                    notification.receiverUserProfileId,
-//                    notification.receiverSportId,
-//
-//                )
-//            )
-//            .from(notification)
-//            .join(notification.notificationTemplate, notificationTemplate)
-//            .where(where)
-//            .orderBy(notification.id.desc())
-//            .limit((size + 1).toLong())
-//            .fetch()
-//
-//        return CursorPageResponse.create(
-//            snapshotAt = snapshotAt,
-//            fetched = fetched,
-//            pageSize = size,
-//            cursorCodec = cursorCodec,
-//        )
-//    }
+    override fun fetchMyNotificationPage(
+        userId: String,
+        request: CommonCursorRequest,
+        snapshotAt: OffsetDateTime,
+    ): CursorPageResponse<NotificationSummaryProjection> {
+
+        val size = request.size.coerceIn(1, 50).toInt()
+        val cursor = cursorCodec.decode(request.cursor)
+
+        val snapshotLocal = snapshotAt
+            .atZoneSameInstant(TimeUtils.DEFAULT_ZONE_ID)
+            .toLocalDateTime()
+
+        val where = BooleanBuilder()
+            .and(notification.receiverUser.id.eq(userId))
+            .and(notification.createdAt.loe(snapshotLocal))
+
+        if (cursor != null) {
+            where.and(notification.id.lt(cursor.id))
+        }
+
+        val fetched = queryFactory
+            .select(
+                QNotificationSummaryProjection(
+                    notification.id,
+                    notification.type,
+                    notification.title,
+                    notification.content,
+                    notification.linkUrl,
+                    notification.isRead,
+                    notification.createdAt,
+                    notification.senderProfileId,
+                )
+            )
+            .from(notification)
+            .where(where)
+            .orderBy(notification.id.desc())
+            .limit((size + 1).toLong())
+            .fetch()
+
+        return CursorPageResponse.create(
+            snapshotAt = snapshotAt,
+            fetched = fetched,
+            pageSize = size,
+            cursorCodec = cursorCodec,
+        )
+    }
 }
