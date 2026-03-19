@@ -177,6 +177,12 @@ class UserService(
         otherUserId: String,
         sportCode: String?,
     ): OtherUserProfilesResponse {
+        // 제재 - 상호 차단 유저 프로필 검색 불가
+        val blockIds = blockRepository.findAllRelatedBlockIds(userId)
+        if (blockIds.contains(otherUserId)) {
+            throw CustomException(ErrorCode.BLOCKED_RELATION)
+        }
+
         val myInfo = getMyInfoAndActiveProfile(userId)
 
         val otherUser = userRepository.findByIdOrNull(otherUserId)
