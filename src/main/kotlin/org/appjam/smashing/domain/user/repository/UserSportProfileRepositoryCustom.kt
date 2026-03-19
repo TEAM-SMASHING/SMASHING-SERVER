@@ -12,6 +12,7 @@ interface UserSportProfileRepositoryCustom {
     /**
      * [추가 제재]
      * - 신고로 인해 정지당한 유저는 제외
+     * - 차단한 유저는 상호 제외
      */
     fun findRandomRecommendation(
         region: String,
@@ -20,6 +21,7 @@ interface UserSportProfileRepositoryCustom {
         myLp: Int,
         lpThreshold: Int,
         limit: Long,
+        blockIds: List<String>,
     ): List<OtherUserRecommendationProjection>
 
     /**

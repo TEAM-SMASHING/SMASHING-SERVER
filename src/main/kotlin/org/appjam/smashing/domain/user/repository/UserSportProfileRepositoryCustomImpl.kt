@@ -29,7 +29,8 @@ class UserSportProfileRepositoryCustomImpl(
         excludeUserId: String,
         myLp: Int,
         lpThreshold: Int,
-        limit: Long
+        limit: Long,
+        blockIds: List<String>,
     ): List<OtherUserRecommendationProjection> {
         val gr = QGameReview("gr")
         val now = LocalDateTime.now()
@@ -59,11 +60,14 @@ class UserSportProfileRepositoryCustomImpl(
                 userSportProfile.sport.id.eq(sportId),
                 user.id.ne(excludeUserId),
                 userSportProfile.lp.between(myLp - lpThreshold, myLp + lpThreshold),
+                // 신고 필터링
                 user.status.eq(UserStatus.ACTIVE)
                     .or(
                         user.status.eq(UserStatus.RESTRICTED)
                             .and(user.restrictionEndDate.before(now))
-                    )
+                    ),
+                // 차단 필터링
+                if (blockIds.isNotEmpty()) user.id.notIn(blockIds) else null
             )
             .orderBy(randomOrder.asc())
             .limit(limit)

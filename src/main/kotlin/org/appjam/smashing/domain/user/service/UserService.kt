@@ -340,6 +340,7 @@ class UserService(
         userId: String,
     ): OtherUsersRecommendationResponse {
         val myInfo = getMyInfoAndActiveProfile(userId)
+        val blockIds = blockRepository.findAllRelatedBlockIds(userId)
 
         val recommendedProfiles = userSportProfileRepository.findRandomRecommendation(
             region = myInfo.user.region,
@@ -347,7 +348,8 @@ class UserService(
             excludeUserId = myInfo.user.id!!,
             myLp = myInfo.activeProfile.lp,
             lpThreshold = LP_THRESHOLD,
-            limit = LIMIT_RECOMMEND
+            limit = LIMIT_RECOMMEND,
+            blockIds = blockIds,
         )
 
         return OtherUsersRecommendationResponse.from(recommendedProfiles)
