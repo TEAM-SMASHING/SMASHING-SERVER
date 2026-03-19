@@ -30,9 +30,14 @@ class BlockService(
             throw CustomException(ErrorCode.BLOCKED_SELF_FORBIDDEN)
         }
 
-        // 조치2 - 중복 차단 불가
+        // 조치2 - 중복 차단 불가(1)
         if (blockRepository.existsByBlockerAndBlockedUser(blocker, blockedUser)) {
             throw CustomException(ErrorCode.BLOCK_ALREADY_EXISTS)
+        }
+
+        // 조치2 - 중복 차단 불가(2)
+        if (blockRepository.existsByBlockerAndBlockedUser(blockedUser, blocker)) {
+            throw CustomException(ErrorCode.BLOCKED_BY_TARGET)
         }
 
         // 정책1 - 차단 데이터 저장

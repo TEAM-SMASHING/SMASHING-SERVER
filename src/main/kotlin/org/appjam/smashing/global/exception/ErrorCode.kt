@@ -119,5 +119,6 @@ enum class ErrorCode(
     // Domain - Block
     BLOCKED_NOT_FOUND(HttpStatus.NOT_FOUND, "BLOCK-001", "차단 대상 유저를 찾을 수 없습니다."),
     BLOCKED_SELF_FORBIDDEN(HttpStatus.BAD_REQUEST, "BLOCK-002", "자기 자신은 차단할 수 없습니다."),
-    BLOCK_ALREADY_EXISTS(HttpStatus.CONFLICT, "REPORT-003", "해당 유저는 이미 신고한 상대입니다."),
+    BLOCK_ALREADY_EXISTS(HttpStatus.CONFLICT, "BLOCK-003", "해당 유저는 이미 차단한 상대입니다."),
+    BLOCKED_BY_TARGET(HttpStatus.FORBIDDEN, "BLOCK-004", "상대방에 의해 차단되어 작업을 수행할 수 없습니다."),
 }
