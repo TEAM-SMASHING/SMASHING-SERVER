@@ -74,6 +74,7 @@ class UserSportProfileRepositoryCustomImpl(
         nickname: String,
         sportId: Long,
         excludeUserId: String,
+        blockIds: List<String>,
     ): List<OtherUserSearchProjection> {
         val now = LocalDateTime.now()
 
@@ -86,14 +87,18 @@ class UserSportProfileRepositoryCustomImpl(
             ).from(userSportProfile)
             .join(userSportProfile.user, user)
             .where(
+                // 기본 필터링
                 userSportProfile.sport.id.eq(sportId),
                 user.id.ne(excludeUserId),
                 user.nickname.startsWith(nickname),
+                // 신고 필터링
                 user.status.eq(UserStatus.ACTIVE)
                     .or(
                         user.status.eq(UserStatus.RESTRICTED)
                             .and(user.restrictionEndDate.before(now))
-                    )
+                    ),
+                // 차단 필터링
+                if (blockIds.isNotEmpty()) user.id.notIn(blockIds) else null,
             )
             .orderBy(user.nickname.asc())
             .limit(5)

@@ -1,5 +1,6 @@
 package org.appjam.smashing.domain.user.service
 
+import org.appjam.smashing.domain.block.repository.BlockRepository
 import org.appjam.smashing.domain.game.repository.GameRepository
 import org.appjam.smashing.domain.matching.enums.MatchingStatus
 import org.appjam.smashing.domain.matching.repository.MatchingRepository
@@ -34,6 +35,7 @@ class UserService(
     private val gameReviewRepository: GameReviewRepository,
     private val gameRepository: GameRepository,
     private val matchingRepository: MatchingRepository,
+    private val blockRepository: BlockRepository,
 ) {
     @Transactional(readOnly = true)
     fun checkNicknameAvailability(
@@ -376,11 +378,13 @@ class UserService(
         requestCommand: OtherUserSearchCommand,
     ): OtherUserSearchResponse {
         val myInfo = getMyInfoAndActiveProfile(userId)
+        val relatedBlockIds = blockRepository.findAllRelatedBlockIds(userId)
 
         val otherUsersSearch = userSportProfileRepository.findAllBySportOrderByNickname(
             nickname = requestCommand.nickname,
             sportId = myInfo.activeProfile.sport.id!!,
             excludeUserId = userId,
+            blockIds = relatedBlockIds
         )
 
         return OtherUserSearchResponse.from(otherUsersSearch)
