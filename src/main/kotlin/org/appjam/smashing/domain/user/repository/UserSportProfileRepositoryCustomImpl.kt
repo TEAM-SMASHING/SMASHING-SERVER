@@ -56,6 +56,7 @@ class UserSportProfileRepositoryCustomImpl(
             .from(userSportProfile)
             .join(userSportProfile.user, user)
             .where(
+                // 기본 필터링
                 user.region.eq(region),
                 userSportProfile.sport.id.eq(sportId),
                 user.id.ne(excludeUserId),
