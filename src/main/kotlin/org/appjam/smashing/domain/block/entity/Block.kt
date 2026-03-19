@@ -1,11 +1,9 @@
 package org.appjam.smashing.domain.block.entity
 
 import io.hypersistence.utils.hibernate.id.Tsid
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.Id
-import jakarta.persistence.Table
+import jakarta.persistence.*
 import org.appjam.smashing.domain.common.entity.BaseEntity
+import org.appjam.smashing.domain.user.entity.User
 import org.hibernate.annotations.Comment
 
 @Entity
@@ -19,10 +17,32 @@ class Block(
     @Column(length = 13)
     @Comment("차단 IDX")
     val id: String? = null,
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+        name = "blocker_id",
+        nullable = false,
+        foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT)
+    )
+    @Comment("차단한 사람")
+    val blocker: User,
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+        name = "blocked_id",
+        nullable = false,
+        foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT)
+    )
+    @Comment("차단당한 사람")
+    val blockedUser: User,
 ) : BaseEntity() {
     companion object {
-        fun create() {
-
-        }
+        fun create(
+            blocker: User,
+            blockedUser: User
+        ) = Block(
+            blocker = blocker,
+            blockedUser = blockedUser,
+        )
     }
 }
