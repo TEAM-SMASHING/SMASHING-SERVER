@@ -150,6 +150,8 @@ class NotificationService(
         userId: String,
         notificationId: String,
     ): NotificationSportMatchResponse {
+
+        // 알림 조회 (receiverUser fetch 포함)
         val notification = notificationRepository.findByIdFetchUser(notificationId)
             ?: throw CustomException(ErrorCode.NOTIFICATION_NOT_FOUND)
 
@@ -158,9 +160,11 @@ class NotificationService(
             throw CustomException(ErrorCode.NOTIFICATION_FORBIDDEN)
         }
 
-        val senderSportCode = notification.sportCode
+        // 알림이 속한 종목 코드
+        val notificationSportCode = notification.sportCode
             ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
 
+        // 현재 로그인 유저의 활성 프로필 종목 코드 조회
         val activeProfileId = notification.receiverUser.activeUserSportProfileId
             ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
 
@@ -168,7 +172,7 @@ class NotificationService(
             ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
 
         return NotificationSportMatchResponse.from(
-            senderSportCode = senderSportCode,
+            notificationSportCode = notificationSportCode,
             activeSportCode = activeSportCode,
         )
     }
