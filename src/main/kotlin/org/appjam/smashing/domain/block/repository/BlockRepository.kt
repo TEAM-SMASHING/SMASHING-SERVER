@@ -1,8 +1,9 @@
 package org.appjam.smashing.domain.block.repository
 
 import org.appjam.smashing.domain.block.entity.Block
+import org.appjam.smashing.domain.user.entity.User
 import org.springframework.data.jpa.repository.JpaRepository
 
 interface BlockRepository : JpaRepository<Block, String> {
-    fun existsByBlockerAndBlocked()
+    fun existsByBlockerAndBlockedUser(blocker: User, blockedUser: User): Boolean
 }

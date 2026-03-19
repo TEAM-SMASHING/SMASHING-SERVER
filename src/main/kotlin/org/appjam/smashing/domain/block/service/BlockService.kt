@@ -3,7 +3,6 @@ package org.appjam.smashing.domain.block.service
 import org.appjam.smashing.domain.block.dto.command.UserBlockCommand
 import org.appjam.smashing.domain.block.entity.Block
 import org.appjam.smashing.domain.block.repository.BlockRepository
-import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.repository.UserRepository
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
@@ -32,7 +31,7 @@ class BlockService(
         }
 
         // 조치2 - 중복 차단 불가
-        if (blockRepository.existsByBlockerAndBlocked(blocker, blockedUser)) {
+        if (blockRepository.existsByBlockerAndBlockedUser(blocker, blockedUser)) {
             throw CustomException(ErrorCode.BLOCK_ALREADY_EXISTS)
         }
 
@@ -42,12 +41,5 @@ class BlockService(
             blockedUser = blockedUser,
         )
         blockRepository.save(block)
-
-        // 차단2 - 차단 제재 정책 확인
-        checkAndApplyRestriction(blockedUser)
-    }
-
-    private fun checkAndApplyRestriction(user: User) {
-        
     }
 }
