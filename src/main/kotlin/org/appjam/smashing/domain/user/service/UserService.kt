@@ -555,6 +555,7 @@ class UserService(
     ): CursorResponse<OtherUserRegionResponse> {
         val myInfo = getMyInfoAndActiveProfile(userId)
         val sportId = myInfo.activeProfile.sport.id!!
+        val blockIds = blockRepository.findAllRelatedBlockIds(userId)
 
         val snapshotAt = requestCursor.snapshotAt ?: TimeUtils.nowOffsetDateTime()
 
@@ -566,6 +567,7 @@ class UserService(
             gender = requestCommand.gender,
             tier = requestCommand.tier?.name,
             snapshotAt = snapshotAt,
+            blockIds = blockIds,
         )
 
         return CursorResponse(

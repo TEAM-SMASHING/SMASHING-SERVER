@@ -118,6 +118,7 @@ class UserSportProfileRepositoryCustomImpl(
         gender: Gender?,
         tier: String?,
         snapshotAt: OffsetDateTime,
+        blockIds: List<String>,
     ): CursorPageResponse<OtherUserRegionProjection> {
         val size = request.size.coerceIn(1, 50).toInt()
         val cursor = cursorCodec.decode(request.cursor, OtherUserRegionCursor::class.java)
@@ -147,6 +148,11 @@ class UserSportProfileRepositoryCustomImpl(
             .and(userSportProfile.sport.id.eq(sportId))
             .and(user.id.ne(userId))
             .and(user.createdAt.loe(snapshotLocal))
+
+        // 차단 관계 유저 필터링
+        if (blockIds.isNotEmpty()) {
+            where.and(user.id.notIn(blockIds))
+        }
 
         gender?.let { where.and(user.gender.eq(gender)) }
         tier?.let { where.and(userSportProfile.tier.name.startsWithIgnoreCase(tier)) }

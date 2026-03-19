@@ -62,5 +62,6 @@ interface UserSportProfileRepositoryCustom {
         gender: Gender?,
         tier: String?,
         snapshotAt: OffsetDateTime,
+        blockIds: List<String>,
     ): CursorPageResponse<OtherUserRegionProjection>
 }
