@@ -115,4 +115,9 @@ enum class ErrorCode(
     REPORTED_NOT_FOUND(HttpStatus.NOT_FOUND, "REPORT-001", "신고 대상 유저를 찾을 수 없습니다."),
     REPORT_SELF_FORBIDDEN(HttpStatus.BAD_REQUEST, "REPORT-002", "자기 자신은 신고할 수 없습니다."),
     REPORT_ALREADY_EXISTS(HttpStatus.CONFLICT, "REPORT-003", "해당 유저는 이미 신고한 상대입니다."),
+
+    // Domain - Block
+    BLOCKED_NOT_FOUND(HttpStatus.NOT_FOUND, "BLOCK-001", "차단 대상 유저를 찾을 수 없습니다."),
+    BLOCKED_SELF_FORBIDDEN(HttpStatus.BAD_REQUEST, "BLOCK-002", "자기 자신은 차단할 수 없습니다."),
+    BLOCK_ALREADY_EXISTS(HttpStatus.CONFLICT, "REPORT-003", "해당 유저는 이미 신고한 상대입니다."),
 }
