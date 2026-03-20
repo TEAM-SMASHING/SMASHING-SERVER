@@ -30,6 +30,7 @@ import java.time.LocalDateTime
         Index(name = "idx_grs_confirmer_profile_id", columnList = "confirmer_profile_id"),
         Index(name = "idx_grs_winner_profile_id", columnList = "winner_profile_id"),
         Index(name = "idx_grs_loser_profile_id", columnList = "loser_profile_id"),
+        Index(name = "idx_grs_game_id_attempt_no", columnList = "game_id, attempt_no"),
     ]
 )
 @Comment("경기 결과 제출 정보")
