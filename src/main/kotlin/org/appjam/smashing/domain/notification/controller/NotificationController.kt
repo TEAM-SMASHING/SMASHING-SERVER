@@ -3,6 +3,7 @@ package org.appjam.smashing.domain.notification.controller
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
+import org.appjam.smashing.domain.notification.dto.response.NotificationSportMatchResponse
 import org.appjam.smashing.domain.notification.dto.response.NotificationSummaryResponse
 import org.appjam.smashing.domain.notification.service.NotificationService
 import org.appjam.smashing.global.auth.security.data.CustomUserDetails
@@ -63,6 +64,29 @@ class NotificationController(
         val response = notificationService.getMyNotifications(
             userId = principal.username,
             request = request,
+        )
+
+        return ApiResponse.success(response)
+    }
+
+    @Operation(
+        summary = "알림 종목 일치 여부 확인 API",
+        description = """
+        알림을 보낸 발신자의 종목과 현재 로그인 유저의 활성 프로필 종목이 일치하는지 확인합니다.
+
+        - isMatch = true: 종목 일치
+        - isMatch = false: 종목 불일치
+        - 본인 알림만 조회 가능
+    """
+    )
+    @GetMapping("/{notificationId}/sport-match")
+    fun checkSportMatch(
+        @AuthenticationPrincipal principal: CustomUserDetails,
+        @PathVariable notificationId: String,
+    ): ResponseEntity<ApiResponse<NotificationSportMatchResponse>> {
+        val response = notificationService.checkSportMatch(
+            userId = principal.username,
+            notificationId = notificationId,
         )
 
         return ApiResponse.success(response)
