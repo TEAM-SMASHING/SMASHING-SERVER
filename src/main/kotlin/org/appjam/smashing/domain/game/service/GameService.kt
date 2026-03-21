@@ -5,7 +5,6 @@ import org.appjam.smashing.domain.game.dto.command.GameResultRejectCommand
 import org.appjam.smashing.domain.game.dto.command.GameResultSubmitCommand
 import org.appjam.smashing.domain.game.dto.response.GameResultConfirmResponse
 import org.appjam.smashing.domain.game.dto.response.GameResultSubmissionDetailResponse
-import org.appjam.smashing.domain.game.dto.response.GameResultSubmitLockResponse
 import org.appjam.smashing.domain.game.dto.response.GameResultSubmitResponse
 import org.appjam.smashing.domain.game.dto.response.PendingResultAcceptedGameSummaryResponse
 import org.appjam.smashing.domain.game.entity.Game
@@ -427,104 +426,44 @@ class GameService(
         return GameResultSubmissionDetailResponse.from(submission)
     }
 
-//    @Transactional(readOnly = true)
-//    fun getPendingResultAcceptedGames(
-//        userId: String,
-//        request: CommonCursorRequest,
-//    ): CursorResponse<PendingResultAcceptedGameSummaryResponse> {
-//        val user = userRepository.findByIdOrNull(userId)
-//            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
-//
-//        val activeProfileId = user.activeUserSportProfileId
-//            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
-//
-//        val activeProfile = userSportProfileRepository.findByIdOrNull(activeProfileId)
-//            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
-//
-//        val sportId = activeProfile.sport.id
-//            ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
-//
-//        val snapshotAt = request.snapshotAt ?: TimeUtils.nowOffsetDateTime()
-//
-//        val response = gameRepository.fetchPendingResultAcceptedGamesPage(
-//            userId = userId,
-//            sportId = sportId,
-//            request = request,
-//            snapshotAt = snapshotAt,
-//        )
-//
-//        val now = LocalDateTime.now(TimeUtils.DEFAULT_ZONE_ID)
-//        val startOfDay = now.toLocalDate().atStartOfDay()
-//
-//        val results = response.results.map { projection ->
-//            val availableAt = calcSubmitAvailableAt(
-//                now = now,
-//                startOfDay = startOfDay,
-//                gameCreatedAt = projection.createdAtLdt,
-//                requesterId = projection.requesterUserId,
-//                receiverId = projection.receiverUserId,
-//            )
-//
-//            val lockResponse = GameResultSubmitLockResponse.from(
-//                now = now,
-//                availableAt = now, //availableAt, // TODO: 앱잼 기간 내 잠금 정책 제외
-//            )
-//
-//            PendingResultAcceptedGameSummaryResponse.from(
-//                projection = projection,
-//                submitAvailableAt = lockResponse.submitAvailableAt,
-//                remainingSeconds = lockResponse.remainingSeconds,
-//                isSubmitLocked = lockResponse.isLocked,
-//            )
-//        }
-//
-//        return CursorResponse(
-//            snapshotAt = response.snapshotAt,
-//            results = results,
-//            nextCursor = response.nextCursor,
-//            hasNext = response.hasNext,
-//        )
-//    }
+    @Transactional(readOnly = true)
+    fun getPendingResultAcceptedGames(
+        userId: String,
+        request: CommonCursorRequest,
+    ): CursorResponse<PendingResultAcceptedGameSummaryResponse> {
+        val user = userRepository.findByIdOrNull(userId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
-    /**
-     * 오늘 기준(00:00~)
-     * - 오늘 확정 0건이면(= 오늘 첫 확정 후보): 생성 후 1시간 제출 불가
-     * - 오늘 확정 1~2건이면(= 오늘 2~3번째 확정 후보):
-     *   직전 확정이 30분 이내에 있었던 연속 확정 상황일 때만 생성 후 10분 제출 불가
-     */
-    private fun calcSubmitAvailableAt(
-        now: LocalDateTime,
-        startOfDay: LocalDateTime,
-        gameCreatedAt: LocalDateTime,
-        requesterId: String,
-        receiverId: String,
-    ): LocalDateTime {
+        // 현재 활성화된 유저-스포츠 프로필 ID 조회
+        val activeProfileId = user.activeUserSportProfileId
+            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
 
-        val todayConfirmedCount = gameRepository.countTodayConfirmedGamesBetweenUsers(
-            startAt = startOfDay,
-            userA = requesterId,
-            userB = receiverId,
+        // 활성 프로필 엔티티 조회
+        val activeProfile = userSportProfileRepository.findByIdOrNull(activeProfileId)
+            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+
+        // 활성 프로필의 종목 ID 추출
+        val sportId = activeProfile.sport.id
+            ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
+
+        // 스냅샷 시각 설정
+        // 최초 요청 시 snapshotAt이 없으면 현재 시각으로 고정
+        val snapshotAt = request.snapshotAt ?: TimeUtils.nowOffsetDateTime()
+
+        // 결과 확정 전 게임 목록 cursor 기반 페이징 조회
+        val response = gameRepository.fetchPendingResultAcceptedGamesPage(
+            userId = userId,
+            sportId = sportId,
+            request = request,
+            snapshotAt = snapshotAt,
         )
 
-        // 오늘 첫 확정 후보 → 생성 후 1시간 제한
-        if (todayConfirmedCount == 0L) {
-            return gameCreatedAt.plusHours(1)
-        }
-
-        // 오늘 2~3번째 확정 후보 → 연속 확정일 때만 10분 제한
-        if (todayConfirmedCount in 1L..2L) {
-            val prevConfirmedAt = gameRepository.findTodayLatestConfirmedAtBetweenUsers(
-                startAt = startOfDay,
-                userA = requesterId,
-                userB = receiverId,
-            ) ?: return gameCreatedAt
-
-            if (ChronoUnit.MINUTES.between(prevConfirmedAt, now) <= 30) {
-                return gameCreatedAt.plusMinutes(10)
-            }
-        }
-
-        return gameCreatedAt
+        return CursorResponse(
+            snapshotAt = response.snapshotAt,
+            results = response.results.map { PendingResultAcceptedGameSummaryResponse.from(it) },
+            nextCursor = response.nextCursor,
+            hasNext = response.hasNext,
+        )
     }
 
     /**

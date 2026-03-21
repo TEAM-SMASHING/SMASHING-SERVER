@@ -25,7 +25,7 @@ data class MatchingReceivedPayload(
 ) : SsePayload {
 
     data class MatchingRequesterSummary(
-        val requesterProfileId: String, // TODO: 유저 정보 조회시 profileid 값 논의 필요
+        val requesterProfileId: String,
         val nickname: String,
         val gender: Gender,
         val tierCode: TierCode,

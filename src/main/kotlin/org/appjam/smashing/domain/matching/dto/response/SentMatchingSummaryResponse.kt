@@ -12,9 +12,8 @@ data class SentMatchingSummaryResponse(
     val status: MatchingStatus,
     val receiver: ReceiverSummary,
 ) {
-
     data class ReceiverSummary(
-        val userId: String,
+        val receiverProfileId: String,
         val nickname: String,
         val gender: Gender,
         val reviewCount: Long,
@@ -25,22 +24,24 @@ data class SentMatchingSummaryResponse(
 
     companion object {
         fun from(
-            p: SentMatchingSummaryProjection
-        ) = SentMatchingSummaryResponse(
-            matchingId = p.matchingId,
-            createdAt = p.createdAt,
-            status = p.status,
-            receiver = ReceiverSummary(
-                userId = p.receiverUserId,
-                nickname = p.receiverNickname,
-                gender = p.receiverGender,
-                reviewCount = p.receiverReviewCount,
-                tierCode = p.receiverTierCode,
-                wins = p.receiverWins,
-                losses = p.receiverLosses,
-            )
-        )
-
-        fun from(list: List<SentMatchingSummaryProjection>) = list.map(::from)
+            results: List<SentMatchingSummaryProjection>
+        ): List<SentMatchingSummaryResponse> {
+            return results.map {
+                SentMatchingSummaryResponse(
+                    matchingId = it.matchingId,
+                    createdAt = it.createdAt,
+                    status = it.status,
+                    receiver = ReceiverSummary(
+                        receiverProfileId = it.receiverProfileId,
+                        nickname = it.receiverNickname,
+                        gender = it.receiverGender,
+                        reviewCount = it.receiverReviewCount,
+                        tierCode = it.receiverTierCode,
+                        wins = it.receiverWins,
+                        losses = it.receiverLosses,
+                    )
+                )
+            }
+        }
     }
 }
