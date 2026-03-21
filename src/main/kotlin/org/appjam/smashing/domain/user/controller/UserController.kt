@@ -114,7 +114,7 @@ class UserController(
 
            [조건]
            - 상대의 다른 스포츠 프로필을 누르더라도 canChallenge와 canAccept는 나의 스포츠 활성화된 프로필과 동일한 것만 노출
-           -선택 여부는 isSelected로 판단
+           - 선택 여부는 isSelected로 판단
            - QueryParam(sportCode)이 없을 경우 selectedProfile에는 나를 기준으로 활성화된 스포츠 프로필이 디폴트
 
            [정렬]
