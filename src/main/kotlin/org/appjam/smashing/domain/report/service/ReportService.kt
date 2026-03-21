@@ -65,8 +65,12 @@ class ReportService(
     }
 
     private fun checkAndApplyRestriction(user: User) {
-        val thirtyDaysAgo = LocalDateTime.now().minusDays(30)
+        // 제재 종료일이 미래라면 이미 제재가 적용됐으므로 return
+        val now = LocalDateTime.now()
+        if (user.restrictionEndDate?.isAfter(now) == true) return
+
         // 30일 내에 서로 다른 신고자에게 받은 신고 횟수 카운트
+        val thirtyDaysAgo = LocalDateTime.now().minusDays(30)
         val reportCount = reportRepository.countRecentReports(
             reportedUser = user,
             since = thirtyDaysAgo,
