@@ -107,21 +107,14 @@ class MatchingService(
             requesterProfile = requesterProfile,
         )
 
-        /**
-         * TODO: 프로필 기반 리뷰 카운트로 바꿀지 결정되면 교체 필요
-         */
-        val requesterReviewCount = 123L
+        // 전체 종목 통합 후기 수 조회
+        val requesterReviewCount = gameReviewRepository.countByRevieweeUserId(
+            userId = requesterUser.id!!,
+        )
 
-//            gameReviewRepository.countByRevieweeAndSport(
-//            revieweeUserId = requesterUser.id!!,
-//            sportId = sportId,
-//        )
-        val receiverReviewCount = 123L // TODO: 이거 아직 논의 안됐음......
-
-//            gameReviewRepository.countByRevieweeAndSport(
-//            revieweeUserId = receiverUser.id!!,
-//            sportId = sportId,
-//        )
+        val receiverReviewCount = gameReviewRepository.countByRevieweeUserId(
+            userId = receiverUser.id!!,
+        )
 
         // SSE - 상대방에게 받은 요청 실시간 반영 + 토스트
         outboxEventPublisher.publish(
@@ -278,75 +271,84 @@ class MatchingService(
         )
     }
 
-//    @Transactional(readOnly = true)
-//    fun getReceivedMatchings(
-//        userId: String,
-//        request: CommonCursorRequest,
-//    ): CursorResponse<ReceivedMatchingSummaryResponse> {
-//
-//        val user = userRepository.findByIdOrNull(userId)
-//            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
-//
-//        val activeProfileId = user.activeUserSportProfileId
-//            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
-//
-//        val activeProfile = userSportProfileRepository.findByIdOrNull(activeProfileId)
-//            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
-//
-//        val sportId = activeProfile.sport.id
-//            ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
-//
-//        val snapshotAt = request.snapshotAt ?: TimeUtils.nowOffsetDateTime()
-//
-//        val response = matchingRepository.fetchReceivedRequestedPage(
-//            receiverUserId = userId,
-//            sportId = sportId,
-//            request = request,
-//            snapshotAt = snapshotAt,
-//        )
-//
-//        return CursorResponse(
-//            snapshotAt = response.snapshotAt,
-//            results = ReceivedMatchingSummaryResponse.from(response.results),
-//            nextCursor = response.nextCursor,
-//            hasNext = response.hasNext,
-//        )
-//    }
+    @Transactional(readOnly = true)
+    fun getReceivedMatchings(
+        userId: String,
+        request: CommonCursorRequest,
+    ): CursorResponse<ReceivedMatchingSummaryResponse> {
+        val user = userRepository.findByIdOrNull(userId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
-//    @Transactional(readOnly = true)
-//    fun getSentMatchings(
-//        userId: String,
-//        request: CommonCursorRequest,
-//    ): CursorResponse<SentMatchingSummaryResponse> {
-//
-//        val user = userRepository.findByIdOrNull(userId)
-//            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
-//
-//        val activeProfileId = user.activeUserSportProfileId
-//            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
-//
-//        val activeProfile = userSportProfileRepository.findByIdOrNull(activeProfileId)
-//            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
-//
-//        val sportId = activeProfile.sport.id
-//            ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
-//
-//        val snapshotAt = request.snapshotAt ?: TimeUtils.nowOffsetDateTime()
-//
-//        val response = matchingRepository.fetchSentRequestedPage(
-//            requesterUserId = userId,
-//            sportId = sportId,
-//            request = request,
-//            snapshotAt = snapshotAt,
-//        )
-//
-//        return CursorResponse(
-//            snapshotAt = response.snapshotAt,
-//            results = SentMatchingSummaryResponse.from(response.results),
-//            nextCursor = response.nextCursor,
-//            hasNext = response.hasNext,
-//        )
-//    }
+        // 현재 활성화된 유저-스포츠 프로필 ID 조회
+        val activeProfileId = user.activeUserSportProfileId
+            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+
+        // 활성 프로필 엔티티 조회
+        val activeProfile = userSportProfileRepository.findByIdOrNull(activeProfileId)
+            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+
+        // 활성 프로필의 종목 ID 추출
+        val sportId = activeProfile.sport.id
+            ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
+
+        // 스냅샷 시각 설정
+        // 최초 요청 시 snapshotAt이 없으면 현재 시각으로 고정
+        val snapshotAt = request.snapshotAt ?: TimeUtils.nowOffsetDateTime()
+
+        // 받은 매칭 요청 목록 cursor 기반 페이징 조회
+        val response = matchingRepository.fetchReceivedRequestedPage(
+            receiverUserId = userId,
+            sportId = sportId,
+            request = request,
+            snapshotAt = snapshotAt,
+        )
+
+        return CursorResponse(
+            snapshotAt = response.snapshotAt,
+            results = ReceivedMatchingSummaryResponse.from(response.results),
+            nextCursor = response.nextCursor,
+            hasNext = response.hasNext,
+        )
+    }
+
+    @Transactional(readOnly = true)
+    fun getSentMatchings(
+        userId: String,
+        request: CommonCursorRequest,
+    ): CursorResponse<SentMatchingSummaryResponse> {
+        val user = userRepository.findByIdOrNull(userId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+
+        // 현재 활성화된 유저-스포츠 프로필 ID 조회
+        val activeProfileId = user.activeUserSportProfileId
+            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+
+        // 활성 프로필 엔티티 조회
+        val activeProfile = userSportProfileRepository.findByIdOrNull(activeProfileId)
+            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+
+        val sportId = activeProfile.sport.id
+            ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
+
+        // 스냅샷 시각 설정
+        // 최초 요청 시 snapshotAt이 없으면 현재 시각으로 고정
+        val snapshotAt = request.snapshotAt ?: TimeUtils.nowOffsetDateTime()
+
+        // 보낸 매칭 요청 목록 cursor 기반 페이징 조회
+        val response = matchingRepository.fetchSentRequestedPage(
+            requesterUserId = userId,
+            sportId = sportId,
+            request = request,
+            snapshotAt = snapshotAt,
+        )
+
+        return CursorResponse(
+            snapshotAt = response.snapshotAt,
+            results = SentMatchingSummaryResponse.from(response.results),
+            nextCursor = response.nextCursor,
+            hasNext = response.hasNext,
+        )
+    }
 
     private fun validateDailyLimit(
         profileA: String,

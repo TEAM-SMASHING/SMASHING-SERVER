@@ -10,7 +10,6 @@ import org.appjam.smashing.domain.user.dto.projection.*
 import org.appjam.smashing.domain.user.entity.QUser.Companion.user
 import org.appjam.smashing.domain.user.entity.QUserSportProfile.Companion.userSportProfile
 import org.appjam.smashing.domain.user.enums.Gender
-import org.appjam.smashing.domain.user.enums.UserStatus
 import org.appjam.smashing.global.common.dto.CommonCursorRequest
 import org.appjam.smashing.global.common.dto.CursorPageResponse
 import org.appjam.smashing.global.util.CursorCodec
@@ -38,7 +37,7 @@ class UserSportProfileRepositoryCustomImpl(
         return queryFactory
             .select(
                 QOtherUserRecommendationProjection(
-                    user.id,
+                    userSportProfile.id,
                     user.nickname,
                     userSportProfile.tier.code,
                     userSportProfile.wins,
@@ -62,11 +61,7 @@ class UserSportProfileRepositoryCustomImpl(
                 user.id.ne(excludeUserId),
                 userSportProfile.lp.between(myLp - lpThreshold, myLp + lpThreshold),
                 // 신고 필터링
-                user.status.eq(UserStatus.ACTIVE)
-                    .or(
-                        user.status.eq(UserStatus.RESTRICTED)
-                            .and(user.restrictionEndDate.before(now))
-                    ),
+                user.restrictionEndDate.before(now),
                 // 차단 필터링
                 if (blockIds.isNotEmpty()) user.id.notIn(blockIds) else null
             )
@@ -86,7 +81,7 @@ class UserSportProfileRepositoryCustomImpl(
         return queryFactory
             .select(
                 QOtherUserSearchProjection(
-                    user.id,
+                    userSportProfile.id,
                     user.nickname
                 )
             ).from(userSportProfile)
@@ -97,11 +92,7 @@ class UserSportProfileRepositoryCustomImpl(
                 user.id.ne(excludeUserId),
                 user.nickname.startsWith(nickname),
                 // 신고 필터링
-                user.status.eq(UserStatus.ACTIVE)
-                    .or(
-                        user.status.eq(UserStatus.RESTRICTED)
-                            .and(user.restrictionEndDate.before(now))
-                    ),
+              user.restrictionEndDate.before(now),
                 // 차단 필터링
                 if (blockIds.isNotEmpty()) user.id.notIn(blockIds) else null,
             )
@@ -175,7 +166,7 @@ class UserSportProfileRepositoryCustomImpl(
         val projections = queryFactory
             .select(
                 QOtherUserRegionProjection(
-                    user.id,
+                    userSportProfile.id,
                     user.nickname,
                     user.gender.stringValue(),
                     userSportProfile.tier.code,

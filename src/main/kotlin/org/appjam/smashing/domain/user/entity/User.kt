@@ -4,7 +4,6 @@ import io.hypersistence.utils.hibernate.id.Tsid
 import jakarta.persistence.*
 import org.appjam.smashing.domain.common.entity.BaseEntity
 import org.appjam.smashing.domain.user.enums.Gender
-import org.appjam.smashing.domain.user.enums.UserStatus
 import org.hibernate.annotations.Comment
 import org.hibernate.annotations.SQLDelete
 import org.hibernate.annotations.SQLRestriction
@@ -57,11 +56,6 @@ class User(
     @Comment("현재 활성화된 유저-스포츠 프로필 IDX")
     var activeUserSportProfileId: String? = null,
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @Comment("유저 상태")
-    var status: UserStatus = UserStatus.ACTIVE,
-
     @Column
     @Comment("제재 종료 일시")
     var restrictionEndDate: LocalDateTime? = null
@@ -82,7 +76,6 @@ class User(
     fun applyRestriction(
         durationDays: Long,
     ) {
-        this.status = UserStatus.RESTRICTED
         this.restrictionEndDate = LocalDateTime.now().plusDays(durationDays)
     }
 

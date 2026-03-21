@@ -11,45 +11,33 @@ data class PendingResultAcceptedGameSummaryResponse(
     val createdAt: OffsetDateTime,
     val resultStatus: GameStatus,
     val opponent: OpponentSummary,
-    val submitAvailableAt: OffsetDateTime,
-    val remainingSeconds: Long,
-    val isSubmitLocked: Boolean,
-    val latestSubmissionId: String? = null,
+    val latestSubmissionId: String?,
     val latestAttemptNo: Int?,
-    val latestSubmitterId: String? = null,
+    val latestSubmitterProfileId: String?,
 ) {
-
     data class OpponentSummary(
-        val userId: String,
+        val opponentProfileId: String,
         val nickname: String,
-        val openchatUrl: String?,
         val gender: Gender,
-        val tierCode: TierCode
+        val tierCode: TierCode,
     )
 
     companion object {
         fun from(
             projection: PendingResultAcceptedGameProjection,
-            submitAvailableAt: OffsetDateTime,
-            remainingSeconds: Long,
-            isSubmitLocked: Boolean,
         ) = PendingResultAcceptedGameSummaryResponse(
             gameId = projection.gameId,
             createdAt = projection.createdAt,
             resultStatus = projection.resultStatus,
             opponent = OpponentSummary(
-                userId = projection.opponentUserId,
+                opponentProfileId = projection.opponentProfileId,
                 nickname = projection.opponentNickname,
-                openchatUrl = projection.opponentOpenchatUrl,
                 gender = projection.opponentGender,
-                tierCode = projection.opponentTierCode
+                tierCode = projection.opponentTierCode,
             ),
-            submitAvailableAt = submitAvailableAt,
-            remainingSeconds = remainingSeconds,
-            isSubmitLocked = isSubmitLocked,
             latestSubmissionId = projection.latestSubmissionId,
             latestAttemptNo = projection.latestAttemptNo,
-            latestSubmitterId = projection.latestSubmitterId
+            latestSubmitterProfileId = projection.latestSubmitterProfileId,
         )
     }
 }

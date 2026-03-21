@@ -10,6 +10,16 @@ import org.hibernate.annotations.Comment
 @Entity
 @Table(
     name = "report",
+    indexes = [
+        Index(
+            name = "idx_report_reported_created",
+            columnList = "reported_id, created_at"
+        ),
+        Index(
+            name = "idx_report_reporter_reported_created",
+            columnList = "reporter_id, reported_id, created_at"
+        )
+    ]
 )
 @Comment("신고 정보")
 class Report(
