@@ -160,7 +160,7 @@ class UserService(
         // 다른 유저 정보 탐색
         val otherUserActiveProfile = userSportProfileRepository.findByIdOrNull(otherUserProfileId)
             ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
-        val otherUser = userRepository.findByIdOrNull(otherUserActiveProfile.id!!)
+        val otherUser = userRepository.findByIdOrNull(otherUserActiveProfile.user.id!!)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
         // 다른 유저의 조회할 프로필 선택
@@ -339,7 +339,7 @@ class UserService(
     ): CursorResponse<UserRecentReviewResponse> {
         val otherUserProfileId = userSportProfileRepository.findByIdOrNull(otherUserProfileId)
             ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
-        val otherUser = userRepository.findByIdOrNull(otherUserProfileId.id!!)
+        val otherUser = userRepository.findByIdOrNull(otherUserProfileId.user.id!!)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
         val selectedProfile = resolveProfile(
@@ -375,7 +375,7 @@ class UserService(
     ): UserRecentReviewSummaryResponse {
         val otherUserProfile = userSportProfileRepository.findByIdOrNull(otherUserProfileId)
             ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
-        val otherUser = userRepository.findByIdOrNull(otherUserProfile.id!!)
+        val otherUser = userRepository.findByIdOrNull(otherUserProfile.user.id!!)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
         val selectedProfile = resolveProfile(
