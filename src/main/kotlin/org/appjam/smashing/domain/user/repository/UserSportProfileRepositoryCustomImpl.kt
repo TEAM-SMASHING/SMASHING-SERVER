@@ -34,7 +34,7 @@ class UserSportProfileRepositoryCustomImpl(
         return queryFactory
             .select(
                 QOtherUserRecommendationProjection(
-                    user.id,
+                    userSportProfile.id,
                     user.nickname,
                     userSportProfile.tier.code,
                     userSportProfile.wins,
@@ -70,7 +70,7 @@ class UserSportProfileRepositoryCustomImpl(
         queryFactory
             .select(
                 QOtherUserSearchProjection(
-                    user.id,
+                    userSportProfile.id,
                     user.nickname
                 )
             ).from(userSportProfile)
@@ -143,7 +143,7 @@ class UserSportProfileRepositoryCustomImpl(
         val projections = queryFactory
             .select(
                 QOtherUserRegionProjection(
-                    user.id,
+                    userSportProfile.id,
                     user.nickname,
                     user.gender.stringValue(),
                     userSportProfile.tier.code,

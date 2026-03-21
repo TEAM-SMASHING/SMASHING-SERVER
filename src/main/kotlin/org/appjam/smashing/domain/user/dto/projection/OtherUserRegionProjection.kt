@@ -7,7 +7,7 @@ import org.appjam.smashing.global.common.dto.CursorPayload
 
 @QueryProjection
 data class OtherUserRegionProjection(
-    val userId: String,
+    val userProfileId: String,
     val nickname: String,
     val gender: String,
     val tierCode: TierCode,
@@ -16,7 +16,7 @@ data class OtherUserRegionProjection(
     val reviews: Long,
 ) : CursorKey {
     override val cursorId: String
-        get() = userId
+        get() = userProfileId
 
     override fun toCursorPayload(): CursorPayload =
         OtherUserRegionCursor(

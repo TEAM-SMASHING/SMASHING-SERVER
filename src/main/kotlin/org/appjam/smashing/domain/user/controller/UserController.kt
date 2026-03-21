@@ -121,15 +121,15 @@ class UserController(
            - 스포츠 프로필 선택 여부 상관 없이 allProfiles에 모든 스포츠를 가나다 순 정렬
         """
     )
-    @GetMapping("/{userId}/profiles")
+    @GetMapping("/{userProfileId}/profiles")
     fun getOtherUserProfiles(
         @AuthenticationPrincipal principal: CustomUserDetails,
-        @PathVariable userId: String,
+        @PathVariable userProfileId: String,
         @RequestParam sportCode: String?,
     ): ResponseEntity<ApiResponse<OtherUserProfilesResponse>> {
         val response = userService.getOtherUserProfiles(
             userId = principal.username,
-            otherUserId = userId,
+            otherUserProfileId = userProfileId,
             sportCode = sportCode,
         )
 
@@ -312,16 +312,16 @@ class UserController(
             - 가장 최근에 받은 리뷰 목록 순
         """
     )
-    @GetMapping("/{userId}/reviews/recent")
+    @GetMapping("/{userProfileId}/reviews/recent")
     fun getOtherUserRecentReview(
         @AuthenticationPrincipal principal: CustomUserDetails,
-        @PathVariable userId: String,
+        @PathVariable userProfileId: String,
         @RequestParam sportCode: String?,
         @Valid request: CommonCursorRequest,
     ): ResponseEntity<ApiResponse<CursorResponse<UserRecentReviewResponse>>> {
         val response = userService.getOtherUserRecentReview(
             userId = principal.username,
-            otherUserId = userId,
+            otherUserProfileId = userProfileId,
             sportCode = sportCode,
             request = request,
         )
@@ -342,15 +342,15 @@ class UserController(
             - QueryParam(sportCode)이 없을 경우 나를 기준으로 활성화된 스포츠 프로필이 디폴트
         """
     )
-    @GetMapping("/{userId}/reviews/summary")
+    @GetMapping("/{userProfileId}/reviews/summary")
     fun getOtherUserRecentReviewSummary(
         @AuthenticationPrincipal principal: CustomUserDetails,
-        @PathVariable userId: String,
+        @PathVariable userProfileId: String,
         @RequestParam sportCode: String?,
     ): ResponseEntity<ApiResponse<UserRecentReviewSummaryResponse>> {
         val response = userService.getOtherUserRecentReviewSummary(
             userId = principal.username,
-            otherUserId = userId,
+            otherUserProfileId = userProfileId,
             sportCode = sportCode,
         )
 

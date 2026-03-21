@@ -4,7 +4,7 @@ import org.appjam.smashing.domain.tier.enums.TierCode
 import org.appjam.smashing.domain.user.dto.projection.OtherUserRegionProjection
 
 data class OtherUserRegionResponse(
-    val userId: String,
+    val userProfileId: String,
     val nickname: String,
     val gender: String,
     val tierCode: TierCode,
@@ -16,7 +16,7 @@ data class OtherUserRegionResponse(
         fun from(
             p: OtherUserRegionProjection,
         ) = OtherUserRegionResponse(
-            userId = p.userId,
+            userProfileId = p.userProfileId,
             nickname = p.nickname,
             gender = p.gender,
             tierCode = p.tierCode,

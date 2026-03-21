@@ -152,16 +152,19 @@ class UserService(
     @Transactional(readOnly = true)
     fun getOtherUserProfiles(
         userId: String,
-        otherUserId: String,
+        otherUserProfileId: String,
         sportCode: String?,
     ): OtherUserProfilesResponse {
         val myInfo = getMyInfoAndActiveProfile(userId)
 
-        val otherUser = userRepository.findByIdOrNull(otherUserId)
+        // 다른 유저 정보 탐색
+        val otherUserActiveProfile = userSportProfileRepository.findByIdOrNull(otherUserProfileId)
+            ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
+        val otherUser = userRepository.findByIdOrNull(otherUserActiveProfile.id!!)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
         // 다른 유저의 조회할 프로필 선택
-        val allProfiles = userSportProfileRepository.findAllByUserIdOrderBySportName(otherUserId)
+        val allProfiles = userSportProfileRepository.findAllByUserIdOrderBySportName(otherUser.id!!)
 
         val selectedProfile = if (sportCode == null) {
             allProfiles.find { myInfo.activeProfile.sport.code == it.sport.code }
@@ -172,7 +175,7 @@ class UserService(
         }
 
         val reviews = gameReviewRepository.countByRevieweeAndSport(
-            revieweeUserId = otherUserId,
+            revieweeUserId = otherUser.id!!,
             sportId = selectedProfile.sport.id!!,
         )
 
@@ -330,11 +333,13 @@ class UserService(
     @Transactional(readOnly = true)
     fun getOtherUserRecentReview(
         userId: String,
-        otherUserId: String,
+        otherUserProfileId: String,
         sportCode: String?,
         request: CommonCursorRequest,
     ): CursorResponse<UserRecentReviewResponse> {
-        val otherUser = userRepository.findByIdOrNull(otherUserId)
+        val otherUserProfileId = userSportProfileRepository.findByIdOrNull(otherUserProfileId)
+            ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
+        val otherUser = userRepository.findByIdOrNull(otherUserProfileId.id!!)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
         val selectedProfile = resolveProfile(
@@ -350,7 +355,7 @@ class UserService(
         val response = gameReviewRepository.findAllBySportIdOrderByDate(
             request = request,
             sportId = sportId,
-            userId = otherUserId,
+            userId = otherUser.id!!,
             snapshotAt = snapshotAt
         )
 
@@ -365,10 +370,12 @@ class UserService(
     @Transactional(readOnly = true)
     fun getOtherUserRecentReviewSummary(
         userId: String,
-        otherUserId: String,
+        otherUserProfileId: String,
         sportCode: String?,
     ): UserRecentReviewSummaryResponse {
-        val otherUser = userRepository.findByIdOrNull(otherUserId)
+        val otherUserProfile = userSportProfileRepository.findByIdOrNull(otherUserProfileId)
+            ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
+        val otherUser = userRepository.findByIdOrNull(otherUserProfile.id!!)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
         val selectedProfile = resolveProfile(
@@ -380,7 +387,7 @@ class UserService(
         val sportId = selectedProfile.sport.id!!
 
         val counts = getCounts(
-            userId = otherUserId,
+            userId = otherUser.id!!,
             sportId = sportId
         )
 
