@@ -23,6 +23,10 @@ class ReportService(
         userId: String,
         requestCommand: UserReportCommand,
     ) {
+        if (requestCommand.reportType == ReportType.ETC && requestCommand.reasonDetail.isNullOrBlank()) {
+            throw CustomException(ErrorCode.REPORT_REASON_REQUIRED)
+        }
+
         val reporter = userRepository.findByIdOrNull(userId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
         val reportedUser = userRepository.findByIdOrNull(requestCommand.reportedUserId)
@@ -33,19 +37,17 @@ class ReportService(
             throw CustomException(ErrorCode.REPORT_SELF_FORBIDDEN)
         }
 
-        // 조치2 - 중복 신고 확인 (30일이 지나면 동일 유저에게 신고 가능)
+        val now = LocalDateTime.now()
         val thirtyDaysAgo = LocalDateTime.now().minusDays(30)
-        if (reportRepository.existsByReporterAndReportedUserAndCreatedAtAfter(
-                reporter = reporter,
-                reportedUser = reportedUser,
-                since = thirtyDaysAgo,
-            )
-        ) {
-            throw CustomException(ErrorCode.REPORT_ALREADY_EXISTS)
-        }
 
-        if (requestCommand.reportType == ReportType.ETC && requestCommand.reasonDetail.isNullOrBlank()) {
-            throw CustomException(ErrorCode.REPORT_REASON_REQUIRED)
+        // 조치2 - 비관적 락으로 중복 신고 확인 (30일이 지나면 동일 유저에게 신고 가능)
+        val recentReport = reportRepository.findRecentReportWithLock(
+            reporter = reporter,
+            reportedUser = reportedUser,
+            since = thirtyDaysAgo,
+        )
+        if (recentReport.isNotEmpty()) {
+            throw CustomException(ErrorCode.REPORT_ALREADY_EXISTS)
         }
 
         // 정책1 - 신고 데이터 저장
