@@ -1,7 +1,7 @@
 package org.appjam.smashing.domain.user.repository
 
 import com.querydsl.jpa.impl.JPAQueryFactory
-import org.appjam.smashing.domain.user.entity.QBlock
+import org.appjam.smashing.domain.user.entity.QUserBlock
 
 class BlockRepositoryCustomImpl(
     private val queryFactory: JPAQueryFactory,
@@ -9,7 +9,7 @@ class BlockRepositoryCustomImpl(
     override fun findAllRelatedBlockIds(
         userId: String,
     ): List<String> {
-        val block = QBlock.block
+        val block = QUserBlock.userBlock
 
         // 내가 차단한 사람들의 ID
         val blockedByUser = queryFactory

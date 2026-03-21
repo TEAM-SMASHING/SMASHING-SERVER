@@ -8,8 +8,8 @@ import org.appjam.smashing.domain.sport.repository.SportRepository
 import org.appjam.smashing.domain.tier.repository.TierRepository
 import org.appjam.smashing.domain.user.dto.command.*
 import org.appjam.smashing.domain.user.dto.response.*
-import org.appjam.smashing.domain.user.entity.Block
 import org.appjam.smashing.domain.user.entity.User
+import org.appjam.smashing.domain.user.entity.UserBlock
 import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.appjam.smashing.domain.user.repository.BlockRepository
 import org.appjam.smashing.domain.user.repository.UserRepository
@@ -473,11 +473,11 @@ class UserService(
         }
 
         // 정책1 - 차단 데이터 저장
-        val block = Block.create(
+        val userBlock = UserBlock.create(
             blocker = blocker,
             blockedUser = blockedUserProfile.user,
         )
-        blockRepository.save(block)
+        blockRepository.save(userBlock)
     }
 
     private fun validateNickName(trimmedNickname: String) {

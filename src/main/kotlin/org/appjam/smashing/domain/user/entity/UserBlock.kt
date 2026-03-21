@@ -7,7 +7,7 @@ import org.hibernate.annotations.Comment
 
 @Entity
 @Table(
-    name = "block",
+    name = "user_block",
     uniqueConstraints = [
         UniqueConstraint(
             name = "uk_block_blocker_blocked",
@@ -16,7 +16,7 @@ import org.hibernate.annotations.Comment
     ]
 )
 @Comment("차단 정보")
-class Block(
+class UserBlock(
     @Id
     @Tsid
     @Column(length = 13)
@@ -45,7 +45,7 @@ class Block(
         fun create(
             blocker: User,
             blockedUser: User
-        ) = Block(
+        ) = UserBlock(
             blocker = blocker,
             blockedUser = blockedUser,
         )
