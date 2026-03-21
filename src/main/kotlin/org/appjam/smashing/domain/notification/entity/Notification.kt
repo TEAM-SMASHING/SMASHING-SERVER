@@ -16,11 +16,11 @@ import org.hibernate.annotations.SQLRestriction
 @Entity
 @Table(
     indexes = [
-        Index(name = "idx_notification_user_id", columnList = "user_id"),
+        Index(name = "idx_notification_user_id", columnList = "receiver_user_id"),
         Index(name = "idx_notification_type", columnList = "type"),
-        Index(name = "idx_notification_sender_user_id", columnList = "sender_user_id"),
         Index(name = "idx_notification_sender_profile_id", columnList = "sender_profile_id"),
         Index(name = "idx_notification_sport_code", columnList = "sport_code"),
+        Index(name = "idx_notification_receiver_user_id_id", columnList = "receiver_user_id, id"),
     ]
 )
 @Comment("알림 정보")

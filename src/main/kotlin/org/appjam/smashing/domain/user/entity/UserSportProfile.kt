@@ -17,6 +17,7 @@ import org.hibernate.annotations.*
         Index(name = "idx_usp_user_id", columnList = "user_id"),
         Index(name = "idx_usp_sport_id", columnList = "sport_id"),
         Index(name = "idx_usp_tier_id", columnList = "tier_id"),
+        Index(name = "idx_usp_user_id_sport_id", columnList = "user_id, sport_id"),
     ]
 )
 @Comment("유저-스포츠 프로필 정보")
