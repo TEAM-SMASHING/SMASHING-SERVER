@@ -1,6 +1,5 @@
 package org.appjam.smashing.domain.user.service
 
-import org.appjam.smashing.domain.block.repository.BlockRepository
 import org.appjam.smashing.domain.game.repository.GameRepository
 import org.appjam.smashing.domain.matching.enums.MatchingStatus
 import org.appjam.smashing.domain.matching.repository.MatchingRepository
@@ -9,8 +8,10 @@ import org.appjam.smashing.domain.sport.repository.SportRepository
 import org.appjam.smashing.domain.tier.repository.TierRepository
 import org.appjam.smashing.domain.user.dto.command.*
 import org.appjam.smashing.domain.user.dto.response.*
+import org.appjam.smashing.domain.user.entity.Block
 import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.entity.UserSportProfile
+import org.appjam.smashing.domain.user.repository.BlockRepository
 import org.appjam.smashing.domain.user.repository.UserRepository
 import org.appjam.smashing.domain.user.repository.UserSportProfileRepository
 import org.appjam.smashing.global.common.dto.CommonCursorRequest
@@ -449,6 +450,37 @@ class UserService(
         return UserRegionResponse.from(
             region = user.region
         )
+    }
+
+    @Transactional
+    fun blockUser(
+        userId: String,
+        requestCommand: UserBlockCommand,
+    ) {
+        val blocker = userRepository.findByIdOrNull(userId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+        val blockedUserProfile = userSportProfileRepository.findByIdOrNull(requestCommand.blockedUserProfileId)
+            ?: throw CustomException(ErrorCode.BLOCKED_NOT_FOUND)
+
+        // 조치1 - 자기 자신 차단 방지
+        if (userId == blockedUserProfile.user.id) {
+            throw CustomException(ErrorCode.BLOCKED_SELF_FORBIDDEN)
+        }
+
+        // 조치2 - 중복 차단 불가
+        if (blockRepository.existsByBlockerAndBlockedUser(blocker, blockedUserProfile.user)) {
+            throw CustomException(ErrorCode.BLOCK_ALREADY_EXISTS)
+        }
+        if (blockRepository.existsByBlockerAndBlockedUser(blockedUserProfile.user, blocker)) {
+            throw CustomException(ErrorCode.BLOCKED_BY_TARGET)
+        }
+
+        // 정책1 - 차단 데이터 저장
+        val block = Block.create(
+            blocker = blocker,
+            blockedUser = blockedUserProfile.user,
+        )
+        blockRepository.save(block)
     }
 
     private fun validateNickName(trimmedNickname: String) {

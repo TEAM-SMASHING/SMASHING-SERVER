@@ -1,7 +1,7 @@
-package org.appjam.smashing.domain.block.repository
+package org.appjam.smashing.domain.user.repository
 
 import com.querydsl.jpa.impl.JPAQueryFactory
-import org.appjam.smashing.domain.block.entity.QBlock
+import org.appjam.smashing.domain.user.entity.QBlock
 
 class BlockRepositoryCustomImpl(
     private val queryFactory: JPAQueryFactory,

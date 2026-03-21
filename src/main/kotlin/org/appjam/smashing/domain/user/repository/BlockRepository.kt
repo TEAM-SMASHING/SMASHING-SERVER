@@ -1,6 +1,6 @@
-package org.appjam.smashing.domain.block.repository
+package org.appjam.smashing.domain.user.repository
 
-import org.appjam.smashing.domain.block.entity.Block
+import org.appjam.smashing.domain.user.entity.Block
 import org.appjam.smashing.domain.user.entity.User
 import org.springframework.data.jpa.repository.JpaRepository
 

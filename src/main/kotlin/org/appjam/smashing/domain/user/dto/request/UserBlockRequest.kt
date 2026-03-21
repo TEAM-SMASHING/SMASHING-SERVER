@@ -1,7 +1,7 @@
-package org.appjam.smashing.domain.block.dto.request
+package org.appjam.smashing.domain.user.dto.request
 
 import jakarta.validation.constraints.NotBlank
-import org.appjam.smashing.domain.block.dto.command.UserBlockCommand
+import org.appjam.smashing.domain.user.dto.command.UserBlockCommand
 
 data class UserBlockRequest(
     @field:NotBlank(message = "blockedUserProfileId를 입력해주세요.")

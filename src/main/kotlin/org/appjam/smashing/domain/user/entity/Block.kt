@@ -1,9 +1,8 @@
-package org.appjam.smashing.domain.block.entity
+package org.appjam.smashing.domain.user.entity
 
 import io.hypersistence.utils.hibernate.id.Tsid
 import jakarta.persistence.*
 import org.appjam.smashing.domain.common.entity.BaseEntity
-import org.appjam.smashing.domain.user.entity.User
 import org.hibernate.annotations.Comment
 
 @Entity
