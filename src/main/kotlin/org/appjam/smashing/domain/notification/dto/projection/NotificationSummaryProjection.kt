@@ -11,15 +11,12 @@ import java.time.OffsetDateTime
 data class NotificationSummaryProjection(
     val notificationId: String,
     val type: NotificationType,
-    val templateTitle: String,
-    val templateContent: String,
-    val params: String,
-    val linkUrl: String,
+    val title: String,
+    val content: String,
+    val linkUrl: String?,
     val isRead: Boolean,
     val createdAtLdt: LocalDateTime,
-    val senderNickname: String,
-    val receiverProfileId: String,
-    val receiverSportId: Long,
+    val senderProfileId: String?,
 ) : CursorKey {
 
     override val cursorId: String
