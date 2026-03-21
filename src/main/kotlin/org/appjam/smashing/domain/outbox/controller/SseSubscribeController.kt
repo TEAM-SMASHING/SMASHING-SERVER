@@ -1,5 +1,6 @@
 package org.appjam.smashing.domain.outbox.controller
 
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.appjam.smashing.global.auth.security.components.CurrentUserProvider
 import org.appjam.smashing.domain.outbox.components.SseEmitterRegistry
 import org.appjam.smashing.domain.outbox.service.OutboxEventService
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
 
+@Tag(name = "Sse")
 @RestController
 @RequestMapping("/api/v1/sse")
 class SseSubscribeController(

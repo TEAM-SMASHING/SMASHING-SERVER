@@ -50,16 +50,6 @@ class UserService(
         }
     }
 
-    private fun validateNickName(trimmedNickname: String) {
-        if (trimmedNickname.length > MAX_NICKNAME_LENGTH) {
-            throw CustomException(ErrorCode.NICKNAME_TOO_LONG)
-        }
-
-        if (!NICKNAME_VALID_REGEX.matches(trimmedNickname)) {
-            throw CustomException(ErrorCode.INVALID_NICKNAME_FORMAT)
-        }
-    }
-
     @Transactional
     fun validateOpenChatUrl(
         openChatValidateCommand: OpenChatValidateCommand,
@@ -72,12 +62,6 @@ class UserService(
             OpenChatValidateResponse(true)
         } else {
             OpenChatValidateResponse(false)
-        }
-    }
-
-    private fun checkDuplicateOpenChatUrl(trimmedUrl: String) {
-        if (userRepository.existsByOpenchatUrl(trimmedUrl)) {
-            throw CustomException(ErrorCode.DUPLICATE_OPEN_CHAT_URL)
         }
     }
 
@@ -108,23 +92,24 @@ class UserService(
     ) {
         val user = userRepository.findByIdOrNull(userId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
-
         val sport = sportRepository.findByCode(requestCommand.sportCode)
             ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
 
+        // 중복 생성 방지
         validateAlreadyRegisteredSport(user.id!!, sport.id!!)
 
+        // 초기LP 및 티어 정보 매칭
         val initLp = requestCommand.experienceRange.initLp
         val initTier = tierRepository.findBySportIdAndLpInRange(
             sportId = sport.id!!,
             lp = initLp,
         ) ?: throw CustomException(ErrorCode.INVALID_INITIAL_TIER)
-
         val tier = tierRepository.findBySportIdAndName(
             sportId = sport.id!!,
             name = initTier.name,
         ) ?: throw CustomException(ErrorCode.INVALID_TIER_SETTING)
 
+        // 새 프로필 저장
         val profile = userSportProfileRepository.save(
             UserSportProfile.create(
                 lp = initLp,
@@ -134,13 +119,8 @@ class UserService(
             )
         )
 
+        // 사용자의 활성 프로필을 추가한 프로필로 변경
         user.updateActiveProfile(profile.id!!)
-    }
-
-    private fun validateAlreadyRegisteredSport(userId: String, sportId: Long) {
-        if (userSportProfileRepository.existsByUserIdAndSportId(userId, sportId)) {
-            throw CustomException(ErrorCode.ALREADY_EXIST_SPORT_PROFILE)
-        }
     }
 
     @Transactional(readOnly = true)
@@ -172,15 +152,19 @@ class UserService(
     @Transactional(readOnly = true)
     fun getOtherUserProfiles(
         userId: String,
-        otherUserId: String,
+        otherUserProfileId: String,
         sportCode: String?,
     ): OtherUserProfilesResponse {
         val myInfo = getMyInfoAndActiveProfile(userId)
 
-        val otherUser = userRepository.findByIdOrNull(otherUserId)
+        // 다른 유저 정보 탐색
+        val otherUserActiveProfile = userSportProfileRepository.findByIdOrNull(otherUserProfileId)
+            ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
+        val otherUser = userRepository.findByIdOrNull(otherUserActiveProfile.user.id!!)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
-        val allProfiles = userSportProfileRepository.findAllByUserIdOrderBySportName(otherUserId)
+        // 다른 유저의 조회할 프로필 선택
+        val allProfiles = userSportProfileRepository.findAllByUserIdOrderBySportName(otherUser.id!!)
 
         val selectedProfile = if (sportCode == null) {
             allProfiles.find { myInfo.activeProfile.sport.code == it.sport.code }
@@ -191,7 +175,7 @@ class UserService(
         }
 
         val reviews = gameReviewRepository.countByRevieweeAndSport(
-            revieweeUserId = otherUserId,
+            revieweeUserId = otherUser.id!!,
             sportId = selectedProfile.sport.id!!,
         )
 
@@ -222,83 +206,6 @@ class UserService(
         )
     }
 
-    private fun checkIsChallengeable(
-        myProfileId: String,
-        otherProfileId: String,
-        sportId: Long,
-    ): Boolean {
-        // 하루 3판 제한 (RESULT_CONFIRMED 게임 기준)
-        val isDailyLimitValid = validateDailyLimit(
-            profileA = myProfileId,
-            profileB = otherProfileId,
-            sportId = sportId,
-        )
-
-        // 24h 쿨다운 (요청/취소/거절 기준)
-        val isCooldownValid = runCatching {
-            validateCooldown(
-                profileA = myProfileId,
-                profileB = otherProfileId,
-                sportId = sportId,
-                now = TimeUtils.nowOffsetDateTime().toLocalDateTime(),
-            )
-        }.isSuccess
-
-        return isDailyLimitValid && isCooldownValid
-    }
-
-    private fun validateDailyLimit(
-        profileA: String,
-        profileB: String,
-        sportId: Long,
-    ): Boolean {
-        val today = LocalDate.now(DEFAULT_ZONE_ID)
-        val startOfDay = today.atStartOfDay()
-        val endOfDay = today.plusDays(1).atStartOfDay()
-
-        val confirmedCount = gameRepository.countConfirmedGamesTodayBetweenProfiles(
-            profileA = profileA,
-            profileB = profileB,
-            sportId = sportId,
-            startOfDay = startOfDay,
-            endOfDay = endOfDay,
-        )
-
-        return confirmedCount < 3L
-    }
-
-    private fun validateCooldown(
-        profileA: String,
-        profileB: String,
-        sportId: Long,
-        now: LocalDateTime,
-    ) {
-        val latest = matchingRepository.findLatestForCooldown(
-            profileA = profileA,
-            profileB = profileB,
-            sportId = sportId,
-        ) ?: return
-
-        val status = runCatching { MatchingStatus.valueOf(latest.status) }
-            .getOrElse { return }
-
-        when (status) {
-            MatchingStatus.REQUESTED -> {
-                val until = latest.createdAt.plusHours(24)
-                if (now.isBefore(until)) throw CustomException(ErrorCode.MATCHING_PENDING_EXISTS)
-            }
-
-            MatchingStatus.CANCELLED,
-            MatchingStatus.REJECTED -> {
-                val base = latest.respondedAt ?: latest.createdAt
-                val until = base.plusHours(24)
-                if (now.isBefore(until)) throw CustomException(ErrorCode.MATCHING_PENDING_EXISTS)
-            }
-
-            else -> Unit
-        }
-    }
-
     @Transactional
     fun updateRegion(
         userId: String,
@@ -310,12 +217,6 @@ class UserService(
         validateRegion(trimmedRegion)
 
         user.updateRegion(trimmedRegion)
-    }
-
-    private fun validateRegion(region: String) {
-        if (!region.endsWith(DISTRICT_SUFFIX)) {
-            throw CustomException(ErrorCode.INVALID_REGION)
-        }
     }
 
     @Transactional
@@ -432,11 +333,13 @@ class UserService(
     @Transactional(readOnly = true)
     fun getOtherUserRecentReview(
         userId: String,
-        otherUserId: String,
+        otherUserProfileId: String,
         sportCode: String?,
         request: CommonCursorRequest,
     ): CursorResponse<UserRecentReviewResponse> {
-        val otherUser = userRepository.findByIdOrNull(otherUserId)
+        val otherUserProfileId = userSportProfileRepository.findByIdOrNull(otherUserProfileId)
+            ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
+        val otherUser = userRepository.findByIdOrNull(otherUserProfileId.user.id!!)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
         val selectedProfile = resolveProfile(
@@ -452,7 +355,7 @@ class UserService(
         val response = gameReviewRepository.findAllBySportIdOrderByDate(
             request = request,
             sportId = sportId,
-            userId = otherUserId,
+            userId = otherUser.id!!,
             snapshotAt = snapshotAt
         )
 
@@ -467,10 +370,12 @@ class UserService(
     @Transactional(readOnly = true)
     fun getOtherUserRecentReviewSummary(
         userId: String,
-        otherUserId: String,
+        otherUserProfileId: String,
         sportCode: String?,
     ): UserRecentReviewSummaryResponse {
-        val otherUser = userRepository.findByIdOrNull(otherUserId)
+        val otherUserProfile = userSportProfileRepository.findByIdOrNull(otherUserProfileId)
+            ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
+        val otherUser = userRepository.findByIdOrNull(otherUserProfile.user.id!!)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
         val selectedProfile = resolveProfile(
@@ -482,7 +387,7 @@ class UserService(
         val sportId = selectedProfile.sport.id!!
 
         val counts = getCounts(
-            userId = otherUserId,
+            userId = otherUser.id!!,
             sportId = sportId
         )
 
@@ -490,6 +395,152 @@ class UserService(
             ratingMap = counts.ratingMap,
             tagMap = counts.tagMap,
         )
+    }
+
+    @Transactional(readOnly = true)
+    fun getOtherUserRegion(
+        userId: String,
+        requestCommand: OtherUserRegionCommand,
+        requestCursor: CommonCursorRequest,
+    ): CursorResponse<OtherUserRegionResponse> {
+        val myInfo = getMyInfoAndActiveProfile(userId)
+        val sportId = myInfo.activeProfile.sport.id!!
+
+        val snapshotAt = requestCursor.snapshotAt ?: TimeUtils.nowOffsetDateTime()
+
+        val response = userSportProfileRepository.findAllBySportAndRegion(
+            userId = userId,
+            sportId = sportId,
+            region = myInfo.user.region,
+            request = requestCursor,
+            gender = requestCommand.gender,
+            tier = requestCommand.tier?.name,
+            snapshotAt = snapshotAt,
+        )
+
+        return CursorResponse(
+            snapshotAt = response.snapshotAt,
+            results = OtherUserRegionResponse.listForm(response.results),
+            nextCursor = response.nextCursor,
+            hasNext = response.hasNext,
+        )
+    }
+
+    @Transactional(readOnly = true)
+    fun getUserRegion(
+        userId: String,
+    ): UserRegionResponse {
+        val user = userRepository.findByIdOrNull(userId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+
+        return UserRegionResponse.from(
+            region = user.region
+        )
+    }
+
+    private fun validateNickName(trimmedNickname: String) {
+        if (trimmedNickname.length > MAX_NICKNAME_LENGTH) {
+            throw CustomException(ErrorCode.NICKNAME_TOO_LONG)
+        }
+
+        if (!NICKNAME_VALID_REGEX.matches(trimmedNickname)) {
+            throw CustomException(ErrorCode.INVALID_NICKNAME_FORMAT)
+        }
+    }
+
+    private fun checkDuplicateOpenChatUrl(trimmedUrl: String) {
+        if (userRepository.existsByOpenchatUrl(trimmedUrl)) {
+            throw CustomException(ErrorCode.DUPLICATE_OPEN_CHAT_URL)
+        }
+    }
+
+    private fun validateAlreadyRegisteredSport(userId: String, sportId: Long) {
+        if (userSportProfileRepository.existsByUserIdAndSportId(userId, sportId)) {
+            throw CustomException(ErrorCode.ALREADY_EXIST_SPORT_PROFILE)
+        }
+    }
+
+    private fun checkIsChallengeable(
+        myProfileId: String,
+        otherProfileId: String,
+        sportId: Long,
+    ): Boolean {
+        // 하루 3판 제한 (RESULT_CONFIRMED 게임 기준)
+        val isDailyLimitValid = validateDailyLimit(
+            profileA = myProfileId,
+            profileB = otherProfileId,
+            sportId = sportId,
+        )
+
+        // 24h 쿨다운 (요청/취소/거절 기준)
+        val isCooldownValid = runCatching {
+            validateCooldown(
+                profileA = myProfileId,
+                profileB = otherProfileId,
+                sportId = sportId,
+                now = TimeUtils.nowOffsetDateTime().toLocalDateTime(),
+            )
+        }.isSuccess
+
+        return isDailyLimitValid && isCooldownValid
+    }
+
+    private fun validateDailyLimit(
+        profileA: String,
+        profileB: String,
+        sportId: Long,
+    ): Boolean {
+        val today = LocalDate.now(DEFAULT_ZONE_ID)
+        val startOfDay = today.atStartOfDay()
+        val endOfDay = today.plusDays(1).atStartOfDay()
+
+        val confirmedCount = gameRepository.countConfirmedGamesTodayBetweenProfiles(
+            profileA = profileA,
+            profileB = profileB,
+            sportId = sportId,
+            startOfDay = startOfDay,
+            endOfDay = endOfDay,
+        )
+
+        return confirmedCount < 3L
+    }
+
+    private fun validateCooldown(
+        profileA: String,
+        profileB: String,
+        sportId: Long,
+        now: LocalDateTime,
+    ) {
+        val latest = matchingRepository.findLatestForCooldown(
+            profileA = profileA,
+            profileB = profileB,
+            sportId = sportId,
+        ) ?: return
+
+        val status = runCatching { MatchingStatus.valueOf(latest.status) }
+            .getOrElse { return }
+
+        when (status) {
+            MatchingStatus.REQUESTED -> {
+                val until = latest.createdAt.plusHours(24)
+                if (now.isBefore(until)) throw CustomException(ErrorCode.MATCHING_PENDING_EXISTS)
+            }
+
+            MatchingStatus.CANCELLED,
+            MatchingStatus.REJECTED -> {
+                val base = latest.respondedAt ?: latest.createdAt
+                val until = base.plusHours(24)
+                if (now.isBefore(until)) throw CustomException(ErrorCode.MATCHING_PENDING_EXISTS)
+            }
+
+            else -> Unit
+        }
+    }
+
+    private fun validateRegion(region: String) {
+        if (!region.endsWith(DISTRICT_SUFFIX)) {
+            throw CustomException(ErrorCode.INVALID_REGION)
+        }
     }
 
     private fun resolveProfile(
@@ -535,35 +586,6 @@ class UserService(
         )
     }
 
-    @Transactional(readOnly = true)
-    fun getOtherUserRegion(
-        userId: String,
-        requestCommand: OtherUserRegionCommand,
-        requestCursor: CommonCursorRequest,
-    ): CursorResponse<OtherUserRegionResponse> {
-        val myInfo = getMyInfoAndActiveProfile(userId)
-        val sportId = myInfo.activeProfile.sport.id!!
-
-        val snapshotAt = requestCursor.snapshotAt ?: TimeUtils.nowOffsetDateTime()
-
-        val response = userSportProfileRepository.findAllBySportAndRegion(
-            userId = userId,
-            sportId = sportId,
-            region = myInfo.user.region,
-            request = requestCursor,
-            gender = requestCommand.gender,
-            tier = requestCommand.tier?.name,
-            snapshotAt = snapshotAt,
-        )
-
-        return CursorResponse(
-            snapshotAt = response.snapshotAt,
-            results = OtherUserRegionResponse.listForm(response.results),
-            nextCursor = response.nextCursor,
-            hasNext = response.hasNext,
-        )
-    }
-
     private fun getMyInfoAndActiveProfile(userId: String): UserWithActiveProfile {
         val user = userRepository.findByIdOrNull(userId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
@@ -574,18 +596,6 @@ class UserService(
         return UserWithActiveProfile(
             user = user,
             activeProfile = activeProfile,
-        )
-    }
-
-    @Transactional(readOnly = true)
-    fun getUserRegion(
-        userId: String,
-    ): UserRegionResponse {
-        val user = userRepository.findByIdOrNull(userId)
-            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
-
-        return UserRegionResponse.from(
-            region = user.region
         )
     }
 

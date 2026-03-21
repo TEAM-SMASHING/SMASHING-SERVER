@@ -19,7 +19,6 @@ import org.appjam.smashing.domain.common.entity.BaseEntity
 import org.appjam.smashing.domain.game.enums.GameStatus
 import org.appjam.smashing.domain.matching.entity.Matching
 import org.appjam.smashing.domain.sport.entity.Sport
-import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.hibernate.annotations.Comment
 import org.hibernate.annotations.SQLDelete
@@ -37,6 +36,7 @@ import java.time.LocalDateTime
         Index(name = "idx_game_winner_profile_id", columnList = "winner_profile_id"),
         Index(name = "idx_game_loser_profile_id", columnList = "loser_profile_id"),
         Index(name = "idx_game_confirmed_submission_id", columnList = "confirmed_submission_id"),
+        Index(name = "idx_game_sport_id_result_status", columnList = "sport_id, result_status"),
     ]
 )
 @Comment("경기 정보")

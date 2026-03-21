@@ -5,7 +5,6 @@ import jakarta.persistence.*
 import org.appjam.smashing.domain.common.entity.BaseEntity
 import org.appjam.smashing.domain.matching.enums.MatchingStatus
 import org.appjam.smashing.domain.sport.entity.Sport
-import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.hibernate.annotations.Comment
 import org.hibernate.annotations.SQLDelete
@@ -19,6 +18,8 @@ import java.time.LocalDateTime
         Index(name = "idx_matching_receiver_profile_id", columnList = "receiver_profile_id"),
         Index(name = "idx_matching_sport_id", columnList = "sport_id"),
         Index(name = "idx_matching_sport_req_recv", columnList = "sport_id, requester_profile_id, receiver_profile_id"),
+        Index(name = "idx_matching_receiver_sport_status", columnList = "receiver_profile_id, sport_id, status"),
+        Index(name = "idx_matching_requester_sport_status", columnList = "requester_profile_id, sport_id, status"),
     ]
 )
 @Comment("매칭 정보")

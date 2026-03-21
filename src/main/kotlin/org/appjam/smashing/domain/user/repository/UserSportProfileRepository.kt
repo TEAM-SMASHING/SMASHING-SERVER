@@ -119,4 +119,15 @@ interface UserSportProfileRepository : JpaRepository<UserSportProfile, String>, 
         userId: String,
         sportCode: String
     ): UserSportProfile?
+
+    @Query(
+        """
+       select usp.sport.code
+       from UserSportProfile usp
+       where usp.id = :profileId
+    """
+    )
+    fun findSportCodeById(
+        profileId: String,
+    ): String?
 }
