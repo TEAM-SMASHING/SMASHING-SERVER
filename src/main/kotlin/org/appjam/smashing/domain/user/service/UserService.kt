@@ -471,9 +471,6 @@ class UserService(
         if (blockRepository.existsByBlockerAndBlockedUser(blocker, blockedUserProfile.user)) {
             throw CustomException(ErrorCode.BLOCK_ALREADY_EXISTS)
         }
-        if (blockRepository.existsByBlockerAndBlockedUser(blockedUserProfile.user, blocker)) {
-            throw CustomException(ErrorCode.BLOCKED_BY_TARGET)
-        }
 
         // 정책1 - 차단 데이터 저장
         val block = Block.create(
