@@ -6,30 +6,17 @@ import org.appjam.smashing.global.auth.jwt.enums.TokenType
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
 import org.springframework.stereotype.Component
-import java.security.MessageDigest
 
 @Component
 class JwtValidator(
     private val keyProvider: KeyProvider
 ) {
-    fun validateRefreshToken(
-        refreshToken: String,
-        storedRefreshToken: String
-    ) {
+    fun verifyToken(refreshToken: String) {
         val claims = parseRefreshToken(refreshToken)
 
         val type = claims[TYPE_KEY] as? String
         if (type != TokenType.REFRESH_TOKEN.name) {
             throw CustomException(ErrorCode.INVALID_REFRESH_TOKEN_TYPE)
-        }
-
-        val isMatched = MessageDigest.isEqual(
-            refreshToken.toByteArray(),
-            storedRefreshToken.toByteArray()
-        )
-
-        if (!isMatched) {
-            throw CustomException(ErrorCode.REFRESH_TOKEN_MISMATCH)
         }
     }
 

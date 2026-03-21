@@ -80,6 +80,7 @@ class SecurityConfig(
             // API
             "/api/v1/auth/login/kakao",
             "/api/v1/auth/signup",
+            "/api/v1/auth/reissue",
             "/api/v1/users/nickname-availability",
             "/api/v1/users/openchat/validate",
         )

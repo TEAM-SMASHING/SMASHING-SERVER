@@ -22,7 +22,7 @@ class JwtProvider(
         roles: List<String> = emptyList()
     ): TokenDto {
         val access = jwtGenerator.generateAccessToken(userId = userId, roles = roles)
-        val refresh = jwtGenerator.generateRefreshToken()
+        val refresh = jwtGenerator.generateRefreshToken(userId = userId)
 
         return TokenDto.of(
             accessToken = access.token,
@@ -99,7 +99,7 @@ class JwtProvider(
      * @param token 엑세스 토큰
      * @return  subject 추출하여 반환
      */
-    fun extractSubject(
+    fun extractAccessSubject(
         token: String,
     ): String {
         val claims = jwtValidator.parseAccessToken(token)
@@ -110,6 +110,27 @@ class JwtProvider(
         }
 
         val subject = claims.subject ?: throw CustomException(ErrorCode.INVALID_ACCESS_TOKEN_SUBJECT)
+
+        return subject
+    }
+
+    /**
+     * 리프레시 토큰에서 subject 추출
+     *
+     * @param token 리프레시 토큰
+     * @return  subject 추출하여 반환
+     */
+    fun extractRefreshSubject(
+        token: String,
+    ): String {
+        val claims = jwtValidator.parseRefreshToken(token)
+
+        val type = claims[TYPE_KEY] as? String
+        if (type != TokenType.REFRESH_TOKEN.name) {
+            throw CustomException(ErrorCode.INVALID_REFRESH_TOKEN)
+        }
+
+        val subject = claims.subject ?: throw CustomException(ErrorCode.INVALID_REFRESH_TOKEN_SUBJECT)
 
         return subject
     }

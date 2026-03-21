@@ -34,12 +34,12 @@ enum class ErrorCode(
     // Auth - Refresh Token
     INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-012", "유효하지 않은 리프레시 토큰입니다."),
     EXPIRED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-013", "만료된 리프레시 토큰입니다."),
-    REFRESH_TOKEN_MISMATCH(HttpStatus.UNAUTHORIZED, "AUTH-014", "저장된 리프레시 토큰과 일치하지 않습니다."),
-    INVALID_REFRESH_SIGNATURE(HttpStatus.UNAUTHORIZED, "AUTH-015", "변조된 리프레시 토큰입니다."),
-    MALFORMED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-016", "리프레시 토큰의 형식이 잘못되었습니다."),
-    UNSUPPORTED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-017", "지원되지 않는 리프레시 토큰 형식입니다."),
-    INVALID_REFRESH_TOKEN_TYPE(HttpStatus.UNAUTHORIZED, "AUTH-018", "리프레시 토큰의 타입이 올바르지 않습니다."),
-    INVALID_REFRESH_TOKEN_CONTENTS(HttpStatus.UNAUTHORIZED, "AUTH-019", "유효하지 않은 정보가 담긴 리프레시 토큰입니다."),
+    INVALID_REFRESH_SIGNATURE(HttpStatus.UNAUTHORIZED, "AUTH-014", "변조된 리프레시 토큰입니다."),
+    MALFORMED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-015", "리프레시 토큰의 형식이 잘못되었습니다."),
+    UNSUPPORTED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-016", "지원되지 않는 리프레시 토큰 형식입니다."),
+    INVALID_REFRESH_TOKEN_CONTENTS(HttpStatus.UNAUTHORIZED, "AUTH-017", "유효하지 않은 정보가 담긴 리프레시 토큰입니다."),
+    INVALID_REFRESH_TOKEN_SUBJECT(HttpStatus.UNAUTHORIZED, "AUTH-018", "리프레시 토큰의 유저 정보가 올바르지 않습니다."),
+    INVALID_REFRESH_TOKEN_TYPE(HttpStatus.UNAUTHORIZED, "AUTH-019", "리프레시 토큰의 타입이 올바르지 않습니다."),
 
     // Auth - Kakao Token
     INVALID_KAKAO_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-020", "유효하지 않은 카카오 액세스 토큰입니다."),

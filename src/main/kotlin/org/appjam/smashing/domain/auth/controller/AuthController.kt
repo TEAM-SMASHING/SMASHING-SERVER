@@ -5,8 +5,10 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.appjam.smashing.domain.auth.dto.request.SignInRequest
 import org.appjam.smashing.domain.auth.dto.request.SignUpRequest
+import org.appjam.smashing.domain.auth.dto.request.TokenReissueRequest
 import org.appjam.smashing.domain.auth.dto.response.SignInResponse
 import org.appjam.smashing.domain.auth.dto.response.SignUpResponse
+import org.appjam.smashing.domain.auth.dto.response.TokenReissueResponse
 import org.appjam.smashing.domain.auth.service.AuthService
 import org.appjam.smashing.global.auth.security.data.CustomUserDetails
 import org.appjam.smashing.global.common.dto.ApiResponse
@@ -73,5 +75,22 @@ class AuthController(
         )
 
         return ApiResponse.success()
+    }
+
+    @Operation(
+        summary = "토큰 재발급 API",
+        description = "엑세스 토큰 만료시, 엑세스 토큰과 리프레시 토큰을 재발급 합니다."
+    )
+    @PostMapping("/reissue")
+    fun tokenReissue(
+        @Valid @RequestBody tokenReissueRequest: TokenReissueRequest,
+    ): ResponseEntity<ApiResponse<TokenReissueResponse>> {
+        val response = authService.tokenReissue(
+            reqeustCommand = tokenReissueRequest.toCommand(),
+        )
+
+        return ApiResponse.success(
+            data = response
+        )
     }
 }
