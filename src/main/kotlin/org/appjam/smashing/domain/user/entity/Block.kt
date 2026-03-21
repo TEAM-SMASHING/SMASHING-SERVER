@@ -7,7 +7,13 @@ import org.hibernate.annotations.Comment
 
 @Entity
 @Table(
-    name = "block"
+    name = "block",
+    uniqueConstraints = [
+        UniqueConstraint(
+            name = "uk_block_blocker_blocked",
+            columnNames = ["blocker_id", "blocked_id"]
+        )
+    ]
 )
 @Comment("차단 정보")
 class Block(
