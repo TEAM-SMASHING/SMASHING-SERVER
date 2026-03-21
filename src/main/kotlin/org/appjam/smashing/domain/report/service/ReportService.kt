@@ -44,12 +44,16 @@ class ReportService(
             throw CustomException(ErrorCode.REPORT_ALREADY_EXISTS)
         }
 
+        if (requestCommand.reportType == ReportType.ETC && requestCommand.reasonDetail.isNullOrBlank()) {
+            throw CustomException(ErrorCode.REPORT_REASON_REQUIRED)
+        }
+
         // 정책1 - 신고 데이터 저장
         val report = Report.create(
             reporter = reporter,
             reportedUser = reportedUser,
             reportType = requestCommand.reportType,
-            reasonDetail = if (requestCommand.reportType == ReportType.ETC) requestCommand.reasonDetail else null
+            reasonDetail = requestCommand.reasonDetail,
         )
         reportRepository.save(report)
 
