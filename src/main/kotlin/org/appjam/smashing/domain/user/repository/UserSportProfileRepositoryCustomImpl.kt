@@ -10,7 +10,6 @@ import org.appjam.smashing.domain.user.dto.projection.*
 import org.appjam.smashing.domain.user.entity.QUser.Companion.user
 import org.appjam.smashing.domain.user.entity.QUserSportProfile.Companion.userSportProfile
 import org.appjam.smashing.domain.user.enums.Gender
-import org.appjam.smashing.domain.user.enums.UserStatus
 import org.appjam.smashing.global.common.dto.CommonCursorRequest
 import org.appjam.smashing.global.common.dto.CursorPageResponse
 import org.appjam.smashing.global.util.CursorCodec
@@ -59,11 +58,7 @@ class UserSportProfileRepositoryCustomImpl(
                 userSportProfile.sport.id.eq(sportId),
                 user.id.ne(excludeUserId),
                 userSportProfile.lp.between(myLp - lpThreshold, myLp + lpThreshold),
-                user.status.eq(UserStatus.ACTIVE)
-                    .or(
-                        user.status.eq(UserStatus.RESTRICTED)
-                            .and(user.restrictionEndDate.before(now))
-                    )
+                user.restrictionEndDate.before(now)
             )
             .orderBy(randomOrder.asc())
             .limit(limit)
@@ -89,11 +84,7 @@ class UserSportProfileRepositoryCustomImpl(
                 userSportProfile.sport.id.eq(sportId),
                 user.id.ne(excludeUserId),
                 user.nickname.startsWith(nickname),
-                user.status.eq(UserStatus.ACTIVE)
-                    .or(
-                        user.status.eq(UserStatus.RESTRICTED)
-                            .and(user.restrictionEndDate.before(now))
-                    )
+                user.restrictionEndDate.before(now)
             )
             .orderBy(user.nickname.asc())
             .limit(5)
