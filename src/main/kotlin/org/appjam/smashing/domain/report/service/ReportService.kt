@@ -6,6 +6,7 @@ import org.appjam.smashing.domain.report.enums.ReportType
 import org.appjam.smashing.domain.report.repository.ReportRepository
 import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.repository.UserRepository
+import org.appjam.smashing.domain.user.repository.UserSportProfileRepository
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
 import org.springframework.data.repository.findByIdOrNull
@@ -16,6 +17,7 @@ import java.time.LocalDateTime
 @Service
 class ReportService(
     private val userRepository: UserRepository,
+    private val userSportProfileRepository: UserSportProfileRepository,
     private val reportRepository: ReportRepository,
 ) {
     @Transactional
@@ -29,21 +31,20 @@ class ReportService(
 
         val reporter = userRepository.findByIdOrNull(userId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
-        val reportedUser = userRepository.findByIdOrNull(requestCommand.reportedUserId)
-            ?: throw CustomException(ErrorCode.REPORTED_NOT_FOUND)
+        val reportedUserProfile = userSportProfileRepository.findByIdOrNull(requestCommand.reportedUserProfileId)
+            ?: throw CustomException(ErrorCode.REPORTED_PROFILE_NOT_FOUND)
 
         // 조치1 - 자기 자신 신고 방지
-        if (userId == reportedUser.id) {
+        if (userId == reportedUserProfile.user.id) {
             throw CustomException(ErrorCode.REPORT_SELF_FORBIDDEN)
         }
 
-        val now = LocalDateTime.now()
         val thirtyDaysAgo = LocalDateTime.now().minusDays(30)
 
         // 조치2 - 비관적 락으로 중복 신고 확인 (30일이 지나면 동일 유저에게 신고 가능)
         val recentReport = reportRepository.findRecentReportWithLock(
             reporter = reporter,
-            reportedUser = reportedUser,
+            reportedUser = reportedUserProfile.user,
             since = thirtyDaysAgo,
         )
         if (recentReport.isNotEmpty()) {
@@ -53,14 +54,14 @@ class ReportService(
         // 정책1 - 신고 데이터 저장
         val report = Report.create(
             reporter = reporter,
-            reportedUser = reportedUser,
+            reportedUser = reportedUserProfile.user,
             reportType = requestCommand.reportType,
             reasonDetail = requestCommand.reasonDetail,
         )
         reportRepository.save(report)
 
         // 정책2 - 자동 제재 정책 확인
-        checkAndApplyRestriction(reportedUser)
+        checkAndApplyRestriction(reportedUserProfile.user)
     }
 
     private fun checkAndApplyRestriction(user: User) {

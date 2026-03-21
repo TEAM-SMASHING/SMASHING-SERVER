@@ -112,7 +112,7 @@ enum class ErrorCode(
     NOTIFICATION_FORBIDDEN(HttpStatus.FORBIDDEN, "NOTI-004", "해당 알림에 대한 권한이 없습니다."),
 
     // Domain - Report
-    REPORTED_NOT_FOUND(HttpStatus.NOT_FOUND, "REPORT-001", "신고 대상 유저를 찾을 수 없습니다."),
+    REPORTED_PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND, "REPORT-001", "신고 대상 유저의 프로필을 찾을 수 없습니다."),
     REPORT_SELF_FORBIDDEN(HttpStatus.BAD_REQUEST, "REPORT-002", "자기 자신은 신고할 수 없습니다."),
     REPORT_ALREADY_EXISTS(HttpStatus.CONFLICT, "REPORT-003", "해당 유저는 이미 신고한 상대입니다."),
     REPORT_REASON_REQUIRED(HttpStatus.BAD_REQUEST, "REPORT-004", "신고 유형이 '기타'인 경우 상세 사유는 필수입니다."),
