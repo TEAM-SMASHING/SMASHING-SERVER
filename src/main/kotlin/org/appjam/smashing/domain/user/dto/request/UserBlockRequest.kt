@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank
 import org.appjam.smashing.domain.user.dto.command.UserBlockCommand
 
 data class UserBlockRequest(
-    @field:NotBlank(message = "blockedUserProfileId를 입력해주세요.")
+    @field:NotBlank(message = "blockedUserProfileId 값은 필수입니다.")
     val blockedUserProfileId: String?,
 ) {
     fun toCommand() = UserBlockCommand(
