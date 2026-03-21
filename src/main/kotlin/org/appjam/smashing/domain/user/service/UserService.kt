@@ -92,23 +92,24 @@ class UserService(
     ) {
         val user = userRepository.findByIdOrNull(userId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
-
         val sport = sportRepository.findByCode(requestCommand.sportCode)
             ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
 
+        // 중복 생성 방지
         validateAlreadyRegisteredSport(user.id!!, sport.id!!)
 
+        // 초기LP 및 티어 정보 매칭
         val initLp = requestCommand.experienceRange.initLp
         val initTier = tierRepository.findBySportIdAndLpInRange(
             sportId = sport.id!!,
             lp = initLp,
         ) ?: throw CustomException(ErrorCode.INVALID_INITIAL_TIER)
-
         val tier = tierRepository.findBySportIdAndName(
             sportId = sport.id!!,
             name = initTier.name,
         ) ?: throw CustomException(ErrorCode.INVALID_TIER_SETTING)
 
+        // 새 프로필 저장
         val profile = userSportProfileRepository.save(
             UserSportProfile.create(
                 lp = initLp,
@@ -118,6 +119,7 @@ class UserService(
             )
         )
 
+        // 사용자의 활성 프로필을 추가한 프로필로 변경
         user.updateActiveProfile(profile.id!!)
     }
 
@@ -158,6 +160,7 @@ class UserService(
         val otherUser = userRepository.findByIdOrNull(otherUserId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
+        // 다른 유저의 조회할 프로필 선택
         val allProfiles = userSportProfileRepository.findAllByUserIdOrderBySportName(otherUserId)
 
         val selectedProfile = if (sportCode == null) {
