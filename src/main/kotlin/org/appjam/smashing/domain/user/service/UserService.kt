@@ -310,12 +310,14 @@ class UserService(
         val myInfo = getMyInfoAndActiveProfile(userId)
         val snapshotAt = request.snapshotAt ?: OffsetDateTime.now()
         val sportId = myInfo.activeProfile.sport.id ?: throw CustomException(ErrorCode.SPORT_NOT_FOUND)
+        val blockIds = blockRepository.findAllRelatedBlockIds(userId)
 
         val response = gameReviewRepository.findAllBySportIdOrderByDate(
             request = request,
             sportId = sportId,
             userId = userId,
             snapshotAt = snapshotAt,
+            blockIds = blockIds,
         )
 
         return CursorResponse(
@@ -364,6 +366,7 @@ class UserService(
         )
 
         val sportId = selectedProfile.sport.id!!
+        val blockIds = blockRepository.findAllRelatedBlockIds(userId)
 
         val snapshotAt = request.snapshotAt ?: OffsetDateTime.now()
 
@@ -371,7 +374,8 @@ class UserService(
             request = request,
             sportId = sportId,
             userId = otherUser.id!!,
-            snapshotAt = snapshotAt
+            snapshotAt = snapshotAt,
+            blockIds = blockIds,
         )
 
         return CursorResponse(
@@ -609,10 +613,13 @@ class UserService(
         userId: String,
         sportId: Long
     ): ReviewCountsResult {
+        val blockIds = blockRepository.findAllRelatedBlockIds(userId)
+
         // 만족도 개수 조회 및 Map 반환
         val ratingResults = gameReviewRepository.countRatingsByRevieweeAndSport(
             revieweeId = userId,
             sportId = sportId,
+            blockIds = blockIds,
         )
         val ratingMap = ratingResults.associate { data ->
             data.reviewRating to data.counts
@@ -622,6 +629,7 @@ class UserService(
         val tagResults = gameReviewRepository.countTagsByRevieweeAndSport(
             revieweeId = userId,
             sportId = sportId,
+            blockIds = blockIds,
         )
         val tagMap = tagResults.associate { data ->
             data.reviewTag to data.counts
