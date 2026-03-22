@@ -613,6 +613,7 @@ class UserService(
         userId: String,
         sportId: Long
     ): ReviewCountsResult {
+        // 차단한 유저는 상호 제외
         val blockIds = blockRepository.findAllRelatedBlockIds(userId)
 
         // 만족도 개수 조회 및 Map 반환

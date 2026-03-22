@@ -29,20 +29,12 @@ interface GameReviewRepositoryCustom {
         blockIds: List<String>,
     ): CursorPageResponse<UserRecentGameProjection>
 
-    /**
-     * [추가 제재]
-     * - 차단한 유저는 상호 제외
-     */
     fun countRatingsByRevieweeAndSport(
         revieweeId: String,
         sportId: Long,
         blockIds: List<String>,
     ): List<ReviewRatingCount>
 
-    /**
-     * [추가 제재]
-     * - 차단한 유저는 상호 제외
-     */
     fun countTagsByRevieweeAndSport(
         revieweeId: String,
         sportId: Long,
