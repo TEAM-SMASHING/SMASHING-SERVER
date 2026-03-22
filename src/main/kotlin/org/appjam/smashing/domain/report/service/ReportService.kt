@@ -2,7 +2,6 @@ package org.appjam.smashing.domain.report.service
 
 import org.appjam.smashing.domain.report.dto.command.UserReportCommand
 import org.appjam.smashing.domain.report.entity.Report
-import org.appjam.smashing.domain.report.enums.ReportType
 import org.appjam.smashing.domain.report.repository.ReportRepository
 import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.repository.UserRepository
@@ -25,10 +24,6 @@ class ReportService(
         userId: String,
         requestCommand: UserReportCommand,
     ) {
-        if (requestCommand.reportType == ReportType.ETC && requestCommand.reasonDetail.isNullOrBlank()) {
-            throw CustomException(ErrorCode.REPORT_REASON_REQUIRED)
-        }
-
         val reporter = userRepository.findByIdOrNull(userId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
         val reportedUserProfile = userSportProfileRepository.findByIdOrNull(requestCommand.reportedUserProfileId)
