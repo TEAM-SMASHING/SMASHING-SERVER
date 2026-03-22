@@ -9,9 +9,11 @@ import org.appjam.smashing.global.extensions.ofIgnoreCase
 data class UserReportRequest(
     @field:NotBlank(message = "reportedUserProfileId 입력해주세요.")
     val reportedUserProfileId: String?,
+
     @field:NotBlank(message = "reportType을 입력해주세요.")
     @field:ValidEnum(message = "잘못된 reportType 값입니다.", enumClass = ReportType::class)
     val reportType: String?,
+
     val reasonDetail: String?
 ) {
     fun toCommand() = UserReportCommand(
