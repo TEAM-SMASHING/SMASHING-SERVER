@@ -9,7 +9,7 @@ data class OtherUsersLeaderBoardResponse(
 ) {
     data class OtherUsers(
         val rank: Int,
-        val userId: String,
+        val userProfileId: String,
         val nickname: String,
         val tierCode: TierCode,
         val lp: Int,
@@ -20,7 +20,7 @@ data class OtherUsersLeaderBoardResponse(
                 rank: Int,
             ) = OtherUsers(
                 rank = rank,
-                userId = u.user.id!!,
+                userProfileId = u.id!!,
                 nickname = u.user.nickname,
                 tierCode = u.tier.code,
                 lp = u.lp,

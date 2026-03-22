@@ -97,24 +97,6 @@ interface UserSportProfileRepository : JpaRepository<UserSportProfile, String>, 
 
     fun existsByUserIdAndSportId(userId: String, sportId: Long): Boolean
 
-    @Query(
-        """
-            select usp
-            from UserSportProfile usp
-            join fetch usp.user u
-            join fetch usp.sport s
-            join fetch usp.tier t
-            where u.region = :region
-              and s.id = :sportId
-            order by usp.lp desc, u.nickname asc 
-            limit 30
-        """
-    )
-    fun findAllByRegionAndSportOrderByLp(
-        region: String,
-        sportId: Long,
-    ): List<UserSportProfile>
-
     fun findByUserIdAndSportCode(
         userId: String,
         sportCode: String

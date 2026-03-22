@@ -6,9 +6,12 @@ import com.querydsl.jpa.JPAExpressions
 import com.querydsl.jpa.impl.JPAQueryFactory
 import org.appjam.smashing.domain.review.entity.QGameReview
 import org.appjam.smashing.domain.review.entity.QGameReview.Companion.gameReview
+import org.appjam.smashing.domain.sport.entity.QSport.Companion.sport
+import org.appjam.smashing.domain.tier.entity.QTier.Companion.tier
 import org.appjam.smashing.domain.user.dto.projection.*
 import org.appjam.smashing.domain.user.entity.QUser.Companion.user
 import org.appjam.smashing.domain.user.entity.QUserSportProfile.Companion.userSportProfile
+import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.appjam.smashing.domain.user.enums.Gender
 import org.appjam.smashing.global.common.dto.CommonCursorRequest
 import org.appjam.smashing.global.common.dto.CursorPageResponse
@@ -192,5 +195,31 @@ class UserSportProfileRepositoryCustomImpl(
             pageSize = size,
             cursorCodec = cursorCodec,
         )
+    }
+
+    override fun findAllByRegionAndSportOrderByLp(
+        region: String,
+        sportId: Long,
+    ): List<UserSportProfile> {
+        val now = LocalDateTime.now()
+
+        return queryFactory
+            .selectFrom(userSportProfile)
+            .join(userSportProfile.user, user).fetchJoin()
+            .join(userSportProfile.sport, sport).fetchJoin()
+            .join(userSportProfile.tier, tier).fetchJoin()
+            .where(
+                // 기본 필터링
+                user.region.eq(region),
+                userSportProfile.sport.id.eq(sportId),
+                /// 신고 필터링
+                user.restrictionEndDate.isNull.or(user.restrictionEndDate.before(now))
+            )
+            .orderBy(
+                userSportProfile.lp.desc(),
+                user.nickname.asc()
+            )
+            .limit(30)
+            .fetch()
     }
 }
