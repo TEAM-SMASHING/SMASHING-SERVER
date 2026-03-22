@@ -3,6 +3,7 @@ package org.appjam.smashing.domain.user.repository
 import org.appjam.smashing.domain.user.dto.projection.OtherUserRecommendationProjection
 import org.appjam.smashing.domain.user.dto.projection.OtherUserRegionProjection
 import org.appjam.smashing.domain.user.dto.projection.OtherUserSearchProjection
+import org.appjam.smashing.domain.user.entity.UserSportProfile
 import org.appjam.smashing.domain.user.enums.Gender
 import org.appjam.smashing.global.common.dto.CommonCursorRequest
 import org.appjam.smashing.global.common.dto.CursorPageResponse
@@ -64,4 +65,13 @@ interface UserSportProfileRepositoryCustom {
         snapshotAt: OffsetDateTime,
         blockIds: List<String>,
     ): CursorPageResponse<OtherUserRegionProjection>
+
+    /**
+     * [추가 제재]
+     * - 신고로 인해 정지당한 유저는 제외
+     */
+    fun findAllByRegionAndSportOrderByLp(
+        region: String,
+        sportId: Long,
+    ): List<UserSportProfile>
 }

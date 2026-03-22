@@ -164,16 +164,16 @@ class UserService(
         val otherUser = userRepository.findByIdOrNull(otherUserProfile.user.id!!)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
-        // 제재 - 상호 차단 유저 프로필 검색 불가
-        val blockIds = blockRepository.findAllRelatedBlockIds(userId)
-        if (blockIds.contains(otherUser.id!!)) {
-            throw CustomException(ErrorCode.BLOCKED_RELATION)
-        }
-
-        val myInfo = getMyInfoAndActiveProfile(userId)
+        // 노출 제한이 있는 유저인지 검사
+        validateUserAccess(
+            userId = userId,
+            otherUser = otherUser,
+        )
 
         // 다른 유저의 조회할 프로필 선택
         val allProfiles = userSportProfileRepository.findAllByUserIdOrderBySportName(otherUser.id!!)
+
+        val myInfo = getMyInfoAndActiveProfile(userId)
 
         val selectedProfile = if (sportCode == null) {
             allProfiles.find { myInfo.activeProfile.sport.code == it.sport.code }
@@ -643,6 +643,23 @@ class UserService(
             activeProfile = activeProfile,
         )
     }
+
+    private fun validateUserAccess(
+        userId: String,
+        otherUser: User,
+    ) {
+        // 1. 차단 관계 확인
+        val blockIds = blockRepository.findAllRelatedBlockIds(userId)
+        if (blockIds.contains(otherUser.id)) {
+            throw CustomException(ErrorCode.BLOCKED_RELATION)
+        }
+
+        // 2. 신고 제재 확인
+        if (otherUser.isRestricted()) {
+            throw CustomException(ErrorCode.REPORT_RESTRICTED_USER)
+        }
+    }
+
 
     companion object {
         private val NICKNAME_VALID_REGEX = Regex("^[a-zA-Z0-9가-힣]*$")
