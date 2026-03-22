@@ -29,7 +29,7 @@ interface ReportRepository : JpaRepository<Report, String> {
           FROM Report r 
           WHERE r.reporter = :reporter
           AND r.reportedUser = :reportedUser 
-          AND r.createdAt > :since
+          AND r.createdAt >= :since
      """
     )
     fun findRecentReportWithLock(
