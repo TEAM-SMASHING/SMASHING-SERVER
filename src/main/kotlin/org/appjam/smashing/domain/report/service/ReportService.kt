@@ -2,7 +2,6 @@ package org.appjam.smashing.domain.report.service
 
 import org.appjam.smashing.domain.report.dto.command.UserReportCommand
 import org.appjam.smashing.domain.report.entity.Report
-import org.appjam.smashing.domain.report.enums.ReportType
 import org.appjam.smashing.domain.report.repository.ReportRepository
 import org.appjam.smashing.domain.user.entity.User
 import org.appjam.smashing.domain.user.repository.UserRepository
