@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 
 interface GameReviewRepository : JpaRepository<GameReview, String>, GameReviewRepositoryCustom {
-
     @Query(
         """
         select count(gr)
@@ -16,23 +15,24 @@ interface GameReviewRepository : JpaRepository<GameReview, String>, GameReviewRe
          where gr.revieweeProfile.user.id = :userId
         """
     )
+
     fun countByRevieweeUserId(
         userId: String,
     ): Long
 
-//    @Query(
-//        """
-//        select count(gr)
-//          from GameReview gr
-//          join gr.game g
-//         where gr.reviewee.id = :revieweeUserId
-//           and g.sport.id = :sportId
-//        """
-//    )
-//    fun countByRevieweeAndSport(
-//        revieweeUserId: String,
-//        sportId: Long,
-//    ): Long
+    @Query(
+        """
+        select count(gr)
+          from GameReview gr
+          join gr.game g
+         where gr.revieweeProfile.user.id = :revieweeUserId
+           and g.sport.id = :sportId
+        """
+    )
+    fun countByRevieweeAndSport(
+        revieweeUserId: String,
+        sportId: Long,
+    ): Long
 
     @Query(
         """

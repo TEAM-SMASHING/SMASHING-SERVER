@@ -7,7 +7,7 @@ data class OtherUsersRecommendationResponse(
     val recommendedUsers: List<OtherUsers>,
 ) {
     data class OtherUsers(
-        val userId: String,
+        val userProfileId: String,
         val nickname: String,
         val tierCode: TierCode,
         val wins: Int,
@@ -17,7 +17,7 @@ data class OtherUsersRecommendationResponse(
     ) {
         companion object {
             fun from(
-                userId: String,
+                userProfileId: String,
                 nickname: String,
                 tierCode: TierCode,
                 wins: Int,
@@ -25,7 +25,7 @@ data class OtherUsersRecommendationResponse(
                 reviews: Int,
                 gender: String,
             ) = OtherUsers(
-                userId = userId,
+                userProfileId = userProfileId,
                 nickname = nickname,
                 tierCode = tierCode,
                 wins = wins,
@@ -38,7 +38,7 @@ data class OtherUsersRecommendationResponse(
                 recommendedUsers: List<OtherUserRecommendationProjection>,
             ) = recommendedUsers.map { profile ->
                 from(
-                    userId = profile.userId,
+                    userProfileId = profile.userProfileId,
                     nickname = profile.nickname,
                     tierCode = profile.tierCode,
                     wins = profile.wins,

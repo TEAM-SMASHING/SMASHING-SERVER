@@ -6,15 +6,15 @@ data class OtherUserSearchResponse(
     val users: List<SearchUser>,
 ) {
     data class SearchUser(
-        val userId: String,
+        val userProfileId: String,
         val nickname: String,
     ) {
         companion object {
             fun from(
-                userId: String,
+                userProfileId: String,
                 nickname: String,
             ) = SearchUser(
-                userId = userId,
+                userProfileId = userProfileId,
                 nickname = nickname,
             )
 
@@ -22,7 +22,7 @@ data class OtherUserSearchResponse(
                 users: List<OtherUserSearchProjection>
             ) = users.map { otherUser ->
                 from(
-                    userId = otherUser.userId,
+                    userProfileId = otherUser.userProfileId,
                     nickname = otherUser.nickname,
                 )
             }

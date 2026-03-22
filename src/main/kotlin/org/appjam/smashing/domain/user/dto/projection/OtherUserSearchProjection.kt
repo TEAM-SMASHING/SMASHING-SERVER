@@ -4,6 +4,6 @@ import com.querydsl.core.annotations.QueryProjection
 
 @QueryProjection
 data class OtherUserSearchProjection(
-    val userId: String,
+    val userProfileId: String,
     val nickname: String,
 )

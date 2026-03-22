@@ -5,7 +5,7 @@ import org.appjam.smashing.domain.tier.enums.TierCode
 
 @QueryProjection
 data class OtherUserRecommendationProjection(
-    val userId: String,
+    val userProfileId: String,
     val nickname: String,
     val tierCode: TierCode,
     val wins: Int,
