@@ -116,11 +116,8 @@ class AuthService(
         accessToken: String,
         userId: String,
     ) {
-        val token = jwtProvider.removeAccessBearer(accessToken)
-        validateAccessTokenSubject(
-            accessToken = token,
-            userId = userId,
-        )
+        // 유저 검증 - 토큰 subject 확인 및 유저 조회 (없을 경우 예외 발생)
+        val token = jwtProvider.validateAndExtractAccessToken(accessToken, userId)
 
         jwtRefreshStore.deleteAllForUser(userId)
 
@@ -161,11 +158,7 @@ class AuthService(
         userId: String,
     ) {
         // 유저 검증 - 토큰 subject 확인 및 유저 조회 (없을 경우 예외 발생)
-        val token = jwtProvider.removeAccessBearer(accessToken)
-        validateAccessTokenSubject(
-            accessToken = token,
-            userId = userId,
-        )
+        val token = jwtProvider.validateAndExtractAccessToken(accessToken, userId)
 
         val user = userRepository.findByIdOrNull(userId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
@@ -211,15 +204,5 @@ class AuthService(
         )
 
         return token
-    }
-
-    private fun validateAccessTokenSubject(
-        accessToken: String,
-        userId: String,
-    ) {
-        val subject = jwtProvider.extractAccessSubject(accessToken)
-        if (subject != userId) {
-            throw CustomException(ErrorCode.ACCESS_TOKEN_SUBJECT_MISMATCH)
-        }
     }
 }

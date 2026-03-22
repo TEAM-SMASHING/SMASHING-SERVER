@@ -136,12 +136,26 @@ class JwtProvider(
     }
 
     /**
-     * 엑세스 토큰에서 Bearer 추출
+     * 액세스 토큰의 subject 가 유저 ID와 일치하는지 검증하고
+     * Bearer가 제거된 토큰 반환
      *
-     * @param token 엑세스 토큰
+     * @param accessToken 엑세스 토큰
+     * @param userId 유저 ID
      * @return Bearer 추출하여 반환
      */
-    fun removeAccessBearer(token: String): String = token.removePrefix("Bearer ").trim()
+    fun validateAndExtractAccessToken(
+        accessToken: String,
+        userId: String,
+    ): String {
+        val token = accessToken.removePrefix("Bearer ").trim()
+        val subject = extractAccessSubject(token)
+
+        if (subject != userId) {
+            throw CustomException(ErrorCode.ACCESS_TOKEN_SUBJECT_MISMATCH)
+        }
+
+        return token
+    }
 
     companion object {
         private const val ROLE = "ROLE_"
