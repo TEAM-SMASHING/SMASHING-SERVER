@@ -6,7 +6,6 @@ import org.appjam.smashing.domain.user.entity.User
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Lock
 import org.springframework.data.jpa.repository.Query
-import org.springframework.data.repository.query.Param
 import java.time.LocalDateTime
 
 interface ReportRepository : JpaRepository<Report, String> {
@@ -19,8 +18,8 @@ interface ReportRepository : JpaRepository<Report, String> {
     """
     )
     fun countRecentReports(
-        @Param("reportedUser") reportedUser: User,
-        @Param("since") since: LocalDateTime
+        reportedUser: User,
+        since: LocalDateTime
     ): Long
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
@@ -34,8 +33,8 @@ interface ReportRepository : JpaRepository<Report, String> {
      """
     )
     fun findRecentReportWithLock(
-        @Param("reporter") reporter: User,
-        @Param("reportedUser") reportedUser: User,
-        @Param("since") since: LocalDateTime,
+        reporter: User,
+        reportedUser: User,
+        since: LocalDateTime,
     ): List<Report>
 }
