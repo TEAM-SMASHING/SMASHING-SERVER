@@ -9,10 +9,11 @@ import org.hibernate.annotations.Comment
 @Table(
     name = "user_block",
     uniqueConstraints = [
-        UniqueConstraint(
-            name = "uk_block_blocker_blocked",
-            columnNames = ["blocker_id", "blocked_id"]
-        )
+        UniqueConstraint(name = "uk_block_blocker_blocked", columnNames = ["blocker_id", "blocked_id"])
+    ],
+    indexes = [
+        Index(name = "idx_block_blocker", columnList = "blocker_id"),
+        Index(name = "idx_block_blocked", columnList = "blocked_id"),
     ]
 )
 @Comment("차단 정보")
