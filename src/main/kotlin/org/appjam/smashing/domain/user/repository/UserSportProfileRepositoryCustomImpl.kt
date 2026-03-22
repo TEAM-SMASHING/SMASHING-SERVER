@@ -137,13 +137,17 @@ class UserSportProfileRepositoryCustomImpl(
             reviewCountExpression
         )
 
+        val now = LocalDateTime.now()
+
         val where = BooleanBuilder()
             .and(user.region.eq(region))
             .and(userSportProfile.sport.id.eq(sportId))
             .and(user.id.ne(userId))
             .and(user.createdAt.loe(snapshotLocal))
+            // 신고 필터링
+            .and(user.restrictionEndDate.isNull.or(user.restrictionEndDate.before(now)))
 
-        // 차단 관계 유저 필터링
+        // 차단 필터링
         if (blockIds.isNotEmpty()) {
             where.and(user.id.notIn(blockIds))
         }
