@@ -118,7 +118,7 @@ class JwtProvider(
      * 리프레시 토큰에서 subject 추출
      *
      * @param token 리프레시 토큰
-     * @return  subject 추출하여 반환
+     * @return subject 추출하여 반환
      */
     fun extractRefreshSubject(
         token: String,
@@ -134,6 +134,14 @@ class JwtProvider(
 
         return subject
     }
+
+    /**
+     * 엑세스 토큰에서 Bearer 추출
+     *
+     * @param token 엑세스 토큰
+     * @return Bearer 추출하여 반환
+     */
+    fun removeAccessBearer(token: String): String = token.removePrefix("Bearer ").trim()
 
     companion object {
         private const val ROLE = "ROLE_"

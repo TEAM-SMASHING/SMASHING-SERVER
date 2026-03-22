@@ -116,7 +116,7 @@ class AuthService(
         accessToken: String,
         userId: String,
     ) {
-        val token = accessToken.removePrefix("Bearer ").trim()
+        val token = jwtProvider.removeAccessBearer(accessToken)
         validateAccessTokenSubject(
             accessToken = token,
             userId = userId,
@@ -161,7 +161,7 @@ class AuthService(
         userId: String,
     ) {
         // 유저 검증 - 토큰 subject 확인 및 유저 조회 (없을 경우 예외 발생)
-        val token = accessToken.removePrefix("Bearer ").trim()
+        val token = jwtProvider.removeAccessBearer(accessToken)
         validateAccessTokenSubject(
             accessToken = token,
             userId = userId,
