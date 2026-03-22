@@ -3,7 +3,10 @@ package org.appjam.smashing.domain.user.controller
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
-import org.appjam.smashing.domain.user.dto.request.*
+import org.appjam.smashing.domain.user.dto.request.ActiveProfileUpdateRequest
+import org.appjam.smashing.domain.user.dto.request.AddressUpdateRequest
+import org.appjam.smashing.domain.user.dto.request.OpenChatValidateRequest
+import org.appjam.smashing.domain.user.dto.request.ProfileAddRequest
 import org.appjam.smashing.domain.user.dto.response.*
 import org.appjam.smashing.domain.user.service.UserService
 import org.appjam.smashing.global.auth.security.data.CustomUserDetails
@@ -249,87 +252,87 @@ class UserController(
 //        )
 //    }
 
-//    @Operation(
-//        summary = "나의 최근 리뷰 목록 조회 API",
-//        description = """
-//            유저가 받은 최근 리뷰 목록을 조회합니다.
-//
-//            [조건]
-//            - 유저의 지역과는 무관
-//            - 유저의 활성화된 스포츠 경기에 대한 목록 리뷰
-//
-//            [정렬]
-//            - 가장 최근에 받은 리뷰 목록 순
-//        """
-//    )
-//    @GetMapping("/me/reviews/recent")
-//    fun getUserRecentReview(
-//        @AuthenticationPrincipal principal: CustomUserDetails,
-//        @Valid request: CommonCursorRequest,
-//    ): ResponseEntity<ApiResponse<CursorResponse<UserRecentReviewResponse>>> {
-//        val response = userService.getUserRecentReview(
-//            userId = principal.username,
-//            request = request,
-//        )
-//
-//        return ApiResponse.success(
-//            data = response,
-//        )
-//    }
+    @Operation(
+        summary = "나의 최근 리뷰 목록 조회 API",
+        description = """
+            유저가 받은 최근 리뷰 목록을 조회합니다.
 
-//    @Operation(
-//        summary = "나의 최근 리뷰 통계 조회 API ",
-//        description = """
-//            유저가 받은 리뷰의 통계를 조회합니다.
-//
-//            [조건]
-//            - 유저의 지역과는 무관
-//            - 유저의 활성화된 스포츠 경기에 대한 목록 리뷰
-//        """
-//    )
-//    @GetMapping("/me/reviews/summary")
-//    fun getUserRecentReviewSummary(
-//        @AuthenticationPrincipal principal: CustomUserDetails,
-//    ): ResponseEntity<ApiResponse<UserRecentReviewSummaryResponse>> {
-//        val response = userService.getUserRecentReviewSummary(principal.username)
-//
-//        return ApiResponse.success(
-//            data = response,
-//        )
-//    }
+            [조건]
+            - 유저의 지역과는 무관
+            - 유저의 활성화된 스포츠 경기에 대한 목록 리뷰
 
-//    @Operation(
-//        summary = "유저의 최근 리뷰 목록 조회 API",
-//        description = """
-//            다른 유저의 최근 리뷰 목록을 조회합니다.
-//
-//            [조건]
-//            - 다른 유저의 지역과는 무관
-//            - 사용자가 선택한 다른 유저의 스포츠 프로필이 노출
-//            - QueryParam(sportCode)이 없을 경우 나를 기준으로 활성화된 스포츠 프로필이 디폴트
-//
-//            [정렬]
-//            - 가장 최근에 받은 리뷰 목록 순
-//        """
-//    )
-//    @GetMapping("/{userId}/reviews/recent")
-//    fun getOtherUserRecentReview(
-//        @AuthenticationPrincipal principal: CustomUserDetails,
-//        @PathVariable userId: String,
-//        @RequestParam sportCode: String?,
-//        @Valid request: CommonCursorRequest,
-//    ): ResponseEntity<ApiResponse<CursorResponse<UserRecentReviewResponse>>> {
-//        val response = userService.getOtherUserRecentReview(
-//            userId = principal.username,
-//            otherUserId = userId,
-//            sportCode = sportCode,
-//            request = request,
-//        )
-//
-//        return ApiResponse.success(
-//            data = response,
-//        )
-//    }
+            [정렬]
+            - 가장 최근에 받은 리뷰 목록 순
+        """
+    )
+    @GetMapping("/me/reviews/recent")
+    fun getUserRecentReview(
+        @AuthenticationPrincipal principal: CustomUserDetails,
+        @Valid request: CommonCursorRequest,
+    ): ResponseEntity<ApiResponse<CursorResponse<UserRecentReviewResponse>>> {
+        val response = userService.getUserRecentReview(
+            userId = principal.username,
+            request = request,
+        )
+
+        return ApiResponse.success(
+            data = response,
+        )
+    }
+
+    @Operation(
+        summary = "나의 최근 리뷰 통계 조회 API ",
+        description = """
+            유저가 받은 리뷰의 통계를 조회합니다.
+
+            [조건]
+            - 유저의 지역과는 무관
+            - 유저의 활성화된 스포츠 경기에 대한 목록 리뷰
+        """
+    )
+    @GetMapping("/me/reviews/summary")
+    fun getUserRecentReviewSummary(
+        @AuthenticationPrincipal principal: CustomUserDetails,
+    ): ResponseEntity<ApiResponse<UserRecentReviewSummaryResponse>> {
+        val response = userService.getUserRecentReviewSummary(principal.username)
+
+        return ApiResponse.success(
+            data = response,
+        )
+    }
+
+    @Operation(
+        summary = "유저의 최근 리뷰 목록 조회 API",
+        description = """
+            다른 유저의 최근 리뷰 목록을 조회합니다.
+
+            [조건]
+            - 다른 유저의 지역과는 무관
+            - 사용자가 선택한 다른 유저의 스포츠 프로필이 노출
+            - QueryParam(sportCode)이 없을 경우 나를 기준으로 활성화된 스포츠 프로필이 디폴트
+
+            [정렬]
+            - 가장 최근에 받은 리뷰 목록 순
+        """
+    )
+    @GetMapping("/{userId}/reviews/recent")
+    fun getOtherUserRecentReview(
+        @AuthenticationPrincipal principal: CustomUserDetails,
+        @PathVariable userId: String,
+        @RequestParam sportCode: String?,
+        @Valid request: CommonCursorRequest,
+    ): ResponseEntity<ApiResponse<CursorResponse<UserRecentReviewResponse>>> {
+        val response = userService.getOtherUserRecentReview(
+            userId = principal.username,
+            otherUserId = userId,
+            sportCode = sportCode,
+            request = request,
+        )
+
+        return ApiResponse.success(
+            data = response,
+        )
+    }
 
 //    @Operation(
 //        summary = "유저의 최근 리뷰 통계 조회 API",

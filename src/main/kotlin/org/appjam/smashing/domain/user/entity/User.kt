@@ -16,7 +16,13 @@ import org.hibernate.annotations.SQLRestriction
 )
 @Comment("유저 정보")
 @SQLRestriction("deleted_at is null")
-@SQLDelete(sql = "update user set deleted_at = now() where id = ?")
+@SQLDelete(
+    sql = """
+        update user 
+        set deleted_at = now()
+        where id = ?
+        """
+)
 class User(
     @Id
     @Tsid
@@ -63,6 +69,8 @@ class User(
     }
 
     companion object {
+        const val DELETED_USER_NICKNAME = "알 수 없음"
+
         fun create(
             kakaoId: String,
             nickname: String,

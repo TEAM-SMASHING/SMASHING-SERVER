@@ -22,6 +22,7 @@ import org.appjam.smashing.global.auth.jwt.filter.JwtBlacklistManager
 import org.appjam.smashing.global.auth.jwt.filter.JwtRefreshStore
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -115,14 +116,12 @@ class AuthService(
         accessToken: String,
         userId: String,
     ) {
-        validateAccessTokenSubject(
-            accessToken = accessToken,
-            userId = userId,
-        )
+        // 유저 검증 - 토큰 subject 확인 및 유저 조회 (없을 경우 예외 발생)
+        val token = jwtProvider.validateAndExtractAccessToken(accessToken, userId)
 
         jwtRefreshStore.deleteAllForUser(userId)
 
-        jwtBlacklistManager.add(accessToken)
+        jwtBlacklistManager.add(token)
     }
 
     @Transactional
@@ -151,6 +150,26 @@ class AuthService(
             accessToken = newToken.accessToken.token,
             refreshToken = newToken.refreshToken.token,
         )
+    }
+
+    @Transactional
+    fun withdraw(
+        accessToken: String,
+        userId: String,
+    ) {
+        // 유저 검증 - 토큰 subject 확인 및 유저 조회 (없을 경우 예외 발생)
+        val token = jwtProvider.validateAndExtractAccessToken(accessToken, userId)
+
+        val user = userRepository.findByIdOrNull(userId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+
+        // 회원 정보 삭제
+        userRepository.delete(user)
+
+        // 토큰 무효화
+        jwtBlacklistManager.add(token)
+
+        jwtRefreshStore.deleteAllForUser(userId)
     }
 
     private fun validateUser(requestCommand: SignUpRequestCommand) {
@@ -185,16 +204,5 @@ class AuthService(
         )
 
         return token
-    }
-
-    private fun validateAccessTokenSubject(
-        accessToken: String,
-        userId: String,
-    ) {
-        val token = accessToken.removePrefix("Bearer ").trim()
-        val subject = jwtProvider.extractAccessSubject(token)
-        if (subject != userId) {
-            throw CustomException(ErrorCode.ACCESS_TOKEN_SUBJECT_MISMATCH)
-        }
     }
 }
