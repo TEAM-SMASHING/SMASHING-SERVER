@@ -58,7 +58,7 @@ class UserSportProfileRepositoryCustomImpl(
                 userSportProfile.sport.id.eq(sportId),
                 user.id.ne(excludeUserId),
                 userSportProfile.lp.between(myLp - lpThreshold, myLp + lpThreshold),
-                user.restrictionEndDate.before(now)
+                user.restrictionEndDate.isNull.or(user.restrictionEndDate.before(now))
             )
             .orderBy(randomOrder.asc())
             .limit(limit)
@@ -84,7 +84,7 @@ class UserSportProfileRepositoryCustomImpl(
                 userSportProfile.sport.id.eq(sportId),
                 user.id.ne(excludeUserId),
                 user.nickname.startsWith(nickname),
-                user.restrictionEndDate.before(now)
+                user.restrictionEndDate.isNull.or(user.restrictionEndDate.before(now))
             )
             .orderBy(user.nickname.asc())
             .limit(5)
