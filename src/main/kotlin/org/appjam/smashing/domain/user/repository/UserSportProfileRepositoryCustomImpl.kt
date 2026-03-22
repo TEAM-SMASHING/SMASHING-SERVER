@@ -61,7 +61,7 @@ class UserSportProfileRepositoryCustomImpl(
                 user.id.ne(excludeUserId),
                 userSportProfile.lp.between(myLp - lpThreshold, myLp + lpThreshold),
                 // 신고 필터링
-                user.restrictionEndDate.before(now),
+                user.restrictionEndDate.isNull.or(user.restrictionEndDate.before(now)),
                 // 차단 필터링
                 if (blockIds.isNotEmpty()) user.id.notIn(blockIds) else null
             )
@@ -92,7 +92,7 @@ class UserSportProfileRepositoryCustomImpl(
                 user.id.ne(excludeUserId),
                 user.nickname.startsWith(nickname),
                 // 신고 필터링
-              user.restrictionEndDate.before(now),
+                user.restrictionEndDate.isNull.or(user.restrictionEndDate.before(now)),
                 // 차단 필터링
                 if (blockIds.isNotEmpty()) user.id.notIn(blockIds) else null,
             )

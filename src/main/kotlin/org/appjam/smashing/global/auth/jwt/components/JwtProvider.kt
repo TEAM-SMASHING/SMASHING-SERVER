@@ -118,7 +118,7 @@ class JwtProvider(
      * 리프레시 토큰에서 subject 추출
      *
      * @param token 리프레시 토큰
-     * @return  subject 추출하여 반환
+     * @return subject 추출하여 반환
      */
     fun extractRefreshSubject(
         token: String,
@@ -133,6 +133,28 @@ class JwtProvider(
         val subject = claims.subject ?: throw CustomException(ErrorCode.INVALID_REFRESH_TOKEN_SUBJECT)
 
         return subject
+    }
+
+    /**
+     * 액세스 토큰의 subject 가 유저 ID와 일치하는지 검증하고
+     * Bearer가 제거된 토큰 반환
+     *
+     * @param accessToken 엑세스 토큰
+     * @param userId 유저 ID
+     * @return Bearer 추출하여 반환
+     */
+    fun validateAndExtractAccessToken(
+        accessToken: String,
+        userId: String,
+    ): String {
+        val token = accessToken.removePrefix("Bearer ").trim()
+        val subject = extractAccessSubject(token)
+
+        if (subject != userId) {
+            throw CustomException(ErrorCode.ACCESS_TOKEN_SUBJECT_MISMATCH)
+        }
+
+        return token
     }
 
     companion object {

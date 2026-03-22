@@ -158,9 +158,10 @@ class UserService(
         otherUserProfileId: String,
         sportCode: String?,
     ): OtherUserProfilesResponse {
-        val otherUserActiveProfile = userSportProfileRepository.findByIdOrNull(otherUserProfileId)
-            ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
-        val otherUser = userRepository.findByIdOrNull(otherUserActiveProfile.user.id!!)
+        // 다른 유저 정보 탐색
+        val otherUserProfile = userSportProfileRepository.findByIdOrNull(otherUserProfileId)
+            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
+        val otherUser = userRepository.findByIdOrNull(otherUserProfile.user.id!!)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
         // 제재 - 상호 차단 유저 프로필 검색 불가
@@ -190,14 +191,14 @@ class UserService(
         // 매칭 신청 가능 여부 확인
         val isChallengeable = checkIsChallengeable(
             myProfileId = myInfo.activeProfile.id!!,
-            otherProfileId = selectedProfile.id!!,
+            otherProfileId = otherUser.activeUserSportProfileId!!,
             sportId = selectedProfile.sport.id!!
         )
 
         // 매칭 수락 가능 여부 확인
         val receivedMatching = matchingRepository.findFirstByReceiverProfileIdAndRequesterProfileIdAndSportIdAndStatusOrderByCreatedAtDesc(
             receiverProfileId = myInfo.activeProfile.id!!,
-            requesterProfileId = selectedProfile.id!!,
+            requesterProfileId = otherUser.activeUserSportProfileId!!,
             sportId = selectedProfile.sport.id!!,
             status = MatchingStatus.REQUESTED
         )
@@ -606,6 +607,7 @@ class UserService(
         userId: String,
         sportId: Long
     ): ReviewCountsResult {
+        // 만족도 개수 조회 및 Map 반환
         val ratingResults = gameReviewRepository.countRatingsByRevieweeAndSport(
             revieweeId = userId,
             sportId = sportId,
@@ -614,6 +616,7 @@ class UserService(
             data.reviewRating to data.counts
         }
 
+        // 빠른 후기 개수 조회 및 Map 반환
         val tagResults = gameReviewRepository.countTagsByRevieweeAndSport(
             revieweeId = userId,
             sportId = sportId,

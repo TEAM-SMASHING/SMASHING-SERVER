@@ -19,8 +19,8 @@ interface ReportRepository : JpaRepository<Report, String> {
     """
     )
     fun countRecentReports(
-        @Param("reportedUser") reportedUser: User,
-        @Param("since") since: LocalDateTime
+        reportedUser: User,
+        since: LocalDateTime
     ): Long
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
@@ -30,12 +30,12 @@ interface ReportRepository : JpaRepository<Report, String> {
           FROM Report r 
           WHERE r.reporter = :reporter
           AND r.reportedUser = :reportedUser 
-          AND r.createdAt > :since
+          AND r.createdAt >= :since
      """
     )
     fun findRecentReportWithLock(
-        @Param("reporter") reporter: User,
-        @Param("reportedUser") reportedUser: User,
-        @Param("since") since: LocalDateTime,
+        reporter: User,
+        reportedUser: User,
+        since: LocalDateTime,
     ): List<Report>
 }

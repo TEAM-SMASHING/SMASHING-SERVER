@@ -25,10 +25,6 @@ class ReportService(
         userId: String,
         requestCommand: UserReportCommand,
     ) {
-        if (requestCommand.reportType == ReportType.ETC && requestCommand.reasonDetail.isNullOrBlank()) {
-            throw CustomException(ErrorCode.REPORT_REASON_REQUIRED)
-        }
-
         val reporter = userRepository.findByIdOrNull(userId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
         val reportedUserProfile = userSportProfileRepository.findByIdOrNull(requestCommand.reportedUserProfileId)
