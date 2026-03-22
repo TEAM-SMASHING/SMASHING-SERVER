@@ -410,6 +410,7 @@ class UserService(
         )
     }
 
+
     @Transactional(readOnly = true)
     fun getOtherUserRegion(
         userId: String,
