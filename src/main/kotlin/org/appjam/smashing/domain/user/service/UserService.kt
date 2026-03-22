@@ -268,10 +268,12 @@ class UserService(
         userId: String,
     ): OtherUsersLeaderBoardResponse {
         val myInfo = getMyInfoAndActiveProfile(userId)
+        val blockIds = blockRepository.findAllRelatedBlockIds(userId)
 
         val leaderBoardProfiles = userSportProfileRepository.findAllByRegionAndSportOrderByLp(
             region = myInfo.user.region,
             sportId = myInfo.activeProfile.sport.id!!,
+            blockIds = blockIds,
         )
 
         return OtherUsersLeaderBoardResponse.from(

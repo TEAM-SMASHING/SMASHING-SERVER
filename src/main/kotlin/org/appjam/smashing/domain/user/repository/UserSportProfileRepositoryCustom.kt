@@ -74,5 +74,6 @@ interface UserSportProfileRepositoryCustom {
     fun findAllByRegionAndSportOrderByLp(
         region: String,
         sportId: Long,
+        blockIds: List<String>,
     ): List<UserSportProfile>
 }
