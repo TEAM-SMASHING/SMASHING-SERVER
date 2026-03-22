@@ -106,6 +106,15 @@ enum class ErrorCode(
     INVALID_TIER_SETTING(HttpStatus.BAD_REQUEST, "TIER-003", "해당 종목에 존재하지 않는 티어 이름입니다."),
 
     // Domain - Notification
-    NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTI-001", "알림을 찾을 수 없습니다."),
-    NOTIFICATION_FORBIDDEN(HttpStatus.FORBIDDEN, "NOTI-002", "해당 알림에 대한 권한이 없습니다."),
+    NOTIFICATION_TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTI-001", "알림 템플릿을 찾을 수 없습니다."),
+    NOTIFICATION_RESULT_REJECTED_TYPE_MISMATCH(HttpStatus.INTERNAL_SERVER_ERROR, "NOTI-002", "결과 반려 알림 타입이 올바르지 않습니다."),
+    NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTI-003", "알림을 찾을 수 없습니다."),
+    NOTIFICATION_FORBIDDEN(HttpStatus.FORBIDDEN, "NOTI-004", "해당 알림에 대한 권한이 없습니다."),
+
+    // Domain - Report
+    REPORTED_PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND, "REPORT-001", "신고 대상 유저의 프로필을 찾을 수 없습니다."),
+    REPORT_SELF_FORBIDDEN(HttpStatus.BAD_REQUEST, "REPORT-002", "자기 자신은 신고할 수 없습니다."),
+    REPORT_ALREADY_EXISTS(HttpStatus.CONFLICT, "REPORT-003", "해당 유저는 이미 신고한 상대입니다."),
+    REPORT_REASON_REQUIRED(HttpStatus.BAD_REQUEST, "REPORT-004", "신고 유형이 '기타'인 경우 상세 사유는 필수입니다."),
+    REPORT_REASON_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "REPORT-005", "신고 유형이 '기타'가 아닌 경우 상세 사유는 입력 불가입니다."),
 }

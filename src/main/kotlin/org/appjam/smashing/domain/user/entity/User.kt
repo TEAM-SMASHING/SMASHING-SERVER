@@ -7,6 +7,7 @@ import org.appjam.smashing.domain.user.enums.Gender
 import org.hibernate.annotations.Comment
 import org.hibernate.annotations.SQLDelete
 import org.hibernate.annotations.SQLRestriction
+import java.time.LocalDateTime
 
 @Entity
 @Table(
@@ -53,7 +54,11 @@ class User(
 
     @Column(name = "active_user_sport_profile_id", length = 13)
     @Comment("현재 활성화된 유저-스포츠 프로필 IDX")
-    var activeUserSportProfileId: String? = null
+    var activeUserSportProfileId: String? = null,
+
+    @Column
+    @Comment("제재 종료 일시")
+    var restrictionEndDate: LocalDateTime? = null
 ) : BaseEntity() {
 
     fun updateActiveProfile(
@@ -66,6 +71,12 @@ class User(
         newRegion: String,
     ) {
         this.region = newRegion
+    }
+
+    fun applyRestriction(
+        durationDays: Long,
+    ) {
+        this.restrictionEndDate = LocalDateTime.now().plusDays(durationDays)
     }
 
     companion object {

@@ -15,6 +15,7 @@ import org.appjam.smashing.global.common.dto.CursorPageResponse
 import org.appjam.smashing.global.util.CursorCodec
 import org.appjam.smashing.global.util.QueryUtils.randomOrder
 import org.appjam.smashing.global.util.TimeUtils
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
 
 class UserSportProfileRepositoryCustomImpl(
@@ -30,6 +31,7 @@ class UserSportProfileRepositoryCustomImpl(
         limit: Long
     ): List<OtherUserRecommendationProjection> {
         val gr = QGameReview("gr")
+        val now = LocalDateTime.now()
 
         return queryFactory
             .select(
@@ -55,7 +57,8 @@ class UserSportProfileRepositoryCustomImpl(
                 user.region.eq(region),
                 userSportProfile.sport.id.eq(sportId),
                 user.id.ne(excludeUserId),
-                userSportProfile.lp.between(myLp - lpThreshold, myLp + lpThreshold)
+                userSportProfile.lp.between(myLp - lpThreshold, myLp + lpThreshold),
+                user.restrictionEndDate.isNull.or(user.restrictionEndDate.before(now))
             )
             .orderBy(randomOrder.asc())
             .limit(limit)
@@ -66,8 +69,10 @@ class UserSportProfileRepositoryCustomImpl(
         nickname: String,
         sportId: Long,
         excludeUserId: String,
-    ): List<OtherUserSearchProjection> =
-        queryFactory
+    ): List<OtherUserSearchProjection> {
+        val now = LocalDateTime.now()
+
+        return queryFactory
             .select(
                 QOtherUserSearchProjection(
                     userSportProfile.id,
@@ -78,11 +83,13 @@ class UserSportProfileRepositoryCustomImpl(
             .where(
                 userSportProfile.sport.id.eq(sportId),
                 user.id.ne(excludeUserId),
-                user.nickname.startsWith(nickname)
+                user.nickname.startsWith(nickname),
+                user.restrictionEndDate.isNull.or(user.restrictionEndDate.before(now))
             )
             .orderBy(user.nickname.asc())
             .limit(5)
             .fetch()
+    }
 
     override fun findAllBySportAndRegion(
         userId: String,

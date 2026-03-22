@@ -9,6 +9,10 @@ import org.appjam.smashing.global.common.dto.CursorPageResponse
 import java.time.OffsetDateTime
 
 interface UserSportProfileRepositoryCustom {
+    /**
+     * [추가 제재]
+     * - 신고로 인해 정지당한 유저는 제외
+     */
     fun findRandomRecommendation(
         region: String,
         sportId: Long,
@@ -30,6 +34,9 @@ interface UserSportProfileRepositoryCustom {
      * [정렬 및 제한]
      * - 닉네임 오름차순 정렬
      * - 최대 5명까지 반환
+     *
+     * [추가 제재]
+     * - 신고로 인해 정지당한 유저는 제외
      *
      * @param nickname 검색하고자 하는 닉네임
      * @param sportId 유저의 활성화된 스포츠 아이디
