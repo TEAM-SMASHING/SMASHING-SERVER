@@ -172,6 +172,7 @@ class NotificationService(
             ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
 
         return NotificationSportMatchResponse.from(
+            receiverUserProfileId = notification.receiverUserProfileId,
             notificationSportCode = notificationSportCode,
             activeSportCode = activeSportCode,
         )

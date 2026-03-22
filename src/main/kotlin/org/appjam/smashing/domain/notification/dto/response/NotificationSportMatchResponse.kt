@@ -1,18 +1,17 @@
 package org.appjam.smashing.domain.notification.dto.response
 
 data class NotificationSportMatchResponse(
+    val receiverUserProfileId: String,
     val isMatch: Boolean,
-    val notificationSportCode: String,
-    val activeSportCode: String,
 ) {
     companion object {
         fun from(
+            receiverUserProfileId: String,
             notificationSportCode: String,
             activeSportCode: String,
         ) = NotificationSportMatchResponse(
+            receiverUserProfileId = receiverUserProfileId,
             isMatch = notificationSportCode == activeSportCode,
-            notificationSportCode = notificationSportCode,
-            activeSportCode = activeSportCode,
         )
     }
 }

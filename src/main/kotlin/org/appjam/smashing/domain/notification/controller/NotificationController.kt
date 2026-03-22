@@ -72,8 +72,9 @@ class NotificationController(
     @Operation(
         summary = "알림 종목 일치 여부 확인 API",
         description = """
-        알림을 보낸 발신자의 종목과 현재 로그인 유저의 활성 프로필 종목이 일치하는지 확인합니다.
+        알림이 속한 종목과 현재 로그인 유저의 활성 프로필 종목이 일치하는지 확인합니다.
 
+        - receiverUserProfileId: 해당 알림을 수신한 사용자 프로필 ID
         - isMatch = true: 종목 일치
         - isMatch = false: 종목 불일치
         - 본인 알림만 조회 가능
