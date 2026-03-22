@@ -564,6 +564,7 @@ class UserService(
         userId: String,
         sportId: Long
     ): ReviewCountsResult {
+        // 만족도 개수 조회 및 Map 반환
         val ratingResults = gameReviewRepository.countRatingsByRevieweeAndSport(
             revieweeId = userId,
             sportId = sportId,
@@ -572,6 +573,7 @@ class UserService(
             data.reviewRating to data.counts
         }
 
+        // 빠른 후기 개수 조회 및 Map 반환
         val tagResults = gameReviewRepository.countTagsByRevieweeAndSport(
             revieweeId = userId,
             sportId = sportId,
