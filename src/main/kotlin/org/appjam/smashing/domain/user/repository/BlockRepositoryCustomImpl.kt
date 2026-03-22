@@ -1,6 +1,5 @@
 package org.appjam.smashing.domain.user.repository
 
-import com.querydsl.core.types.dsl.Expressions
 import com.querydsl.jpa.impl.JPAQueryFactory
 import org.appjam.smashing.domain.user.entity.QUserBlock
 
@@ -14,13 +13,8 @@ class BlockRepositoryCustomImpl(
 
         return queryFactory
             .select(
-                Expressions.stringTemplate(
-                    "case when {0} = {1} then {2} else {3} end",
-                    block.blocker.id,
-                    userId,
-                    block.blockedUser.id,
-                    block.blocker.id
-                )
+                block.blocker.id.`when`(userId).then(block.blockedUser.id)
+                    .otherwise(block.blocker.id)
             )
             .from(block)
             .where(
