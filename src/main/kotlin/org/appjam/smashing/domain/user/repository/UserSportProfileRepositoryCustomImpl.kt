@@ -28,7 +28,8 @@ class UserSportProfileRepositoryCustomImpl(
         excludeUserId: String,
         myLp: Int,
         lpThreshold: Int,
-        limit: Long
+        limit: Long,
+        blockIds: List<String>,
     ): List<OtherUserRecommendationProjection> {
         val gr = QGameReview("gr")
         val now = LocalDateTime.now()
@@ -54,11 +55,15 @@ class UserSportProfileRepositoryCustomImpl(
             .from(userSportProfile)
             .join(userSportProfile.user, user)
             .where(
+                // 기본 필터링
                 user.region.eq(region),
                 userSportProfile.sport.id.eq(sportId),
                 user.id.ne(excludeUserId),
                 userSportProfile.lp.between(myLp - lpThreshold, myLp + lpThreshold),
-                user.restrictionEndDate.isNull.or(user.restrictionEndDate.before(now))
+                // 신고 필터링
+                user.restrictionEndDate.isNull.or(user.restrictionEndDate.before(now)),
+                // 차단 필터링
+                if (blockIds.isNotEmpty()) user.id.notIn(blockIds) else null
             )
             .orderBy(randomOrder.asc())
             .limit(limit)
@@ -69,6 +74,7 @@ class UserSportProfileRepositoryCustomImpl(
         nickname: String,
         sportId: Long,
         excludeUserId: String,
+        blockIds: List<String>,
     ): List<OtherUserSearchProjection> {
         val now = LocalDateTime.now()
 
@@ -81,10 +87,14 @@ class UserSportProfileRepositoryCustomImpl(
             ).from(userSportProfile)
             .join(userSportProfile.user, user)
             .where(
+                // 기본 필터링
                 userSportProfile.sport.id.eq(sportId),
                 user.id.ne(excludeUserId),
                 user.nickname.startsWith(nickname),
-                user.restrictionEndDate.isNull.or(user.restrictionEndDate.before(now))
+                // 신고 필터링
+                user.restrictionEndDate.isNull.or(user.restrictionEndDate.before(now)),
+                // 차단 필터링
+                if (blockIds.isNotEmpty()) user.id.notIn(blockIds) else null,
             )
             .orderBy(user.nickname.asc())
             .limit(5)
@@ -99,6 +109,7 @@ class UserSportProfileRepositoryCustomImpl(
         gender: Gender?,
         tier: String?,
         snapshotAt: OffsetDateTime,
+        blockIds: List<String>,
     ): CursorPageResponse<OtherUserRegionProjection> {
         val size = request.size.coerceIn(1, 50).toInt()
         val cursor = cursorCodec.decode(request.cursor, OtherUserRegionCursor::class.java)
@@ -128,6 +139,11 @@ class UserSportProfileRepositoryCustomImpl(
             .and(userSportProfile.sport.id.eq(sportId))
             .and(user.id.ne(userId))
             .and(user.createdAt.loe(snapshotLocal))
+
+        // 차단 관계 유저 필터링
+        if (blockIds.isNotEmpty()) {
+            where.and(user.id.notIn(blockIds))
+        }
 
         gender?.let { where.and(user.gender.eq(gender)) }
         tier?.let { where.and(userSportProfile.tier.name.startsWithIgnoreCase(tier)) }

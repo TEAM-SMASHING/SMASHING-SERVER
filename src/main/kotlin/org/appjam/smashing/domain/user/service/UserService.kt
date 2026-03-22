@@ -9,7 +9,9 @@ import org.appjam.smashing.domain.tier.repository.TierRepository
 import org.appjam.smashing.domain.user.dto.command.*
 import org.appjam.smashing.domain.user.dto.response.*
 import org.appjam.smashing.domain.user.entity.User
+import org.appjam.smashing.domain.user.entity.UserBlock
 import org.appjam.smashing.domain.user.entity.UserSportProfile
+import org.appjam.smashing.domain.user.repository.BlockRepository
 import org.appjam.smashing.domain.user.repository.UserRepository
 import org.appjam.smashing.domain.user.repository.UserSportProfileRepository
 import org.appjam.smashing.global.common.dto.CommonCursorRequest
@@ -34,6 +36,7 @@ class UserService(
     private val gameReviewRepository: GameReviewRepository,
     private val gameRepository: GameRepository,
     private val matchingRepository: MatchingRepository,
+    private val blockRepository: BlockRepository,
 ) {
     @Transactional(readOnly = true)
     fun checkNicknameAvailability(
@@ -155,13 +158,19 @@ class UserService(
         otherUserProfileId: String,
         sportCode: String?,
     ): OtherUserProfilesResponse {
-        val myInfo = getMyInfoAndActiveProfile(userId)
-
         // 다른 유저 정보 탐색
         val otherUserProfile = userSportProfileRepository.findByIdOrNull(otherUserProfileId)
             ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
         val otherUser = userRepository.findByIdOrNull(otherUserProfile.user.id!!)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+
+        // 제재 - 상호 차단 유저 프로필 검색 불가
+        val blockIds = blockRepository.findAllRelatedBlockIds(userId)
+        if (blockIds.contains(otherUser.id!!)) {
+            throw CustomException(ErrorCode.BLOCKED_RELATION)
+        }
+
+        val myInfo = getMyInfoAndActiveProfile(userId)
 
         // 다른 유저의 조회할 프로필 선택
         val allProfiles = userSportProfileRepository.findAllByUserIdOrderBySportName(otherUser.id!!)
@@ -239,6 +248,7 @@ class UserService(
         userId: String,
     ): OtherUsersRecommendationResponse {
         val myInfo = getMyInfoAndActiveProfile(userId)
+        val blockIds = blockRepository.findAllRelatedBlockIds(userId)
 
         val recommendedProfiles = userSportProfileRepository.findRandomRecommendation(
             region = myInfo.user.region,
@@ -246,7 +256,8 @@ class UserService(
             excludeUserId = myInfo.user.id!!,
             myLp = myInfo.activeProfile.lp,
             lpThreshold = LP_THRESHOLD,
-            limit = LIMIT_RECOMMEND
+            limit = LIMIT_RECOMMEND,
+            blockIds = blockIds,
         )
 
         return OtherUsersRecommendationResponse.from(recommendedProfiles)
@@ -277,11 +288,13 @@ class UserService(
         requestCommand: OtherUserSearchCommand,
     ): OtherUserSearchResponse {
         val myInfo = getMyInfoAndActiveProfile(userId)
+        val relatedBlockIds = blockRepository.findAllRelatedBlockIds(userId)
 
         val otherUsersSearch = userSportProfileRepository.findAllBySportOrderByNickname(
             nickname = requestCommand.nickname,
             sportId = myInfo.activeProfile.sport.id!!,
             excludeUserId = userId,
+            blockIds = relatedBlockIds
         )
 
         return OtherUserSearchResponse.from(otherUsersSearch)
@@ -405,6 +418,7 @@ class UserService(
     ): CursorResponse<OtherUserRegionResponse> {
         val myInfo = getMyInfoAndActiveProfile(userId)
         val sportId = myInfo.activeProfile.sport.id!!
+        val blockIds = blockRepository.findAllRelatedBlockIds(userId)
 
         val snapshotAt = requestCursor.snapshotAt ?: TimeUtils.nowOffsetDateTime()
 
@@ -416,6 +430,7 @@ class UserService(
             gender = requestCommand.gender,
             tier = requestCommand.tier?.name,
             snapshotAt = snapshotAt,
+            blockIds = blockIds,
         )
 
         return CursorResponse(
@@ -436,6 +451,34 @@ class UserService(
         return UserRegionResponse.from(
             region = user.region
         )
+    }
+
+    @Transactional
+    fun blockUser(
+        userId: String,
+        requestCommand: UserBlockCommand,
+    ) {
+        val blocker = userRepository.findByIdOrNull(userId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+        val blockedUserProfile = userSportProfileRepository.findByIdOrNull(requestCommand.blockedUserProfileId)
+            ?: throw CustomException(ErrorCode.BLOCKED_NOT_FOUND)
+
+        // 조치1 - 자기 자신 차단 방지
+        if (userId == blockedUserProfile.user.id) {
+            throw CustomException(ErrorCode.BLOCKED_SELF_FORBIDDEN)
+        }
+
+        // 조치2 - 중복 차단 불가
+        if (blockRepository.existsByBlockerAndBlockedUser(blocker, blockedUserProfile.user)) {
+            throw CustomException(ErrorCode.BLOCK_ALREADY_EXISTS)
+        }
+
+        // 정책1 - 차단 데이터 저장
+        val userBlock = UserBlock.create(
+            blocker = blocker,
+            blockedUser = blockedUserProfile.user,
+        )
+        blockRepository.save(userBlock)
     }
 
     private fun validateNickName(trimmedNickname: String) {

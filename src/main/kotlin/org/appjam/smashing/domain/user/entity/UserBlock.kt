@@ -1,0 +1,54 @@
+package org.appjam.smashing.domain.user.entity
+
+import io.hypersistence.utils.hibernate.id.Tsid
+import jakarta.persistence.*
+import org.appjam.smashing.domain.common.entity.BaseEntity
+import org.hibernate.annotations.Comment
+
+@Entity
+@Table(
+    name = "user_block",
+    uniqueConstraints = [
+        UniqueConstraint(name = "uk_block_blocker_blocked", columnNames = ["blocker_id", "blocked_id"])
+    ],
+    indexes = [
+        Index(name = "idx_block_blocker", columnList = "blocker_id"),
+        Index(name = "idx_block_blocked", columnList = "blocked_id"),
+    ]
+)
+@Comment("차단 정보")
+class UserBlock(
+    @Id
+    @Tsid
+    @Column(length = 13)
+    @Comment("차단 IDX")
+    val id: String? = null,
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+        name = "blocker_id",
+        nullable = false,
+        foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT)
+    )
+    @Comment("차단한 사람")
+    val blocker: User,
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+        name = "blocked_id",
+        nullable = false,
+        foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT)
+    )
+    @Comment("차단당한 사람")
+    val blockedUser: User,
+) : BaseEntity() {
+    companion object {
+        fun create(
+            blocker: User,
+            blockedUser: User
+        ) = UserBlock(
+            blocker = blocker,
+            blockedUser = blockedUser,
+        )
+    }
+}

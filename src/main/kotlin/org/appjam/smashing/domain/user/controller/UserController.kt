@@ -412,4 +412,22 @@ class UserController(
         )
     }
 
+    @Operation(
+        summary = "차단 API",
+        description = """
+            유저를 차단합니다.
+        """
+    )
+    @PostMapping("/block")
+    fun blockUser(
+        @AuthenticationPrincipal principal: CustomUserDetails,
+        @Valid @RequestBody userBlockRequest: UserBlockRequest,
+    ): ResponseEntity<ApiResponse<Unit>> {
+        userService.blockUser(
+            userId = principal.username,
+            requestCommand = userBlockRequest.toCommand(),
+        )
+
+        return ApiResponse.success()
+    }
 }

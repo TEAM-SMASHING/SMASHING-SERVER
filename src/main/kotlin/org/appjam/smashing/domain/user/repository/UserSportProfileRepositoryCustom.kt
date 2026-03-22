@@ -12,6 +12,7 @@ interface UserSportProfileRepositoryCustom {
     /**
      * [추가 제재]
      * - 신고로 인해 정지당한 유저는 제외
+     * - 차단한 유저는 상호 제외
      */
     fun findRandomRecommendation(
         region: String,
@@ -20,6 +21,7 @@ interface UserSportProfileRepositoryCustom {
         myLp: Int,
         lpThreshold: Int,
         limit: Long,
+        blockIds: List<String>,
     ): List<OtherUserRecommendationProjection>
 
     /**
@@ -37,16 +39,19 @@ interface UserSportProfileRepositoryCustom {
      *
      * [추가 제재]
      * - 신고로 인해 정지당한 유저는 제외
+     * - 차단한 유저는 서로 제외
      *
      * @param nickname 검색하고자 하는 닉네임
      * @param sportId 유저의 활성화된 스포츠 아이디
      * @param excludeUserId 제외하고자 하는 유저 (본인)
+     * @param blockIds 차단 제재 적용
      * @return 조건에 부합하는 다른 유저의 아이디와 닉네임
      */
     fun findAllBySportOrderByNickname(
         nickname: String,
         sportId: Long,
         excludeUserId: String,
+        blockIds: List<String>
     ): List<OtherUserSearchProjection>
 
     fun findAllBySportAndRegion(
@@ -57,5 +62,6 @@ interface UserSportProfileRepositoryCustom {
         gender: Gender?,
         tier: String?,
         snapshotAt: OffsetDateTime,
+        blockIds: List<String>,
     ): CursorPageResponse<OtherUserRegionProjection>
 }
