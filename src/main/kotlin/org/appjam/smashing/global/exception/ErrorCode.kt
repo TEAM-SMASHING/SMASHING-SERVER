@@ -117,6 +117,7 @@ enum class ErrorCode(
     REPORT_ALREADY_EXISTS(HttpStatus.CONFLICT, "REPORT-003", "해당 유저는 이미 신고한 상대입니다."),
     REPORT_REASON_REQUIRED(HttpStatus.BAD_REQUEST, "REPORT-004", "신고 유형이 '기타'인 경우 상세 사유는 필수입니다."),
     REPORT_REASON_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "REPORT-005", "신고 유형이 '기타'가 아닌 경우 상세 사유는 입력 불가입니다."),
+    REPORT_RESTRICTED_USER(HttpStatus.FORBIDDEN, "REPORT-006", "신고 제재를 당한 유저입니다."),
 
     // Domain - Block
     BLOCKED_NOT_FOUND(HttpStatus.NOT_FOUND, "BLOCK-001", "차단 대상 유저를 찾을 수 없습니다."),

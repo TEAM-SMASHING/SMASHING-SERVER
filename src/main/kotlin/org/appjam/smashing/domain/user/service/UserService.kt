@@ -164,10 +164,16 @@ class UserService(
         val otherUser = userRepository.findByIdOrNull(otherUserProfile.user.id!!)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
-        // 제재 - 상호 차단 유저 프로필 검색 불가
+        // 제재1 - 상호 차단 유저 프로필 검색 불가
         val blockIds = blockRepository.findAllRelatedBlockIds(userId)
         if (blockIds.contains(otherUser.id!!)) {
             throw CustomException(ErrorCode.BLOCKED_RELATION)
+        }
+
+        // 제재2 - 신고 제한있는 유저 프로필 검색 불가
+        val now = LocalDateTime.now()
+        if (otherUser.restrictionEndDate?.isAfter(now) == true) {
+            throw CustomException(ErrorCode.REPORT_RESTRICTED_USER)
         }
 
         val myInfo = getMyInfoAndActiveProfile(userId)
