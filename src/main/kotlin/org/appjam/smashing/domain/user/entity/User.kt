@@ -79,6 +79,8 @@ class User(
         this.restrictionEndDate = LocalDateTime.now().plusDays(durationDays)
     }
 
+    fun isRestricted(now: LocalDateTime = LocalDateTime.now()): Boolean = restrictionEndDate?.isAfter(now) ?: false
+
     companion object {
         const val DELETED_USER_NICKNAME = "알 수 없음"
 
