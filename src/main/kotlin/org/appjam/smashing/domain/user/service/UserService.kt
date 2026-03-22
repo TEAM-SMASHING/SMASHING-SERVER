@@ -182,14 +182,14 @@ class UserService(
         // 매칭 신청 가능 여부 확인
         val isChallengeable = checkIsChallengeable(
             myProfileId = myInfo.activeProfile.id!!,
-            otherProfileId = selectedProfile.id!!,
+            otherProfileId = otherUser.activeUserSportProfileId!!,
             sportId = selectedProfile.sport.id!!
         )
 
         // 매칭 수락 가능 여부 확인
         val receivedMatching = matchingRepository.findFirstByReceiverProfileIdAndRequesterProfileIdAndSportIdAndStatusOrderByCreatedAtDesc(
             receiverProfileId = myInfo.activeProfile.id!!,
-            requesterProfileId = selectedProfile.id!!,
+            requesterProfileId = otherUser.activeUserSportProfileId!!,
             sportId = selectedProfile.sport.id!!,
             status = MatchingStatus.REQUESTED
         )
