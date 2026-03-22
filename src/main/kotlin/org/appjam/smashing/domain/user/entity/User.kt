@@ -37,7 +37,7 @@ class User(
 
     @Column(nullable = false, length = 50)
     @Comment("닉네임")
-    var nickname: String,
+    val nickname: String,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "VARCHAR(30)")
