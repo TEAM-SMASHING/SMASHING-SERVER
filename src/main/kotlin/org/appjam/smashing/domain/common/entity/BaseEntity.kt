@@ -44,6 +44,6 @@ abstract class BaseEntity {
 
     @Column(name = "deleted_at", insertable = false, updatable = false, columnDefinition = "DATETIME")
     @Comment("삭제일자")
-    lateinit var deletedAt: LocalDateTime
+    var deletedAt: LocalDateTime? = null
         protected set
 }
