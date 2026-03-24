@@ -158,10 +158,10 @@ class UserService(
         otherUserProfileId: String,
         sportCode: String?,
     ): OtherUserProfilesResponse {
-        // 다른 유저 정보 탐색
-        val otherUserProfile = userSportProfileRepository.findByIdOrNull(otherUserProfileId)
-            ?: throw CustomException(ErrorCode.USER_SPORT_PROFILE_NOT_FOUND)
-        val otherUser = userRepository.findByIdOrNull(otherUserProfile.user.id!!)
+        // 다른 유저 정보 탐색 (탈퇴 유저도 조회하기 위해 id 직접 추출)
+        val otherUserId = userSportProfileRepository.findUserIdById(otherUserProfileId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+        val otherUser = userRepository.findByIdIncludingDeleted(otherUserId)
             ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
         // 노출 제한이 있는 유저인지 검사
@@ -659,13 +659,18 @@ class UserService(
         userId: String,
         otherUser: User,
     ) {
-        // 1. 차단 관계 확인
+        // 1. 탈퇴 유저 확인
+        if (otherUser.deletedAt != null) {
+            throw CustomException(ErrorCode.WITHDRAWN_USER)
+        }
+
+        // 2. 차단 관계 확인
         val blockIds = blockRepository.findAllRelatedBlockIds(userId)
         if (blockIds.contains(otherUser.id)) {
             throw CustomException(ErrorCode.BLOCKED_RELATION)
         }
 
-        // 2. 신고 제재 확인
+        // 3. 신고 제재 확인
         if (otherUser.isRestricted()) {
             throw CustomException(ErrorCode.REPORT_RESTRICTED_USER)
         }

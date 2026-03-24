@@ -112,4 +112,16 @@ interface UserSportProfileRepository : JpaRepository<UserSportProfile, String>, 
     fun findSportCodeById(
         profileId: String,
     ): String?
+
+    @Query(
+        value = """
+           SELECT user_id 
+           FROM user_sport_profile 
+           WHERE id = :id 
+        """,
+        nativeQuery = true
+    )
+    fun findUserIdById(
+        id: String,
+    ): String?
 }
