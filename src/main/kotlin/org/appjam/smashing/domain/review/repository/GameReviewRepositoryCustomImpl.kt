@@ -4,6 +4,9 @@ import com.querydsl.core.BooleanBuilder
 import com.querydsl.jpa.impl.JPAQueryFactory
 import org.appjam.smashing.domain.review.dto.projection.QUserRecentGameProjection
 import org.appjam.smashing.domain.review.dto.projection.UserRecentGameProjection
+import org.appjam.smashing.domain.review.dto.response.QReviewRatingCount
+import org.appjam.smashing.domain.review.dto.response.ReviewRatingCount
+import org.appjam.smashing.domain.review.dto.response.ReviewTagCount
 import org.appjam.smashing.domain.review.entity.QGameReview
 import org.appjam.smashing.domain.user.entity.QUser
 import org.appjam.smashing.domain.user.entity.User.Companion.DELETED_USER_NICKNAME
@@ -20,7 +23,8 @@ class GameReviewRepositoryCustomImpl(
         request: CommonCursorRequest,
         sportId: Long,
         userId: String,
-        snapshotAt: OffsetDateTime
+        snapshotAt: OffsetDateTime,
+        blockIds: List<String>,
     ): CursorPageResponse<UserRecentGameProjection> {
         val size = request.size.coerceIn(1, 50).toInt()
         val cursor = cursorCodec.decode(request.cursor)
@@ -38,6 +42,11 @@ class GameReviewRepositoryCustomImpl(
         }
 
         val reviewer = QUser.user
+
+        // 차단 필터링
+        if (blockIds.isNotEmpty()) {
+            where.and(reviewer.id.isNull.or(reviewer.id.notIn(blockIds)))
+        }
 
         val projections = queryFactory
             .select(
@@ -61,5 +70,66 @@ class GameReviewRepositoryCustomImpl(
             pageSize = size,
             cursorCodec = cursorCodec,
         )
+    }
+
+    override fun countRatingsByRevieweeAndSport(
+        revieweeId: String,
+        sportId: Long,
+        blockIds: List<String>,
+    ): List<ReviewRatingCount> {
+        val gr = QGameReview.gameReview
+
+        // 차단 필터링
+        val blockCondition = if (blockIds.isNotEmpty()) {
+            gr.reviewerProfile.user.id.isNull
+                .or(gr.reviewerProfile.user.id.notIn(blockIds))
+        } else null
+
+        return queryFactory
+            .select(
+                QReviewRatingCount(
+                    gr.rating,
+                    gr.id.count()
+                )
+            )
+            .from(gr)
+            .leftJoin(gr.reviewerProfile.user)
+            .where(
+                gr.revieweeProfile.user.id.eq(revieweeId),
+                gr.game.sport.id.eq(sportId),
+                blockCondition,
+            )
+            .groupBy(gr.rating)
+            .fetch()
+    }
+
+    override fun countTagsByRevieweeAndSport(
+        revieweeId: String,
+        sportId: Long,
+        blockIds: List<String>,
+    ): List<ReviewTagCount> {
+        val gr = QGameReview.gameReview
+
+        // 차단 필터링
+        val blockCondition = if (blockIds.isNotEmpty()) {
+            gr.reviewerProfile.user.id.isNull
+                .or(gr.reviewerProfile.user.id.notIn(blockIds))
+        } else null
+
+        val filteredReviews = queryFactory
+            .selectFrom(gr)
+            .leftJoin(gr.reviewerProfile.user)
+            .where(
+                gr.revieweeProfile.user.id.eq(revieweeId),
+                gr.game.sport.id.eq(sportId),
+                blockCondition,
+            )
+            .fetch()
+
+        return filteredReviews
+            .flatMap { it.tags }
+            .groupingBy { it }
+            .eachCount()
+            .map { (tag, count) -> ReviewTagCount(tag, count.toLong()) }
     }
 }

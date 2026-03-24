@@ -1,6 +1,8 @@
 package org.appjam.smashing.domain.review.repository
 
 import org.appjam.smashing.domain.review.dto.projection.UserRecentGameProjection
+import org.appjam.smashing.domain.review.dto.response.ReviewRatingCount
+import org.appjam.smashing.domain.review.dto.response.ReviewTagCount
 import org.appjam.smashing.global.common.dto.CommonCursorRequest
 import org.appjam.smashing.global.common.dto.CursorPageResponse
 import java.time.OffsetDateTime
@@ -15,11 +17,27 @@ interface GameReviewRepositoryCustom {
      *
      * [정렬]
      * - 최신 게임 순
+     *
+     * [추가 제재]
+     * - 차단한 유저는 상호 제외
      */
     fun findAllBySportIdOrderByDate(
         request: CommonCursorRequest,
         sportId: Long,
         userId: String,
-        snapshotAt: OffsetDateTime
+        snapshotAt: OffsetDateTime,
+        blockIds: List<String>,
     ): CursorPageResponse<UserRecentGameProjection>
+
+    fun countRatingsByRevieweeAndSport(
+        revieweeId: String,
+        sportId: Long,
+        blockIds: List<String>,
+    ): List<ReviewRatingCount>
+
+    fun countTagsByRevieweeAndSport(
+        revieweeId: String,
+        sportId: Long,
+        blockIds: List<String>,
+    ): List<ReviewTagCount>
 }

@@ -204,6 +204,7 @@ class UserSportProfileRepositoryCustomImpl(
     override fun findAllByRegionAndSportOrderByLp(
         region: String,
         sportId: Long,
+        blockIds: List<String>,
     ): List<UserSportProfile> {
         val now = LocalDateTime.now()
 
@@ -217,7 +218,9 @@ class UserSportProfileRepositoryCustomImpl(
                 user.region.eq(region),
                 userSportProfile.sport.id.eq(sportId),
                 /// 신고 필터링
-                user.restrictionEndDate.isNull.or(user.restrictionEndDate.before(now))
+                user.restrictionEndDate.isNull.or(user.restrictionEndDate.before(now)),
+                // 차단 필터링
+                if (blockIds.isNotEmpty()) user.id.notIn(blockIds) else null
             )
             .orderBy(
                 userSportProfile.lp.desc(),
