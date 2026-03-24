@@ -131,4 +131,8 @@ class Game(
     fun cancel() {
         resultStatus = GameStatus.CANCELED
     }
+
+    fun expire() {
+        resultStatus = GameStatus.EXPIRED
+    }
 }
