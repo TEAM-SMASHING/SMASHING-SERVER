@@ -2,6 +2,7 @@ package org.appjam.smashing.domain.game.repository
 
 import jakarta.persistence.LockModeType
 import org.appjam.smashing.domain.game.entity.Game
+import org.appjam.smashing.domain.game.enums.GameStatus
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Lock
 import org.springframework.data.jpa.repository.Query
@@ -37,6 +38,16 @@ interface GameRepository : JpaRepository<Game, String>, GameRepositoryCustom {
         @Param("startOfDay") startOfDay: LocalDateTime,
         @Param("endOfDay") endOfDay: LocalDateTime,
     ): Long
+
+    @Query("""
+    select g from Game g
+    where g.resultStatus in :statuses
+    and g.createdAt <= :expiredBefore
+    """)
+    fun findAllExpiredGames(
+        @Param("statuses") statuses: List<GameStatus>,
+        @Param("expiredBefore") expiredBefore: LocalDateTime,
+    ): List<Game>
 
     fun existsByMatchingId(
         matchingId: String
