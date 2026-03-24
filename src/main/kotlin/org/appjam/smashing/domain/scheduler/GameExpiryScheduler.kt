@@ -36,7 +36,7 @@ class GameExpiryScheduler(
             expiredBefore = expiredBefore,
         )
 
-        // 만료 처리 (기록되지 않음)
+        // 만료 처리
         expiredGames.forEach { game ->
             game.expire()
         }
