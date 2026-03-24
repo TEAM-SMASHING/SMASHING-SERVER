@@ -6,5 +6,5 @@ import org.appjam.smashing.domain.review.enums.ReviewTag
 @QueryProjection
 data class ReviewTagCount(
     val reviewTag: ReviewTag,
-    val counts: Long
+    val counts: Long,
 )
