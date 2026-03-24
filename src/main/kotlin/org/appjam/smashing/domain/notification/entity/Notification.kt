@@ -95,7 +95,7 @@ class Notification(
             val sportCode = receiverProfile.sport.code
             val requesterNickname = requesterProfile.user.nickname
 
-            val title = "[$sportName] 매칭 신청이 도착했어요"
+            val title = "$sportName 매칭 신청이 도착했어요"
             val content = "${requesterNickname}님으로부터 매칭 신청이 도착했어요! 지금 확인해볼까요?"
 
             return Notification(
@@ -122,7 +122,7 @@ class Notification(
             val sportCode = receiverProfile.sport.code
             val acceptorNickname = acceptorProfile.user.nickname
 
-            val title = "[$sportName] 매칭이 수락되었어요."
+            val title = "$sportName 매칭이 수락되었어요."
             val content = "${acceptorNickname}님이 내가 보낸 매칭을 수락했어요! 지금 확인해볼까요?"
 
             return Notification(
@@ -151,7 +151,7 @@ class Notification(
             val sportCode = receiverProfile.sport.code
             val submitterNickname = submitterProfile.user.nickname
 
-            val title = "[$sportName] 매칭 결과가 도착했어요"
+            val title = "$sportName 매칭 결과가 도착했어요"
             val content = "${submitterNickname}님이 매칭 결과를 보내주셨어요! 지금 확인해볼까요?"
 
             return Notification(
@@ -178,13 +178,13 @@ class Notification(
             val rejectorNickname = rejectorProfile.user.nickname
 
             val reasonText = when (reason) {
-                GameSubmissionRejectReason.WINNER_MISMATCH -> "승자가 잘못됐어요"
-                GameSubmissionRejectReason.GAME_NOT_PLAYED_YET -> "아직 진행하지 않은 경기에요"
+                GameSubmissionRejectReason.WINNER_MISMATCH -> "점수 오류"
+                GameSubmissionRejectReason.GAME_NOT_PLAYED_YET -> "경기 미진행"
             }
 
             return Notification(
                 type = NotificationType.MATCHING_RESULT_REJECTED,
-                title = "[$sportName] 매칭 결과가 반려되었어요",
+                title = "$sportName 매칭 결과가 반려되었어요",
                 content = "${rejectorNickname}님이 결과 입력을 거절했어요. (사유: $reasonText)",
                 sportCode = sportCode,
                 senderUserId = rejectorProfile.user.id!!,
