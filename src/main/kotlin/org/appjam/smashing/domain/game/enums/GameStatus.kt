@@ -5,5 +5,6 @@ enum class GameStatus {
     WAITING_CONFIRMATION,     // 경기 결과 확인 대기 중
     RESULT_CONFIRMED,         // 경기 결과 확인 완료
     RESULT_REJECTED,          // 경기 결과 반려됨
-    CANCELED                  // 경기 취소됨
+    CANCELED,                 // 경기 취소됨
+    EXPIRED,                  // 경기 만료됨 (72시간 미처리)
 }
