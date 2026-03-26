@@ -18,6 +18,17 @@ interface GameReviewRepository : JpaRepository<GameReview, String>, GameReviewRe
         userId: String,
     ): Long
 
+    @Query("""
+    select gr.id
+    from GameReview gr
+    where gr.game.id = :gameId
+      and gr.reviewerProfile.id = :reviewerProfileId
+    """)
+    fun findIdByGameAndReviewerProfile(
+        gameId: String,
+        reviewerProfileId: String,
+    ): String?
+
     @Query(
         """
         select count(gr)

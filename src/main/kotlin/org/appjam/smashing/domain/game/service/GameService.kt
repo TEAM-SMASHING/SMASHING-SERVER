@@ -19,6 +19,7 @@ import org.appjam.smashing.domain.notification.service.NotificationService
 import org.appjam.smashing.domain.outbox.components.OutboxEventPublisher
 import org.appjam.smashing.domain.outbox.dto.GameUpdatedPayload
 import org.appjam.smashing.domain.outbox.enums.SseEventType
+import org.appjam.smashing.domain.review.repository.GameReviewRepository
 import org.appjam.smashing.domain.review.service.GameReviewService
 import org.appjam.smashing.domain.tier.entity.Tier
 import org.appjam.smashing.domain.tier.repository.TierRepository
@@ -42,6 +43,7 @@ class GameService(
     private val gameRepository: GameRepository,
     private val userRepository: UserRepository,
     private val submissionRepository: GameResultSubmissionRepository,
+    private val gameReviewRepository: GameReviewRepository,
     private val notificationService: NotificationService,
     private val outboxEventPublisher: OutboxEventPublisher,
     private val gameReviewService: GameReviewService,
@@ -380,8 +382,8 @@ class GameService(
             game = game,
         )
 
-        // confirmer -> host 리뷰 저장
-        val savedReview = gameReviewService.createReview(
+        // confirmer → host 리뷰 저장
+        gameReviewService.createReview(
             game = game,
             reviewerProfile = submission.confirmerProfile,
             revieweeProfile = submission.submitterProfile,
@@ -390,11 +392,17 @@ class GameService(
             tags = command.review.tags,
         )
 
+        // 응답: 결과 제출 시 Host(submitterProfile)가 작성한 리뷰 ID 반환
+        val hostReviewId = gameReviewRepository.findIdByGameAndReviewerProfile(
+            gameId = gameId,
+            reviewerProfileId = submission.submitterProfile.id!!,
+        ) ?: throw CustomException(ErrorCode.REVIEW_NOT_FOUND)
+
         // Host에게 후기 도착 알림 저장
         notificationService.createReviewReceived(
             receiver = submission.submitterProfile.user,
             receiverProfile = submission.submitterProfile,
-            reviewId = savedReview.id!!,
+            reviewId = hostReviewId,
             reviewerProfile = submission.confirmerProfile,
         )
 
@@ -410,7 +418,7 @@ class GameService(
             )
         )
 
-        return GameResultConfirmResponse.from(savedReview.id!!)
+        return GameResultConfirmResponse.from(hostReviewId)
     }
 
     @Transactional(readOnly = true)
