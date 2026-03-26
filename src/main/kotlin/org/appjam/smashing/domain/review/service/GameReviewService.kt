@@ -46,4 +46,15 @@ class GameReviewService(
 
         return ReviewDetailResponse.from(review)
     }
+
+    @Transactional(readOnly = true)
+    fun findIdByGameAndReviewerProfile(
+        gameId: String,
+        reviewerProfileId: String,
+    ): String? {
+        return gameReviewRepository.findIdByGameAndReviewerProfile(
+            gameId = gameId,
+            reviewerProfileId = reviewerProfileId,
+        )
+    }
 }
