@@ -2,21 +2,21 @@ package org.appjam.smashing.domain.outbox.repository
 
 import org.appjam.smashing.domain.outbox.entity.OutboxEvent
 import org.appjam.smashing.domain.outbox.enums.OutboxEventStatus
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
-import org.springframework.data.domain.Pageable
 import java.time.LocalDateTime
 
 interface OutboxEventRepository : JpaRepository<OutboxEvent, String> {
 
     @Query("""
-    select e.id
-      from OutboxEvent e
-     where e.userId = :userId
-       and e.status = :status
-     order by e.id asc
-     """)
+        select e.id
+          from OutboxEvent e
+         where e.userId = :userId
+           and e.status = :status
+         order by e.id asc
+    """)
     fun findIdsByUserIdAndStatus(
         userId: String,
         status: OutboxEventStatus,
@@ -67,4 +67,18 @@ interface OutboxEventRepository : JpaRepository<OutboxEvent, String> {
         processing: OutboxEventStatus = OutboxEventStatus.PROCESSING,
         now: LocalDateTime,
     ): Int
+
+    @Query("""
+        select e
+          from OutboxEvent e
+         where e.status = :status
+           and e.lastAttemptAt is not null
+           and e.lastAttemptAt < :threshold
+         order by e.lastAttemptAt asc, e.id asc
+    """)
+    fun findStaleProcessingEvents(
+        status: OutboxEventStatus = OutboxEventStatus.PROCESSING,
+        threshold: LocalDateTime,
+        pageable: Pageable,
+    ): List<OutboxEvent>
 }
