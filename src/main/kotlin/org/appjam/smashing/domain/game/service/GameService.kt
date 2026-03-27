@@ -43,7 +43,6 @@ class GameService(
     private val gameRepository: GameRepository,
     private val userRepository: UserRepository,
     private val submissionRepository: GameResultSubmissionRepository,
-    private val gameReviewRepository: GameReviewRepository,
     private val notificationService: NotificationService,
     private val outboxEventPublisher: OutboxEventPublisher,
     private val gameReviewService: GameReviewService,
