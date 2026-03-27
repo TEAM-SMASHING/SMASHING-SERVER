@@ -1,8 +1,6 @@
 package org.appjam.smashing.domain.outbox.dto
 
-import org.appjam.smashing.domain.game.enums.GameSubmissionRejectReason
 import org.appjam.smashing.domain.game.enums.GameStatus
-import org.appjam.smashing.domain.notification.enums.NotificationType
 import org.appjam.smashing.domain.outbox.enums.MatchingUpdateStatus
 import org.appjam.smashing.domain.outbox.enums.SseEventType
 import org.appjam.smashing.domain.tier.enums.TierCode
