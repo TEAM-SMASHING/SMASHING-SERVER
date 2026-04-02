@@ -76,20 +76,21 @@ class MatchingService(
         val requesterProfileIdNotNull = requesterProfile.id ?: throw CustomException(ErrorCode.ACTIVE_PROFILE_NOT_FOUND)
         val receiverProfileIdNotNull = receiverProfile.id ?: throw CustomException(ErrorCode.MATCHING_RECEIVER_PROFILE_NOT_FOUND)
 
+        // TODO : QA 기간 임시 주석 처리
         // 하루 3판 제한 (RESULT_CONFIRMED 게임 기준)
-        validateDailyLimit(
-            profileA = requesterProfileIdNotNull,
-            profileB = receiverProfileIdNotNull,
-            sportId = sportId,
-        )
+//        validateDailyLimit(
+//            profileA = requesterProfileIdNotNull,
+//            profileB = receiverProfileIdNotNull,
+//            sportId = sportId,
+//        )
 
         // 24h 쿨다운 (요청/취소/거절 기준)
-        validateCooldown(
-            profileA = requesterProfileIdNotNull,
-            profileB = receiverProfileIdNotNull,
-            sportId = sportId,
-            now = now,
-        )
+//        validateCooldown(
+//            profileA = requesterProfileIdNotNull,
+//            profileB = receiverProfileIdNotNull,
+//            sportId = sportId,
+//            now = now,
+//        )
 
         // 매칭 생성
         val matching = matchingRepository.save(

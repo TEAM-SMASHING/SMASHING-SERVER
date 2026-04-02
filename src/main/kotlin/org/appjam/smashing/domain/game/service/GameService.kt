@@ -94,23 +94,24 @@ class GameService(
                     profileB = receiverProfile.id!!,
                 )
 
+                // TODO : QA 기간 임시 주석 처리
                 // 오늘 첫 경기면 생성 후 1시간 동안 결과 제출 불가
-                if (todayConfirmedCount == 0L && ChronoUnit.MINUTES.between(game.createdAt, now) < 60) {
-                    throw CustomException(ErrorCode.GAME_RESULT_SUBMIT_BLOCKED_1H)
-                }
+//                if (todayConfirmedCount == 0L && ChronoUnit.MINUTES.between(game.createdAt, now) < 60) {
+//                    throw CustomException(ErrorCode.GAME_RESULT_SUBMIT_BLOCKED_1H)
+//                }
 
                 // 오늘 2~3번째 경기면 10분 제한
-                if (todayConfirmedCount in 1L..2L) {
-                    val prevConfirmedAt = gameRepository.findTodayLatestConfirmedAtBetweenProfiles(
-                        startAt = startOfDay,
-                        profileA = requesterProfile.id!!,
-                        profileB = receiverProfile.id!!,
-                    )
-
-                    if (prevConfirmedAt != null && ChronoUnit.MINUTES.between(prevConfirmedAt, now) <= 30 && ChronoUnit.MINUTES.between(game.createdAt, now) < 10) {
-                        throw CustomException(ErrorCode.GAME_RESULT_SUBMIT_BLOCKED_10M)
-                    }
-                }
+//                if (todayConfirmedCount in 1L..2L) {
+//                    val prevConfirmedAt = gameRepository.findTodayLatestConfirmedAtBetweenProfiles(
+//                        startAt = startOfDay,
+//                        profileA = requesterProfile.id!!,
+//                        profileB = receiverProfile.id!!,
+//                    )
+//
+//                    if (prevConfirmedAt != null && ChronoUnit.MINUTES.between(prevConfirmedAt, now) <= 30 && ChronoUnit.MINUTES.between(game.createdAt, now) < 10) {
+//                        throw CustomException(ErrorCode.GAME_RESULT_SUBMIT_BLOCKED_10M)
+//                    }
+//                }
 
                 // 최초 제출에서는 review 필수
                 if (command.review == null) {
