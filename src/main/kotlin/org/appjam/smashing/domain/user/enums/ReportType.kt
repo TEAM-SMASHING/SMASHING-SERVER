@@ -1,4 +1,4 @@
-package org.appjam.smashing.domain.report.enums
+package org.appjam.smashing.domain.user.enums
 
 enum class ReportType {
     MANNER, // 비매너 사용자

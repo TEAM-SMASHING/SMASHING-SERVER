@@ -433,4 +433,28 @@ class UserController(
 
         return ApiResponse.success()
     }
+
+    @Operation(
+        summary = "신고 API",
+        description = """
+            유저를 신고합니다.
+                
+            [정책]
+             - 30일 내에 서로 다른 3명의 유저에게 신고당할 경우, 7일 동안 탐색/추천에서 노출에 제외됩니다.
+             - 같은 유저를 두 번 이상 신고할 수 없습니다.
+               단, 30일 이후에 동일 유저 신고 가능
+        """
+    )
+    @PostMapping("/report")
+    fun reportUser(
+        @AuthenticationPrincipal principal: CustomUserDetails,
+        @Valid @RequestBody userReportRequest: UserReportRequest,
+    ): ResponseEntity<ApiResponse<Unit>> {
+        userService.reportUser(
+            userId = principal.username,
+            requestCommand = userReportRequest.toCommand()
+        )
+
+        return ApiResponse.success()
+    }
 }

@@ -1,8 +1,8 @@
-package org.appjam.smashing.domain.report.dto.request
+package org.appjam.smashing.domain.user.dto.request
 
 import jakarta.validation.constraints.NotBlank
-import org.appjam.smashing.domain.report.dto.command.UserReportCommand
-import org.appjam.smashing.domain.report.enums.ReportType
+import org.appjam.smashing.domain.user.dto.command.UserReportCommand
+import org.appjam.smashing.domain.user.enums.ReportType
 import org.appjam.smashing.global.common.validator.annotation.ValidEnum
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode

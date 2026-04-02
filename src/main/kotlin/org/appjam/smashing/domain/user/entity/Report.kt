@@ -1,10 +1,9 @@
-package org.appjam.smashing.domain.report.entity
+package org.appjam.smashing.domain.user.entity
 
 import io.hypersistence.utils.hibernate.id.Tsid
 import jakarta.persistence.*
 import org.appjam.smashing.domain.common.entity.BaseEntity
-import org.appjam.smashing.domain.report.enums.ReportType
-import org.appjam.smashing.domain.user.entity.User
+import org.appjam.smashing.domain.user.enums.ReportType
 import org.hibernate.annotations.Comment
 
 @Entity
