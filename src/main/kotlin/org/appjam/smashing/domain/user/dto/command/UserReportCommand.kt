@@ -1,6 +1,6 @@
-package org.appjam.smashing.domain.report.dto.command
+package org.appjam.smashing.domain.user.dto.command
 
-import org.appjam.smashing.domain.report.enums.ReportType
+import org.appjam.smashing.domain.user.enums.ReportType
 
 data class UserReportCommand(
     val reportedUserProfileId: String,

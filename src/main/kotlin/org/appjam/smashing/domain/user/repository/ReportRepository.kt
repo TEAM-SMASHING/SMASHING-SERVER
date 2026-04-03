@@ -1,7 +1,7 @@
-package org.appjam.smashing.domain.report.repository
+package org.appjam.smashing.domain.user.repository
 
 import jakarta.persistence.LockModeType
-import org.appjam.smashing.domain.report.entity.Report
+import org.appjam.smashing.domain.user.entity.Report
 import org.appjam.smashing.domain.user.entity.User
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Lock
