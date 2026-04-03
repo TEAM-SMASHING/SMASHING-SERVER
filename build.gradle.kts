@@ -74,6 +74,9 @@ dependencies {
 
     // Redis
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
+
+    // Cache
+    implementation("org.springframework.boot:spring-boot-starter-cache")
 }
 
 kotlin {
