@@ -1,5 +1,6 @@
 package org.appjam.smashing.domain.user.repository
 
+import org.appjam.smashing.domain.auth.enums.ProviderType
 import org.appjam.smashing.domain.user.entity.User
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
@@ -23,6 +24,6 @@ interface UserRepository : JpaRepository<User, String> {
 
     fun findBySocialIdAndProvider(
         socialId: String,
-        provider: String,
+        provider: ProviderType,
     ): User?
 }
