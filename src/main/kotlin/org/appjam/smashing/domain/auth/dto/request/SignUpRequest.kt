@@ -2,14 +2,17 @@ package org.appjam.smashing.domain.auth.dto.request
 
 import jakarta.validation.constraints.NotBlank
 import org.appjam.smashing.domain.auth.dto.command.SignUpRequestCommand
+import org.appjam.smashing.domain.auth.enums.ProviderType
 import org.appjam.smashing.domain.sport.enums.ExperienceRange
 import org.appjam.smashing.domain.user.enums.Gender
 import org.appjam.smashing.global.common.validator.annotation.ValidEnum
 import org.appjam.smashing.global.extensions.ofIgnoreCase
 
 data class SignUpRequest(
-    @field:NotBlank(message = "kakaoId를 입력해주세요.")
-    val kakaoId: String?,
+    @field:NotBlank(message = "socialId를 입력해주세요.")
+    val socialId: String?,
+    @field:ValidEnum(message = "잘못된 provider 값입니다.", enumClass = ProviderType::class)
+    val provider: String?,
     @field:NotBlank(message = "nickname을 입력해주세요.")
     val nickname: String?,
     @field:NotBlank(message = "gender를 입력해주세요.")
@@ -26,7 +29,8 @@ data class SignUpRequest(
     val region: String?,
 ) {
     fun toCommand() = SignUpRequestCommand(
-        kakaoId = kakaoId!!,
+        socialId = socialId!!,
+        provider = ofIgnoreCase<ProviderType>(provider!!),
         nickname = nickname!!,
         gender = ofIgnoreCase<Gender>(gender!!),
         openChatUrl = openChatUrl!!,
