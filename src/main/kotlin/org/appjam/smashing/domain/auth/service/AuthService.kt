@@ -44,10 +44,10 @@ class AuthService(
     ): SignInResponse {
         val (provider, socialId) = socialAuthServiceManager.getSocialId(requestCommand)
 
-        val user = userRepository.findBySocialIdAndProvider(socialId, provider.name)
-            ?: return SignInResponse.from(
-                socialId = socialId,
-            )
+        val user = userRepository.findBySocialIdAndProvider(
+            socialId = socialId,
+            provider = provider,
+        ) ?: return SignInResponse.from(socialId = socialId)
 
         val userId = user.id ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
