@@ -43,18 +43,26 @@ class OidcTokenValidator {
         jwksUri: String,
     ): PublicKey {
         val header = String(Base64.getUrlDecoder().decode(idToken.split(".")[0]))
-        val kid = ObjectMapper().readTree(header).get("kid").asText()
+        val kid = ObjectMapper().readTree(header).get(KID).asText()
 
         val jwks = RestTemplate().getForObject(jwksUri, JsonNode::class.java)
             ?: throw CustomException(ErrorCode.INVALID_ID_TOKEN)
 
-        val key = jwks["keys"].find { it["kid"].asText() == kid }
+        val key = jwks[KEYS].find { it[KID].asText() == kid }
             ?: throw CustomException(ErrorCode.INVALID_ID_TOKEN)
 
-        val n = BigInteger(1, Base64.getUrlDecoder().decode(key["n"].asText()))
-        val e = BigInteger(1, Base64.getUrlDecoder().decode(key["e"].asText()))
+        val n = BigInteger(1, Base64.getUrlDecoder().decode(key[N].asText()))
+        val e = BigInteger(1, Base64.getUrlDecoder().decode(key[E].asText()))
 
-        return KeyFactory.getInstance("RSA")
+        return KeyFactory.getInstance(RSA)
             .generatePublic(RSAPublicKeySpec(n, e))
+    }
+
+    companion object {
+        private const val KID = "kid"
+        private const val KEYS = "keys"
+        private const val N = "n"
+        private const val E = "e"
+        private const val RSA = "RSA"
     }
 }
