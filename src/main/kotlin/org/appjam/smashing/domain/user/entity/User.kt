@@ -2,6 +2,7 @@ package org.appjam.smashing.domain.user.entity
 
 import io.hypersistence.utils.hibernate.id.Tsid
 import jakarta.persistence.*
+import org.appjam.smashing.domain.auth.enums.ProviderType
 import org.appjam.smashing.domain.common.entity.BaseEntity
 import org.appjam.smashing.domain.user.enums.Gender
 import org.hibernate.annotations.Comment
@@ -12,7 +13,8 @@ import java.time.LocalDateTime
 @Entity
 @Table(
     indexes = [
-        Index(name = "idx_nickname", columnList = "nickname")
+        Index(name = "idx_nickname", columnList = "nickname"),
+        Index(name = "idx_social", columnList = "social_id, provider")
     ]
 )
 @Comment("유저 정보")
@@ -32,8 +34,13 @@ class User(
     val id: String? = null,
 
     @Column(nullable = false)
-    @Comment("카카오 IDX")
-    val kakaoId: String,
+    @Comment("소셜 IDX")
+    val socialId: String,
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+    @Comment("소셜 제공자")
+    val provider: ProviderType,
 
     @Column(nullable = false, length = 50)
     @Comment("닉네임")
@@ -85,18 +92,19 @@ class User(
         const val DELETED_USER_NICKNAME = "알 수 없음"
 
         fun create(
-            kakaoId: String,
+            socialId: String,
+            provider: ProviderType,
             nickname: String,
             gender: Gender,
             openchatUrl: String,
             region: String,
         ) = User(
-            kakaoId = kakaoId,
+            socialId = socialId,
+            provider = provider,
             nickname = nickname,
             gender = gender,
             openchatUrl = openchatUrl,
             region = region,
         )
     }
-
 }
