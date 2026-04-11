@@ -175,7 +175,7 @@ class AuthService(
 
     private fun validateUser(requestCommand: SignUpRequestCommand) {
         if (userRepository.existsBySocialId(requestCommand.socialId)) {
-            throw CustomException(ErrorCode.DUPLICATE_KAKAO_ID)
+            throw CustomException(ErrorCode.DUPLICATE_SOCIAL_ID)
         }
 
         if (userRepository.existsByNickname(requestCommand.nickname)) {

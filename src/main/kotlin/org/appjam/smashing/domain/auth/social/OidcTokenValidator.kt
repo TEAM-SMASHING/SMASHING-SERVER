@@ -20,7 +20,10 @@ class OidcTokenValidator {
         jwksUri: String,
         iss: String,
     ): String = try {
-        val publicKey = getPublicKey(idToken, jwksUri)
+        val publicKey = getPublicKey(
+            idToken = idToken,
+            jwksUri = jwksUri,
+        )
 
         val claims = Jwts.parserBuilder()
             .setSigningKey(publicKey)
@@ -28,11 +31,11 @@ class OidcTokenValidator {
             .parseClaimsJws(idToken)
             .body
 
-        require(claims.issuer == iss) { "invalid iss" }
+        if (claims.issuer != iss) throw CustomException(ErrorCode.INVALID_ISS)
 
         claims.subject
     } catch (e: Exception) {
-        throw CustomException(ErrorCode.INVALID_ACCESS_TOKEN) // todo: change
+        throw CustomException(ErrorCode.INVALID_ID_TOKEN)
     }
 
     private fun getPublicKey(
@@ -43,10 +46,10 @@ class OidcTokenValidator {
         val kid = ObjectMapper().readTree(header).get("kid").asText()
 
         val jwks = RestTemplate().getForObject(jwksUri, JsonNode::class.java)
-            ?: throw CustomException(ErrorCode.INVALID_ACCESS_TOKEN) // todo: change
+            ?: throw CustomException(ErrorCode.INVALID_ID_TOKEN)
 
         val key = jwks["keys"].find { it["kid"].asText() == kid }
-            ?: throw CustomException(ErrorCode.INVALID_ACCESS_TOKEN) // todo: change
+            ?: throw CustomException(ErrorCode.INVALID_ID_TOKEN)
 
         val n = BigInteger(1, Base64.getUrlDecoder().decode(key["n"].asText()))
         val e = BigInteger(1, Base64.getUrlDecoder().decode(key["e"].asText()))
