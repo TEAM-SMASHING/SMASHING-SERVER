@@ -24,10 +24,10 @@ class AuthController(
     private val authService: AuthService,
 ) {
     @Operation(
-        summary = "카카오 로그인 API",
-        description = "카카오 로그인을 진행합니다."
+        summary = "소셜 로그인 API",
+        description = "소셜 로그인을 진행합니다."
     )
-    @PostMapping("/login/kakao")
+    @PostMapping("/login")
     fun signIn(
         @Valid @RequestBody signInRequest: SignInRequest
     ): ResponseEntity<ApiResponse<SignInResponse>> {
