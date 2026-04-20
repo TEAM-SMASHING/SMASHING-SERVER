@@ -43,9 +43,10 @@ enum class ErrorCode(
 
     // Auth - SocialId Token
     INVALID_ISS(HttpStatus.UNAUTHORIZED, "AUTH-020", "유효하지 않은 ID 토큰 발급자입니다."),
-    DUPLICATE_SOCIAL_ID(HttpStatus.CONFLICT, "AUTH-021", "이미 존재하는 유저입니다."),
-    DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "AUTH-022", "이미 사용 중인 닉네임입니다."),
-    INVALID_ID_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-023", "유효하지 않은 ID 토큰입니다."),
+    INVALID_AUD(HttpStatus.UNAUTHORIZED, "AUTH-021", "유효하지 않은 audience입니다."),
+    DUPLICATE_SOCIAL_ID(HttpStatus.CONFLICT, "AUTH-022", "이미 존재하는 유저입니다."),
+    DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "AUTH-023", "이미 사용 중인 닉네임입니다."),
+    INVALID_ID_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-024", "유효하지 않은 ID 토큰입니다."),
 
     // Domain - User / Profile
     USER_SPORT_PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND, "USER-001", "유저 스포츠 프로필을 찾을 수 없습니다."),
