@@ -9,6 +9,7 @@ import org.appjam.smashing.global.extensions.ofIgnoreCase
 data class SignInRequest(
     @field:NotBlank(message = "idToken을 입력해주세요.")
     val idToken: String?,
+    @field:NotBlank(message = "provider를 입력해주세요.")
     @field:ValidEnum(message = "잘못된 provider 값입니다.", enumClass = ProviderType::class)
     val provider: String?,
 ) {
