@@ -42,12 +42,12 @@ class AuthService(
     fun signIn(
         requestCommand: SignInRequestCommand,
     ): SignInResponse {
-        val kakaoId = socialAuthServiceManager.getKakaoId(requestCommand.accessToken)
+        val (provider, socialId) = socialAuthServiceManager.getSocialId(requestCommand)
 
-        val user = userRepository.findByKakaoId(kakaoId)
-            ?: return SignInResponse.from(
-                kakaoId = kakaoId,
-            )
+        val user = userRepository.findBySocialIdAndProvider(
+            socialId = socialId,
+            provider = provider,
+        ) ?: return SignInResponse.from(socialId = socialId)
 
         val userId = user.id ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
@@ -56,7 +56,7 @@ class AuthService(
         return SignInResponse.from(
             accessToken = token.accessToken.token,
             refreshToken = token.refreshToken.token,
-            kakaoId = kakaoId,
+            socialId = socialId,
             userId = userId,
             nickname = user.nickname,
         )
@@ -81,7 +81,8 @@ class AuthService(
 
         val user = userRepository.save(
             User.create(
-                kakaoId = requestCommand.kakaoId,
+                socialId = requestCommand.socialId,
+                provider = requestCommand.provider,
                 nickname = requestCommand.nickname,
                 gender = requestCommand.gender,
                 openchatUrl = requestCommand.openChatUrl.trim(),
@@ -173,8 +174,8 @@ class AuthService(
     }
 
     private fun validateUser(requestCommand: SignUpRequestCommand) {
-        if (userRepository.existsByKakaoId(requestCommand.kakaoId)) {
-            throw CustomException(ErrorCode.DUPLICATE_KAKAO_ID)
+        if (userRepository.existsBySocialId(requestCommand.socialId)) {
+            throw CustomException(ErrorCode.DUPLICATE_SOCIAL_ID)
         }
 
         if (userRepository.existsByNickname(requestCommand.nickname)) {
