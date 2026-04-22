@@ -28,26 +28,22 @@ class OidcTokenValidator(
         }
         val clientId = oidcProperties.getClientId(providerType)
 
-        return try {
-            val publicKey = getPublicKey(
-                idToken = idToken,
-                jwksUri = jwksUri,
-            )
+        val publicKey = getPublicKey(
+            idToken = idToken,
+            jwksUri = jwksUri,
+        )
 
-            val claims = Jwts.parserBuilder()
-                .setSigningKey(publicKey)
-                .build()
-                .parseClaimsJws(idToken)
-                .body
+        val claims = Jwts.parserBuilder()
+            .setSigningKey(publicKey)
+            .build()
+            .parseClaimsJws(idToken)
+            .body
 
-            // 회원 검증
-            if (claims.issuer != iss) throw CustomException(ErrorCode.INVALID_ISS)
-            if (claims.audience != clientId) throw CustomException(ErrorCode.INVALID_AUD)
+        // 회원 검증
+        if (claims.issuer != iss) throw CustomException(ErrorCode.INVALID_ISS)
+        if (claims.audience != clientId) throw CustomException(ErrorCode.INVALID_AUD)
 
-            claims.subject
-        } catch (e: Exception) {
-            throw CustomException(ErrorCode.INVALID_ID_TOKEN)
-        }
+        return claims.subject
     }
 
     private fun getPublicKey(
