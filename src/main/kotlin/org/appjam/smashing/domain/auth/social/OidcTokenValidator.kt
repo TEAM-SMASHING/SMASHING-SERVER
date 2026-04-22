@@ -1,13 +1,11 @@
 package org.appjam.smashing.domain.auth.social
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.jsonwebtoken.Jwts
 import org.appjam.smashing.domain.auth.enums.ProviderType
 import org.appjam.smashing.global.exception.CustomException
 import org.appjam.smashing.global.exception.ErrorCode
 import org.springframework.stereotype.Component
-import org.springframework.web.client.RestTemplate
 import java.math.BigInteger
 import java.security.KeyFactory
 import java.security.PublicKey
@@ -17,6 +15,7 @@ import java.util.*
 @Component
 class OidcTokenValidator(
     private val oidcProperties: OidcProperties,
+    private val jwksClient: OidcJwksClient,
 ) {
     fun extractSocialId(
         idToken: String,
@@ -58,10 +57,9 @@ class OidcTokenValidator(
         val header = String(Base64.getUrlDecoder().decode(idToken.split(".")[0]))
         val kid = ObjectMapper().readTree(header).get(KID).asText()
 
-        val jwks = RestTemplate().getForObject(jwksUri, JsonNode::class.java)
-            ?: throw CustomException(ErrorCode.INVALID_ID_TOKEN)
+        val keys = jwksClient.getKeys(jwksUri)
 
-        val key = jwks[KEYS].find { it[KID].asText() == kid }
+        val key = keys[KEYS].find { it[KID].asText() == kid }
             ?: throw CustomException(ErrorCode.INVALID_ID_TOKEN)
 
         val n = BigInteger(1, Base64.getUrlDecoder().decode(key[N].asText()))
